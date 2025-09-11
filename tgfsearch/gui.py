@@ -15,7 +15,7 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import tgfsearch.tools as tl
-from tgfsearch.search import is_valid_detector, program
+from tgfsearch.search import is_valid_search, program
 
 
 # Redirects stdout and stderr from the search program. Meant to be run in a subprocess
@@ -32,7 +32,7 @@ def search_program_wrapper(write, first_date, second_date, unit, mode_info):
     try:
         program(first_date, second_date, unit, mode_info)
     except Exception as ex:
-        print('Search program terminated with the following error or warning:\n')
+        print('Error: search program terminated with the following error or warning:\n')
         # Removing the top layer of the traceback (which is just this function) and printing the remainder
         count = len(traceback.extract_tb(ex.__traceback__)) - 1
         print(traceback.format_exc(limit=-count))
@@ -74,38 +74,6 @@ class SearchManager:
         self.lock = threading.Lock()  # Mutex to prevent race conditions with a search in progress
         self.event = threading.Event()  # Event for communicating with the search thread
 
-    # Checks whether a search with the given dates and detector is a valid one
-    @staticmethod
-    def is_valid_search(first_date, second_date, detector, print_feedback=False):
-        # Checks that both dates are digits in the proper format
-        if not first_date.isdigit() or not second_date.isdigit() \
-                or len(first_date) != 6 or len(second_date) != 6:
-            if print_feedback:
-                print('Error: not a valid date. BOTH dates must be in yymmdd format.')
-
-            return False
-
-        # Checks that both dates are sequential
-        if int(first_date) > int(second_date):
-            if print_feedback:
-                print('Error: second date must be AFTER first date.')
-
-            return False
-
-        # Checks that a detector has been entered
-        if detector == '':
-            if print_feedback:
-                print('Error: No detector specified.')
-
-            return False
-        elif not is_valid_detector(detector):
-            if print_feedback:
-                print('Error: Not a valid detector.')
-
-            return False
-
-        return True
-
     # Enables the given mode
     def add_mode(self, mode):
         with self.lock:
@@ -124,7 +92,7 @@ class SearchManager:
                 second_date = first_date
 
             # If the search command is valid, sets up a SearchArgs object to store it
-            if self.is_valid_search(first_date, second_date, detector, print_feedback=True):
+            if is_valid_search(first_date, second_date, detector, print_feedback=True):
                 mode_info = []
                 for mode in self.mode_flags:
                     if self.mode_flags[mode]:

@@ -15,7 +15,6 @@ import sys as sys
 import traceback as traceback
 import warnings as warnings
 
-
 # Adds parent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -42,6 +41,38 @@ def is_valid_detector(unit):
             return unit_upper in identities
         except json.decoder.JSONDecodeError:
             raise SyntaxError('invalid syntax in detector config file.')
+
+
+# Checks whether a search with the given dates and detector is a valid one
+def is_valid_search(first_date, second_date, unit, print_feedback=False):
+    # Checks that both dates are digits in the proper format
+    if not first_date.isdigit() or not second_date.isdigit() \
+            or len(first_date) != 6 or len(second_date) != 6:
+        if print_feedback:
+            print('Error: not a valid date. BOTH dates must be in yymmdd format.')
+
+        return False
+
+    # Checks that both dates are sequential
+    if int(first_date) > int(second_date):
+        if print_feedback:
+            print('Error: second date must be AFTER first date.')
+
+        return False
+
+    # Checks that a valid detector has been entered
+    if unit == '':
+        if print_feedback:
+            print('Error: no detector specified.')
+
+        return False
+    elif not is_valid_detector(unit):
+        if print_feedback:
+            print('Error: not a valid detector.')
+
+        return False
+
+    return True
 
 
 # Returns the correct detector object based on the parameters provided
@@ -83,6 +114,15 @@ def get_modes(mode_info):
         modes['onescint'] = False
 
     return modes
+
+
+# Returns the maximum allowed fraction of available system memory that the program is allowed to use for data
+def get_max_mem_frac():
+    available_memory = psutil.virtual_memory()[1]
+    if available_memory * params.MEMORY_ALLOWANCE_FRAC < params.ABS_MEMORY_ALLOWANCE:
+        return params.MEMORY_ALLOWANCE_FRAC
+
+    return params.ABS_MEMORY_ALLOWANCE / available_memory
 
 
 # Logs errors that occur during daily searches
@@ -436,6 +476,7 @@ def find_se_traces(detector, event, trace_dict, times, count_scints):
 
 # Makes the scatter plot for a short event
 def make_se_scatterplot(detector, event, times, energies, count_scints):
+    timestamp = dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)
     # Subplot timescales
     timescales = [params.SE_TIMESCALE_ONE, params.SE_TIMESCALE_TWO, params.SE_TIMESCALE_THREE]
 
@@ -468,7 +509,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
 
     figure = plt.figure(figsize=[20, 11.0], dpi=150.)
     figure.suptitle(f'{event.scintillator} Event {str(event.number)}, ' 
-                    f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)} UTC, ' 
+                    f'{timestamp} UTC, ' 
                     f'{event.length} counts \n Weather: {event.weather_conditions} \n'
                     f'Score: {"%.3f" % event.total_score}, Rank: {event.rank}', fontsize=20)
     ax1 = figure.add_subplot(3, 1, 1)
@@ -486,7 +527,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
 
         dot_size = 5 if ts == params.SE_TIMESCALE_ONE else 3  # makes larger dots for top plot
         ax.set_yscale('log')
-        ax.set_ylim([0.6, 1e5])
+        ax.set_ylim((0.6, 1e5))
         for scintillator in times_dict:
             color = colors[scintillator] if scintillator in colors else 'b'
             # 0.6 to avoid annoying divide by zero warnings
@@ -526,7 +567,9 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     tl.make_path(scatter_path)
     event_num_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.number)))
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
-    figure.savefig(f'{scatter_path}/{detector.date_str}_{event.scintillator}_'
+    figure.savefig(f'{scatter_path}/'
+                   f'{timestamp.strftime("%y%m%d_%H%M%S")}_'
+                   f'{event.scintillator}_'
                    f'event{event_num_padding}{event.number}_'
                    f'rank{rank_padding}{event.rank}_'
                    f'score{("%.3f" % event.total_score).replace(".", "p")}.png')
@@ -552,7 +595,9 @@ def make_se_json(detector, event, times, energies, wallclock, count_scints):
     event_num_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.number)))
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
     with open(
-            f'{event_path}/{detector.date_str}_{event.scintillator}_'
+            f'{event_path}/'
+            f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec).strftime("%y%m%d_%H%M%S")}_'
+            f'{event.scintillator}_'
             f'event{event_num_padding}{event.number}_'
             f'rank{rank_padding}{event.rank}_'
             f'score{("%.3f" % event.total_score).replace(".", "p")}.json', 'w') as file:
@@ -962,20 +1007,23 @@ def find_le_files(detector, le_scint_list, event):
     return lm_files
 
 
-# Makes the histogram subplots for long events
-def make_hist_subplot(ax, event, day_bins, hist_allday, mue, sigma, bin_size):
-    left = 0 if (event.peak_index - params.LE_SUBPLOT_PADDING) < 0 else (event.peak_index - params.LE_SUBPLOT_PADDING)
-    right = (len(day_bins) - 2) if (event.peak_index + params.LE_SUBPLOT_PADDING) > (len(day_bins) - 2) else \
-        (event.peak_index + params.LE_SUBPLOT_PADDING)
+# Makes the text file for a long event
+def make_le_txt(detector, event, bin_size, event_num):
+    event_path = f'{detector.get_results_loc()}/event_files/long_events/{bin_size}_sec_bins/'
+    tl.make_path(event_path)
+    timestamp = dt.datetime.fromtimestamp(event.start_sec + detector.first_sec, dt.UTC)
+    with open(f'{event_path}/'
+              f'{timestamp.strftime("%y%m%d_%H%M%S")}_'
+              f'event{event_num}_'
+              f'zscore{int(event.highest_score)}.txt', 'w') as event_file:
 
-    sub_bins = day_bins[left:right]
-    ax.bar(sub_bins, hist_allday[left:right], alpha=params.LE_SUBPLOT_BAR_ALPHA,
-           color=params.LE_SUBPLOT_BAR_COLOR, width=bin_size)
-    ax.set_xlabel('Seconds of Day (UT)')
-    ax.set_ylabel('Counts/bin')
-    ax.plot(sub_bins, mue[left:right] + params.FLAG_THRESH * sigma[left:right],
-            color=params.LE_THRESH_LINE_COLOR, linestyle='dashed', linewidth=2)
-    ax.grid(True)
+        print(f'{timestamp} UTC ({event.start_sec} '
+              f'seconds of day), {event.stop_sec - event.start_sec} seconds long, highest z-score: '
+              f'{event.highest_score}, {bin_size} sec bins',
+              file=detector.log)
+        for scintillator in event.lm_files:
+            print(f'{scintillator}: {event.lm_files[scintillator]}', file=event_file)
+
 
 
 # Runs the long event search
@@ -1026,34 +1074,25 @@ def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
         tl.print_logger('Generating event files...', detector.log)
         print('', file=detector.log)
         print('Potential glows:', file=detector.log)
-
-        event_path = f'{detector.get_results_loc()}/event_files/long_events/{bin_size}_sec_bins/'
-        tl.make_path(event_path)
-
         if len(potential_glows) == 1:
             print('Making 1 event file...')
         else:
             print(f'Making {len(potential_glows)} event files...')
 
         for i in range(len(potential_glows)):
-
             glow = potential_glows[i]
-            info = (f'{dt.datetime.fromtimestamp(glow.start_sec + detector.first_sec, dt.UTC)} UTC ({glow.start_sec} '
-                    f'seconds of day), {glow.stop_sec - glow.start_sec} seconds long, highest z-score: '
-                    f'{glow.highest_score}, {bin_size} sec bins')
+
+            # Getting the list mode files associated with the event
+            glow.lm_files = find_le_files(detector, le_scint_list, glow)
 
             # Logging the event
-            print(info, file=detector.log)
+            print(f'{dt.datetime.fromtimestamp(glow.start_sec + detector.first_sec, dt.UTC)} UTC ({glow.start_sec} '
+                  f'seconds of day), {glow.stop_sec - glow.start_sec} seconds long, highest z-score: '
+                  f'{glow.highest_score}, {bin_size} sec bins',
+                  file=detector.log)
 
             # Making the event file
-            event_file = open(f'{event_path}/{detector.date_str}_event{i + 1}_zscore'
-                              f'{int(glow.highest_score)}.txt', 'w')
-            print(info, file=event_file)
-            glow.lm_files = find_le_files(detector, le_scint_list, glow)
-            for scintillator in glow.lm_files:
-                print(f'{scintillator}: {glow.lm_files[scintillator]}', file=event_file)
-
-            event_file.close()
+            make_le_txt(detector, glow, bin_size, i + 1)
 
         print('', file=detector.log)
 
@@ -1067,7 +1106,20 @@ def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
                 break
 
             glow = potential_glows[i]
-            make_hist_subplot(ax_list[i], glow, bins_allday, hist_allday, mue, sigma, bin_size)
+            ax = ax_list[i]
+            left = 0 if (glow.peak_index - params.LE_SUBPLOT_PADDING) < 0 else \
+                        glow.peak_index - params.LE_SUBPLOT_PADDING
+            right = len(bins_allday) if glow.peak_index + params.LE_SUBPLOT_PADDING > len(bins_allday) else \
+                glow.peak_index + params.LE_SUBPLOT_PADDING
+
+            sub_bins = bins_allday[left:right]
+            ax.bar(sub_bins, hist_allday[left:right], alpha=params.LE_SUBPLOT_BAR_ALPHA,
+                   color=params.LE_SUBPLOT_BAR_COLOR, width=bin_size)
+            ax.set_xlabel('Seconds of Day (UT)')
+            ax.set_ylabel('Counts/bin')
+            ax.plot(sub_bins, mue[left:right] + params.FLAG_THRESH * sigma[left:right],
+                    color=params.LE_THRESH_LINE_COLOR, linestyle='dashed', linewidth=2)
+            ax.grid(True)
 
     else:
         tl.print_logger(f'No glows found', detector.log)
@@ -1078,7 +1130,10 @@ def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
     tl.print_logger('Saving Histogram...', detector.log)
     hist_path = f'{detector.get_results_loc()}'
     tl.make_path(hist_path)
-    figure.savefig(f'{hist_path}/{detector.date_str}_histogram_{bin_size}_sec_bins_{len(potential_glows)}_events.png',
+    figure.savefig(f'{hist_path}/'
+                   f'{detector.date_str}_'
+                   f'histogram_{bin_size}_sec_bins_'
+                   f'{len(potential_glows)}_events.png',
                    dpi=500)
     figure.clf()
     plt.close(figure)
@@ -1143,14 +1198,14 @@ def get_lm_sets(partition_points, lm_filelist):
 
 
 # Returns the total memory in bytes of all files contained in the partition defined by points start and end
-def get_partition_memory(start, end, trace_map, lm_filelist, lm_growth_factor, trace_growth_factor):
+def get_partition_memory(detector, start, end, trace_map, lm_filelist):
     memory = 0
     for i in range(start, end):
         file = lm_filelist[i]
-        memory += tl.file_size(file) * lm_growth_factor
+        memory += tl.file_size(file) * detector.lm_growth_factor
         if file in trace_map:
             for trace in trace_map[file]:
-                memory += tl.file_size(trace) * trace_growth_factor
+                memory += tl.file_size(trace) * detector.trace_growth_factor
 
     return memory
 
@@ -1168,9 +1223,7 @@ def get_partition_files(start, end, trace_map, lm_filelist):
 
 # Partitions the day into self-contained detector objects depending on the memory limit in parameters
 def make_chunks(detector):
-    allowed_memory = psutil.virtual_memory()[1] * params.TOTAL_MEMORY_ALLOWANCE_FRAC
-    lm_growth_factor = detector.lm_growth_factor
-    trace_growth_factor = detector.trace_growth_factor
+    allowed_memory = psutil.virtual_memory()[1] * get_max_mem_frac()
 
     lm_filelists = {scintillator: detector.get_attribute(scintillator, 'lm_filelist')
                     for scintillator in detector}
@@ -1204,8 +1257,7 @@ def make_chunks(detector):
             trace_map = trace_maps[scintillator]
             lm_sets = all_lm_sets[scintillator]
             lm_filelist = lm_filelists[scintillator]
-            new_memory += get_partition_memory(lm_sets[i], lm_sets[i + 1], trace_map, lm_filelist, lm_growth_factor,
-                                               trace_growth_factor)
+            new_memory += get_partition_memory(detector, lm_sets[i], lm_sets[i + 1], trace_map, lm_filelist)
 
         total_memory += new_memory
         # Making a new chunk if the amount of new memory added by partitioning at i + 1 takes us over the limit
@@ -1246,16 +1298,11 @@ def main():
         second_date = str(sys.argv[2])
         unit = str(sys.argv[3])
     else:
-        print('Please provide a first date, a second date, and a unit name.')
+        print('Error: please provide a first date, a second date, and a unit name.')
         exit()
 
-    # Makes sure inputs are valid
-    if not first_date.isdigit() or not second_date.isdigit() \
-            or len(first_date) != 6 or len(second_date) != 6:
-        print('Invalid date(s).')
-        exit()
-    elif int(second_date) < int(first_date):
-        print('Not a valid date range.')
+    # Makes sure that inputs are valid
+    if not is_valid_search(first_date, second_date, unit, print_feedback=True):
         exit()
 
     if len(sys.argv) > 4:
@@ -1270,10 +1317,6 @@ def main():
 def program(first_date, second_date, unit, mode_info):
     matplotlib.use('Agg')  # Memory leaks without this
     modes = get_modes(mode_info)
-
-    if not is_valid_detector(unit):
-        print('Not a valid detector.')
-        exit()
 
     # Looping through the dates
     for date_str in tl.make_date_list(first_date, second_date):
@@ -1301,7 +1344,8 @@ def program(first_date, second_date, unit, mode_info):
                 raise FileNotFoundError("couldn't infer identity.")
 
         except FileNotFoundError:
-            print('No data files to infer detector identity from. Please provide the import location of the data.')
+            print('Error: no data files to infer detector identity from. Please provide the import location of '
+                  'the data.')
             exit()
 
         # Logs relevant data files and events in a .txt File
@@ -1321,12 +1365,12 @@ def program(first_date, second_date, unit, mode_info):
                 else:
                     detector.log = log
                     detector.import_data(clean_energy=modes['clnenrg'], feedback=True,
-                                         mem_frac=params.TOTAL_MEMORY_ALLOWANCE_FRAC)
+                                         mem_frac=get_max_mem_frac())
                     tl.pickle_detector(detector, 'detector')
             else:
                 detector.log = log
                 detector.import_data(clean_energy=modes['clnenrg'], feedback=True,
-                                     mem_frac=params.TOTAL_MEMORY_ALLOWANCE_FRAC)
+                                     mem_frac=get_max_mem_frac())
 
             print('')
             print('Done.')
@@ -1497,8 +1541,7 @@ def program(first_date, second_date, unit, mode_info):
                 if not modes['skshort']:
                     tl.print_logger('\n', detector.log)
                     tl.print_logger('Starting search for short events...', detector.log)
-                    tl.print_logger('Warning! In low memory mode, short events '
-                                    'will be ranked on a per-chunk basis.',
+                    tl.print_logger('Warning: in low memory mode, short events will be ranked on a per-chunk basis.',
                                     detector.log)
                     tl.print_logger('', detector.log)
                     event_numbers = {}
@@ -1564,7 +1607,7 @@ def program(first_date, second_date, unit, mode_info):
 
             except MemoryError:
                 tl.print_logger('\n', log)
-                tl.print_logger('Cannot complete search. Too little memory available on system.', log)
+                tl.print_logger('Error: cannot complete search. Too little memory available on system.', log)
 
             except FileNotFoundError:  # Missing necessary data
                 tl.print_logger('\n', detector.log)

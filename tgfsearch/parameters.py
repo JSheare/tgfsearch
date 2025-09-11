@@ -7,7 +7,9 @@ SEC_PER_HOUR = 3600  # Number of seconds in an hour
 CENTURY = '20'  # The current century (numerically)
 TWO_AM = 7200  # Number of seconds of the day corresponding to 2:00AM
 WEATHER_PADDING = 3  # The number of hours on either side of an event to check the weather for
-TOTAL_MEMORY_ALLOWANCE_FRAC = 0.40  # Fraction of available memory on the system that the program can use for data
+ABS_MEMORY_ALLOWANCE = 8589934592  # The upper bound of memory that the program can use for data in bytes
+MEMORY_ALLOWANCE_FRAC = 0.40  # The fraction of available memory on the system that the program can use for data.
+#   Bounded by the ABS_MEMORY_ALLOWANCE
 
 
 """Trace-Related Parameters"""
@@ -17,9 +19,9 @@ NUM_BINS_BASELINE = 100  # The number of bins from the very beginning of the tra
 TRIGGER_ABOVE_BASELINE = 2  # The number of energy channels above baseline needed to trigger a trace
 MIN_RISING_EDGE_BINS = 71  # The minimum number of bins in a rising edge for it to be considered valid
 ABOVE_BASELINE_RATIO_THRESH = 0.1  # Traces with no saturation and a ratio of above/below baseline counts > 1 must
-# have a ratio at least this much greater than 1 to be considered passing
+#   have a ratio at least this much greater than 1 to be considered passing
 BELOW_BASELINE_RATIO_THRESH = 0.5  # Traces with no saturation and a ratio of above/below baseline counts < 1 must
-# have a ratio at least this much greater than 0 to be considered passing
+#   have a ratio at least this much greater than 0 to be considered passing
 ROLLOVER_PERIOD = 2**36  # Maximum number of clock ticks before a rollover
 T_STEP = 12.5e-9  # clock tick time resolution (80 MHz)
 DT = 200e-9  # Time to extend sample on either side to let pulse shapes finish

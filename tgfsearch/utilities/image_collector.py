@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
 import tgfsearch.parameters as params
 import tgfsearch.tools as tl
-from tgfsearch.search import is_valid_detector
+from tgfsearch.search import is_valid_search
 
 
 def is_valid_dir_path(path):
@@ -35,19 +35,11 @@ def main():
         second_date = str(sys.argv[2])
         unit = str(sys.argv[3]).upper()
     else:
-        print('Error: Please provide a first date, a second date, and a unit name.')
+        print('Error: please provide a first date, a second date, and a detector name.')
         exit()
 
     # Makes sure inputs are valid
-    if not first_date.isdigit() or not second_date.isdigit() \
-            or len(first_date) != 6 or len(second_date) != 6:
-        print('Error: Invalid date(s).')
-        exit()
-    elif int(second_date) < int(first_date):
-        print('Error: Not a valid date range.')
-        exit()
-    elif not is_valid_detector(unit):
-        print('Error: Not a valid detector.')
+    if not is_valid_search(first_date, second_date, unit, print_feedback=True):
         exit()
 
     if len(sys.argv) > 4:
@@ -64,7 +56,7 @@ def main():
             results_index = index + 1
             if mode_info[results_index] != 'none' and mode_info[results_index] != '/':
                 if not is_valid_dir_path(mode_info[results_index]):
-                    print('Error: Invalid results path.')
+                    print('Error: invalid results path.')
                     exit()
 
                 results_loc = mode_info[results_index]
@@ -72,13 +64,13 @@ def main():
             export_index = index + 2
             if mode_info[export_index] != 'none' and mode_info[export_index] != '/':
                 if not is_valid_dir_path(mode_info[export_index]):
-                    print('Error: Invalid export path.')
+                    print('Error: invalid export path.')
                     exit()
 
                 export_loc = mode_info[export_index]
 
         else:
-            print("Error: Please provide custom import and export directories, or 'none' in place of either.")
+            print("Error: please provide custom import and export directories, or 'none' in place of either.")
             exit()
 
     # Flag for only including short events above or equal to a certain rank

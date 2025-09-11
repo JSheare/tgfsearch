@@ -10,7 +10,7 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 import tgfsearch.tools as tl
-from tgfsearch.search import is_valid_detector, get_detector
+from tgfsearch.search import is_valid_search, get_detector
 
 def get_obj_size(obj, visited=None):
     if isinstance(obj, pd.DataFrame):
@@ -52,7 +52,7 @@ def main():
         second_date = str(sys.argv[2])
         unit = str(sys.argv[3])
     else:
-        print('Please provide a first date, a second date, and a unit name.')
+        print('Error: please provide a first date, a second date, and a unit name.')
         exit()
 
     if len(sys.argv) > 5 and sys.argv[4] == '-c':
@@ -61,16 +61,7 @@ def main():
         import_loc = ''
 
     # Makes sure inputs are valid
-    if not first_date.isdigit() or not second_date.isdigit() \
-            or len(first_date) != 6 or len(second_date) != 6:
-        print('Invalid date(s).')
-        exit()
-    elif int(second_date) < int(first_date):
-        print('Not a valid date range.')
-        exit()
-
-    if not is_valid_detector(unit):
-        print('Not a valid detector.')
+    if not is_valid_search(first_date, second_date, unit, print_feedback=True):
         exit()
 
     lm_growth_factors = []
@@ -86,8 +77,8 @@ def main():
                         raise FileNotFoundError("couldn't infer identity.")
 
                 except FileNotFoundError:
-                    print('No data files to infer detector identity from. Please provide the import location of the '
-                          'data.')
+                    print('Error: no data files to infer detector identity from. Please provide the import location of '
+                          'the data.')
                     exit()
 
             # Measuring the growth factor for the list mode files
@@ -133,7 +124,7 @@ def main():
         print('\n')
 
     except MemoryError:
-        print('Not enough system memory to complete test.')
+        print('Error: not enough memory available on system to complete the test.')
         exit()
 
 
