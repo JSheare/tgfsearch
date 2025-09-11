@@ -1,98 +1,154 @@
 {
-  "GODOT": {
-    "spectra_params": {"bin_range": 15008.0, "bin_size": 16 },
-    "subtree": "GODOT/Data",
-    "scintillators": {
-      "000000": {"NaI":  "1490", "LP": "1491", "default": "LP"}
+  "identities" : {
+    "GODOT": {
+      "spectra_params": {"bin_range": 15008.0, "bin_size": 16},
+      "subtree": "GODOT/Data",
+      "file_format": {
+        "000000": "generic_old_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "1490", "LP": "1491", "default": "LP"}
+      }
+    },
+
+    "THOR1": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR1/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4179", "SP": "4194", "MP": "4189", "LP": "4195", "default": "LP"}
+      }
+    },
+    "THOR2": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR2/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4182", "SP": "4172", "MP": "4167", "LP": "4187", "default": "LP"}
+      }
+    },
+
+    "THOR3": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR3/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4169", "SP": "4175", "MP": "4174", "LP": "4185", "default": "LP"}
+      }
+    },
+
+    "THOR4": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR4/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4177", "SP": "4191", "MP": "4192", "LP": "4181", "default": "LP"}
+      }
+    },
+
+    "THOR5": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR5/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4188", "SP": "4190", "MP": "4178", "LP": "4173", "default": "LP"},
+        "221109": {"NaI": "4188", "SP": "4190", "MP": "4169", "LP": "4173", "default": "LP"}
+      }
+    },
+
+    "THOR6": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "THOR/THOR6/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4186", "SP": "4176", "MP": "4183", "LP": "4180", "default": "LP"}
+      }
+    },
+
+    "SANTIS": {
+      "spectra_params": {"bin_range": 15008.0, "bin_size": 16},
+      "subtree": "SANTIS/Data",
+      "file_format": {
+        "000000": "generic_nrl_lm"
+      },
+      "scintillators": {
+        "000000": {"LP": "2549", "default": "LP"}
+      }
+    },
+
+    "CROATIA": {
+      "spectra_params": {"bin_range": 15008.0, "bin_size": 16},
+      "subtree": "SANTIS/Data",
+      "file_format": {
+        "000000": "generic_nrl_lm"
+      },
+      "scintillators": {
+        "000000": {"NaI": "4193", "LP": "2549", "default": "LP"}
+      }
+    },
+
+    "MINITHOR1": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "MINITHOR1/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"IP": "4194", "NaI": "4179", "default": "IP"}
+      }
+    },
+
+    "ISRAEL": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "ISRAEL/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"MP": "5069", "default": "MP"}
+      }
+    },
+
+    "FRANCE": {
+      "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
+      "subtree": "FRANCE/Data",
+      "file_format": {
+        "000000": "thor_lm"
+      },
+      "scintillators": {
+        "000000": {"MP": "5072", "LP": "5071", "default": "LP"}
+      }
     }
   },
 
-  "THOR1": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR1/Data",
-    "scintillators": {
-      "000000": {"NaI": "4179", "SP": "4194", "MP": "4189", "LP": "4195", "default": "LP"}
-    }
-  },
-
-  "THOR2": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR2/Data",
-    "scintillators": {
-      "000000": {"NaI": "4182", "SP": "4172", "MP": "4167", "LP": "4187", "default": "LP"}
-    }
-  },
-
-  "THOR3": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR3/Data",
-    "scintillators": {
-      "000000": {"NaI": "4169", "SP": "4175", "MP": "4174", "LP": "4185", "default": "LP"}
-    }
-  },
-
-  "THOR4": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR4/Data",
-    "scintillators": {
-      "000000": {"NaI": "4177", "SP": "4191", "MP": "4192", "LP": "4181", "default": "LP"}
-    }
-  },
-
-  "THOR5": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR5/Data",
-    "scintillators": {
-      "000000": {"NaI": "4188", "SP": "4190", "MP": "4178", "LP": "4173", "default": "LP"},
-      "221109": {"NaI": "4188", "SP": "4190", "MP": "4169", "LP": "4173", "default": "LP"}
-    }
-  },
-
-  "THOR6": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "THOR/THOR6/Data",
-    "scintillators": {
-      "000000": {"NaI": "4186", "SP": "4176", "MP": "4183", "LP": "4180", "default": "LP"}
-    }
-  },
-
-  "SANTIS": {
-    "spectra_params": {"bin_range": 15008.0, "bin_size": 16},
-    "subtree": "SANTIS/Data",
-    "scintillators": {
-      "000000": {"LP": "2549", "default": "LP"}
-    }
-  },
-
-  "CROATIA": {
-    "spectra_params": {"bin_range": 15008.0, "bin_size": 16},
-    "subtree": "SANTIS/Data",
-    "scintillators": {
-      "000000": {"NaI": "4193","LP": "2549", "default": "LP"}
-    }
-  },
-
-  "MINITHOR1": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "MINITHOR1/Data",
-    "scintillators": {
-      "000000": {"IP": "4194","NaI": "4179", "default": "IP"}
-    }
-  },
-
-  "ISRAEL": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "ISRAEL/Data",
-    "scintillators": {
-      "000000": {"MP": "5069", "default": "MP"}
-    }
-  },
-
-  "FRANCE": {
-    "spectra_params": {"bin_range": 65535.0, "bin_size": 1},
-    "subtree": "FRANCE/Data",
-    "scintillators": {
-      "000000": {"MP": "5072", "LP": "5071", "default": "LP"}
+  "growth_factors" : {
+    "generic_old_lm" : {
+      "lm_growth_factor" : 1.0,
+      "trace_growth_factor" : 1.0
+    },
+    "generic_nrl_lm" : {
+      "lm_growth_factor" : 2.6203447532376596,
+      "trace_growth_factor" : 10.085717812927724
+    },
+    "thor_lm" : {
+      "lm_growth_factor" : 2.6203447532376596,
+      "trace_growth_factor" : 10.085717812927724
+    },
+    "json_nrl_lm" : {
+      "lm_growth_factor" : 2.6203447532376596,
+      "trace_growth_factor" : 10.085717812927724
     }
   }
 }
