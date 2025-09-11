@@ -1,3 +1,4 @@
+"""A script that turns the package's various docstrings into HTML documents."""
 import os
 import pydoc
 import shutil

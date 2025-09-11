@@ -79,6 +79,10 @@ _has_identity&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;flag&nbsp;for&nbsp;whether&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,&nbsp;etc.).<br>
 spectra_params&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;various&nbsp;parameters&nbsp;used&nbsp;to&nbsp;make&nbsp;spectra&nbsp;for&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
+lm_growth_factor&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
+trace_growth_factor&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
 _import_loc&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;data&nbsp;files&nbsp;for&nbsp;the&nbsp;day&nbsp;are&nbsp;located.<br>
 _results_loc&nbsp;:&nbsp;str<br>
@@ -118,7 +122,7 @@ with&nbsp;some&nbsp;info&nbsp;about&nbsp;which&nbsp;Scintillators&nbsp;have&nbsp
 Parameters<br>
 ----------<br>
 clear_filelists&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;lists&nbsp;of&nbsp;files&nbsp;stored&nbsp;in&nbsp;the&nbsp;detector&nbsp;will&nbsp;be&nbsp;also&nbsp;be&nbsp;cleared.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;lists&nbsp;of&nbsp;files&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;will&nbsp;be&nbsp;also&nbsp;be&nbsp;cleared.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
 <dl><dt><a name="Detector-data_present_in"><strong>data_present_in</strong></a>(self, scintillator, data_type='lm')</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;for&nbsp;the&nbsp;specified&nbsp;scintillator&nbsp;and&nbsp;False&nbsp;otherwise.<br>
 &nbsp;<br>
@@ -299,7 +303,15 @@ list<br>
 <dl><dt><a name="Detector-has_identity"><strong>has_identity</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;established&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,<br>
 etc.),&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
-<dl><dt><a name="Detector-import_data"><strong>import_data</strong></a>(self, existing_filelists=False, import_traces=True, import_lm=True, clean_energy=False, feedback=False, mem_frac=1.0)</dt><dd><span class="code">Imports&nbsp;and&nbsp;stores&nbsp;data&nbsp;from&nbsp;the&nbsp;daily&nbsp;data&nbsp;files.<br>
+<dl><dt><a name="Detector-import_data"><strong>import_data</strong></a>(
+    self,
+    existing_filelists=False,
+    import_traces=True,
+    import_lm=True,
+    clean_energy=False,
+    feedback=False,
+    mem_frac=1.0
+)</dt><dd><span class="code">Imports&nbsp;and&nbsp;stores&nbsp;data&nbsp;from&nbsp;the&nbsp;daily&nbsp;data&nbsp;files.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -310,12 +322,12 @@ import_traces&nbsp;:&nbsp;bool<br>
 import_lm&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;function&nbsp;will&nbsp;import&nbsp;any&nbsp;list&nbsp;mode&nbsp;data&nbsp;it&nbsp;finds.&nbsp;True&nbsp;by&nbsp;default.<br>
 clean_energy&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;asks&nbsp;the&nbsp;data&nbsp;reader&nbsp;to&nbsp;strip&nbsp;out&nbsp;maximum&nbsp;and&nbsp;low&nbsp;energy&nbsp;counts.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;data&nbsp;reader&nbsp;will&nbsp;strip&nbsp;out&nbsp;maximum&nbsp;and&nbsp;low&nbsp;energy&nbsp;counts.&nbsp;False&nbsp;by&nbsp;default.<br>
 feedback&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;feedback&nbsp;about&nbsp;the&nbsp;progress&nbsp;of&nbsp;the&nbsp;importing&nbsp;will&nbsp;be&nbsp;printed.<br>
 mem_frac&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional:&nbsp;The&nbsp;maximum&nbsp;fraction&nbsp;of&nbsp;currently&nbsp;available&nbsp;system&nbsp;memory&nbsp;that&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;is&nbsp;allowed&nbsp;to&nbsp;use&nbsp;for<br>
-&nbsp;&nbsp;&nbsp;&nbsp;data.&nbsp;If&nbsp;the&nbsp;dataset&nbsp;is&nbsp;projected&nbsp;to&nbsp;be&nbsp;&nbsp;larger&nbsp;than&nbsp;this&nbsp;limit,&nbsp;a&nbsp;MemoryError&nbsp;will&nbsp;be&nbsp;raised.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data.&nbsp;If&nbsp;the&nbsp;dataset&nbsp;is&nbsp;projected&nbsp;to&nbsp;be&nbsp;larger&nbsp;than&nbsp;this&nbsp;limit,&nbsp;a&nbsp;MemoryError&nbsp;will&nbsp;be&nbsp;raised.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;1.0&nbsp;(100%&nbsp;of&nbsp;available&nbsp;system&nbsp;memory)&nbsp;by&nbsp;default.</span></dd></dl>
 
 <dl><dt><a name="Detector-is_named"><strong>is_named</strong></a>(self, name)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;the&nbsp;same&nbsp;name&nbsp;as&nbsp;the&nbsp;passed&nbsp;string.<br>
@@ -433,10 +445,10 @@ tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 <hr>
 Data descriptors defined here:<br>
 <dl><dt><strong>__dict__</strong></dt>
-<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</span></dd>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
 </dl>
 <dl><dt><strong>__weakref__</strong></dt>
-<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</span></dd>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
 </dl>
 </td></tr></table></td></tr></table>
 </body></html>

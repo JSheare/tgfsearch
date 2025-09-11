@@ -46,6 +46,10 @@ class Detector:
         A flag for whether the Detector has an identity (established name, scintillator configuration, etc.).
     spectra_params : dict
         A dictionary containing various parameters used to make spectra for the Detector.
+    lm_growth_factor : float
+        The average bytes of Detector memory added per byte of list mode data file imported.
+    trace_growth_factor : float
+        The average bytes of Detector memory added per byte of trace mode data file imported.
     _import_loc : str
         The directory where data files for the day are located.
     _results_loc : str
@@ -74,6 +78,8 @@ class Detector:
         self._has_identity = False
         self.unit = unit.upper()
         self.spectra_params = {'bin_range': 0, 'bin_size': 0}
+        self.lm_growth_factor = 2.6203447532376596  # Default
+        self.trace_growth_factor = 10.085717812927724  # Default
         self._import_loc = ''
         self._results_loc = ''
         self._scintillators = {}
@@ -150,33 +156,53 @@ class Detector:
 
     def _read_identity(self):
         """Gets and fills in the identity of the Detector from a config file based on the name and date."""
-        with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
-                  'r') as file:
-            identities = json.load(file)
+        try:
+            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
+                      'r') as file:
+                entries = json.load(file)
+        except json.decoder.JSONDecodeError:
+            raise SyntaxError('invalid syntax in detector config file.')
 
-        if self.unit in identities:
-            identity = identities[self.unit]
-            self.spectra_params = identity['spectra_params']
-            self._import_loc = f'{params.DEFAULT_DATA_ROOT}/{identity["subtree"]}/{self.date_str}'
-            # Getting the right scintillator configuration based on the date
-            correct_date_str = ''
-            for after_date_str in identity['scintillators']:
-                if int(self.date_str) >= int(after_date_str):
-                    correct_date_str = after_date_str
-                else:
-                    break
+        if self.unit in entries['identities']:
+            identity = entries['identities'][self.unit]
+            try:
+                self.spectra_params = identity['spectra_params']
+                self._import_loc = f'{params.DEFAULT_DATA_ROOT}/{identity["subtree"]}/{self.date_str}'
 
-            for scintillator in identity['scintillators'][correct_date_str]:
-                value = identity['scintillators'][correct_date_str][scintillator]
-                if scintillator == 'default':
-                    self.default_scintillator = value
-                else:
-                    self._scintillators[scintillator] = Scintillator(scintillator, value)
-                    self.scint_list.append(scintillator)
+                # Getting the right list mode and trace data growth factors based on the date
+                correct_format = ''
+                for after_date_str in identity['file_format']:
+                    if int(self.date_str) >= int(after_date_str):
+                        correct_format = identity['file_format'][after_date_str]
+                    else:
+                        break
 
-            self._has_identity = True
+                if correct_format in entries['growth_factors']:
+                    self.lm_growth_factor = entries['growth_factors'][correct_format]['lm_growth_factor']
+                    self.trace_growth_factor = entries['growth_factors'][correct_format]['trace_growth_factor']
+
+                # Getting the right scintillator configuration based on the date
+                correct_date_str = ''
+                for after_date_str in identity['scintillators']:
+                    if int(self.date_str) >= int(after_date_str):
+                        correct_date_str = after_date_str
+                    else:
+                        break
+
+                for scintillator in identity['scintillators'][correct_date_str]:
+                    value = identity['scintillators'][correct_date_str][scintillator]
+                    if scintillator == 'default':
+                        self.default_scintillator = value
+                    else:
+                        self._scintillators[scintillator] = Scintillator(scintillator, value)
+                        self.scint_list.append(scintillator)
+
+                self._has_identity = True
+            except KeyError:
+                raise SyntaxError(f'missing information in detector config file for {self.unit}.')
+
         else:
-            raise ValueError(f"'{self.unit}' is not a valid detector.")
+            raise ValueError(f"'no entry for {self.unit}' in detector config file.")
 
     def has_identity(self):
         """Returns True if the Detector has an established identity (established name, scintillator configuration,
@@ -561,10 +587,10 @@ class Detector:
         total_file_size = 0
         for scintillator in self._scintillators:
             for file in self.get_attribute(scintillator, 'lm_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * params.LM_GROWTH_FACTOR
+                total_file_size += tl.file_size(file) * self.lm_growth_factor
 
             for file in self.get_attribute(scintillator, 'trace_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * params.TRACE_GROWTH_FACTOR
+                total_file_size += tl.file_size(file) * self.trace_growth_factor
 
         return total_file_size
 

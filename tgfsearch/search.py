@@ -37,7 +37,7 @@ def is_valid_detector(unit):
     else:
         try:
             with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/detector_config.json', 'r') as file:
-                identities = json.load(file)
+                identities = json.load(file)['identities']
 
             return unit_upper in identities
         except json.decoder.JSONDecodeError:
@@ -1143,14 +1143,14 @@ def get_lm_sets(partition_points, lm_filelist):
 
 
 # Returns the total memory in bytes of all files contained in the partition defined by points start and end
-def get_partition_memory(start, end, trace_map, lm_filelist):
+def get_partition_memory(start, end, trace_map, lm_filelist, lm_growth_factor, trace_growth_factor):
     memory = 0
     for i in range(start, end):
         file = lm_filelist[i]
-        memory += tl.file_size(file) * params.LM_GROWTH_FACTOR
+        memory += tl.file_size(file) * lm_growth_factor
         if file in trace_map:
             for trace in trace_map[file]:
-                memory += tl.file_size(trace) * params.TRACE_GROWTH_FACTOR
+                memory += tl.file_size(trace) * trace_growth_factor
 
     return memory
 
@@ -1169,6 +1169,8 @@ def get_partition_files(start, end, trace_map, lm_filelist):
 # Partitions the day into self-contained detector objects depending on the memory limit in parameters
 def make_chunks(detector):
     allowed_memory = psutil.virtual_memory()[1] * params.TOTAL_MEMORY_ALLOWANCE_FRAC
+    lm_growth_factor = detector.lm_growth_factor
+    trace_growth_factor = detector.trace_growth_factor
 
     lm_filelists = {scintillator: detector.get_attribute(scintillator, 'lm_filelist')
                     for scintillator in detector}
@@ -1202,7 +1204,8 @@ def make_chunks(detector):
             trace_map = trace_maps[scintillator]
             lm_sets = all_lm_sets[scintillator]
             lm_filelist = lm_filelists[scintillator]
-            new_memory += get_partition_memory(lm_sets[i], lm_sets[i + 1], trace_map, lm_filelist)
+            new_memory += get_partition_memory(lm_sets[i], lm_sets[i + 1], trace_map, lm_filelist, lm_growth_factor,
+                                               trace_growth_factor)
 
         total_memory += new_memory
         # Making a new chunk if the amount of new memory added by partitioning at i + 1 takes us over the limit
@@ -1268,23 +1271,19 @@ def program(first_date, second_date, unit, mode_info):
     matplotlib.use('Agg')  # Memory leaks without this
     modes = get_modes(mode_info)
 
-    # Makes a list of all the dates on the requested range
-    requested_dates = tl.make_date_list(first_date, second_date)
+    if not is_valid_detector(unit):
+        print('Not a valid detector.')
+        exit()
 
     # Looping through the dates
-    for date_str in requested_dates:
+    for date_str in tl.make_date_list(first_date, second_date):
         low_memory_mode = False
         print('')
         print(f'{tl.short_to_full_date(date_str)}:')
 
         # Initializes the detector object
         print('Importing data...')
-        if is_valid_detector(unit):
-            detector = get_detector(unit, date_str)
-        else:
-            print('Not a valid detector.')
-            exit()
-
+        detector = get_detector(unit, date_str)
         try:
             # Tells the detector to use custom import/export directories if the user asks for it
             if modes['custom']:
