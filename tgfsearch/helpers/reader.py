@@ -21,16 +21,7 @@ class Reader:
 
     def reset(self):
         """Resets the reader instance back to its default state."""
-        self.passtime['lastsod'] = -1.0
-        self.passtime['ppssod'] = -1.0
-        self.passtime['lastunix'] = -1.0
-        self.passtime['ppsunix'] = -1.0
-        self.passtime['lastwc'] = -1
-        self.passtime['ppswc'] = -1
-        self.passtime['hz'] = 8e7  # Always this value for now
-        self.passtime['frlen'] = -1
-        self.passtime['prevfr'] = None
-        self.passtime['started'] = 0
+        self.passtime = dr.get_passtime()
 
     def read(self, file_name, reset_after=False, clean_energy=False):
         """Reads the data file with the given name and returns the data as a pandas dataframe.

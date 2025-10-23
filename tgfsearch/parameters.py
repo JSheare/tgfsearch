@@ -37,7 +37,7 @@ DEADTIME_EXTEND = 1  # Number of samples to extend deadtime by if not yet back t
 """Short Event Search Parameters"""
 # Search algorithm parameters
 INDIV_ROLLGAP = 4  # The rollgap used for individual scintillator searches (onescint, allscints)
-ROLLGAP_CONTRIBUTION = 2.666667  # The average rollgap contribution for each scintillator after the first one
+ROLLGAP_CONTRIBUTION = 3.125  # The average rollgap contribution for each scintillator after the first one
 AIRCRAFT_ROLLGAP = 18  # The rollgap used in aircraft mode
 SHORT_EVENT_TIME_SPACING = 1e-3  # 1 millisecond
 SHORT_EVENT_MIN_COUNTS = 10  # The minimum number of counts that a short event needs to be
@@ -73,16 +73,12 @@ WEATHER_WEIGHT = 0.3
 SE_TIMESCALE_ONE = 5e-4  # Subplot 1 timescale, 500 Microseconds
 SE_TIMESCALE_TWO = 0.005  # Subplot 2 timescale, 5 milliseconds
 SE_TIMESCALE_THREE = 2  # Subplot 3 timescale, 2 seconds
-NAI_COLOR = 'b'  # Color for NaI scintillator dots
-SP_COLOR = 'm'  # Color for small plastic scintillator dots
-MP_COLOR = 'g'  # Color for medium plastic scintillator dots
-LP_COLOR = 'darkgoldenrod'  # Color for large plastic scintillator dots
 DOT_ALPHA = 0.5  # Controls dot transparency
 
 
 """Long Event Search Parameters"""
 # Search algorithm parameters
-LP_CHANNEL_CUTOFF = 2000  # All large plastic channels below this are cut during the long event search
+LPL_CHANNEL_CUTOFF = 2000  # All large plastic channels below this are cut during the long event search
 NAI_CHANNEL_CUTOFF = 6000  # All sodium iodide channels below this are cut during the long event search
 SHORT_BIN_SIZE = 4  # The size of each short bin (in seconds)
 LONG_BIN_SIZE = 60  # The size of each long bin (in seconds)

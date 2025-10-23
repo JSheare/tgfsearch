@@ -1,0 +1,25 @@
+{
+  "short_event_search_colors": {
+    "nai": "b",
+    "spl": "m",
+    "mpl": "g",
+    "lpl": "darkgoldenrod",
+    "ipl": "k"
+  },
+
+  "long_event_search_scints": {
+    "FRANCE": ["lpl"],
+    "GODOT":["nai", "lpl"],
+    "ISRAEL": ["mpl"],
+    "MINITHOR1": ["nai", "ipl"],
+    "SANTIS": ["lpl"],
+    "SPLIT": ["lpl"],
+    "THOR1": ["nai", "lpl"],
+    "THOR2": ["nai", "lpl"],
+    "THOR3": ["nai", "lpl"],
+    "THOR4": ["nai", "lpl"],
+    "THOR5": ["nai", "lpl"],
+    "THOR6": ["nai", "lpl"],
+    "TRIGGER": ["mpl"]
+  }
+}

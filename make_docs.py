@@ -28,8 +28,11 @@ def main():
     # Docs for scintillator
     make_doc('scintillator', os.getcwd() + '/tgfsearch/detectors')
 
-    # Docs for reader
+    # Docs for reader helper
     make_doc('reader', os.getcwd() + '/tgfsearch/helpers')
+
+    # Docs for data reader
+    make_doc('data_reader', os.getcwd() + '/tgfsearch')
 
 
 if __name__ == '__main__':

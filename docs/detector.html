@@ -25,11 +25,10 @@
 <a href="os.html">os</a><br>
 <a href="tgfsearch.parameters.html">tgfsearch.parameters</a><br>
 </td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
-<a href="matplotlib.pyplot.html">matplotlib.pyplot</a><br>
 <a href="psutil.html">psutil</a><br>
 <a href="sys.html">sys</a><br>
-</td><td class="multicolumn"><a href="threading.html">threading</a><br>
-<a href="tgfsearch.tools.html">tgfsearch.tools</a><br>
+<a href="threading.html">threading</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.tools.html">tgfsearch.tools</a><br>
 <a href="warnings.html">warnings</a><br>
 </td></tr></table></td></tr></table><p>
 <table class="section">
@@ -77,12 +76,10 @@ dates_stored&nbsp;:&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dates&nbsp;currently&nbsp;being&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
 _has_identity&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;flag&nbsp;for&nbsp;whether&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,&nbsp;etc.).<br>
-spectra_params&nbsp;:&nbsp;dict<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;various&nbsp;parameters&nbsp;used&nbsp;to&nbsp;make&nbsp;spectra&nbsp;for&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
-lm_growth_factor&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
-trace_growth_factor&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
+lm_growth_factors&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;each&nbsp;scintillator,&nbsp;the&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
+trace_growth_factors&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;each&nbsp;scintillator,&nbsp;the&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
 _import_loc&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;data&nbsp;files&nbsp;for&nbsp;the&nbsp;day&nbsp;are&nbsp;located.<br>
 _results_loc&nbsp;:&nbsp;str<br>
@@ -129,8 +126,7 @@ clear_filelists&nbsp;:&nbsp;bool<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;scintillator's&nbsp;name.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 data_type&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;type&nbsp;of&nbsp;data&nbsp;to&nbsp;check&nbsp;for.&nbsp;Use&nbsp;'lm'&nbsp;to&nbsp;check&nbsp;for&nbsp;list&nbsp;mode&nbsp;data&nbsp;and&nbsp;'trace'&nbsp;to&nbsp;check<br>
 &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;trace&nbsp;data.&nbsp;Checks&nbsp;for&nbsp;list&nbsp;mode&nbsp;data&nbsp;by&nbsp;default.<br>
@@ -147,8 +143,7 @@ bool<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;count&nbsp;is&nbsp;from.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;count&nbsp;is&nbsp;from.<br>
 count_time&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;count&nbsp;occurred&nbsp;at&nbsp;(in&nbsp;seconds&nbsp;of&nbsp;day).<br>
 &nbsp;<br>
@@ -163,8 +158,7 @@ str<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;count&nbsp;is&nbsp;from.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;count&nbsp;is&nbsp;from.<br>
 count_time&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;count&nbsp;occurred&nbsp;at&nbsp;(in&nbsp;seconds&nbsp;of&nbsp;day).<br>
 &nbsp;<br>
@@ -179,8 +173,7 @@ int<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 count_time&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;count&nbsp;occurred&nbsp;at&nbsp;(in&nbsp;seconds&nbsp;of&nbsp;day).<br>
 trace_list&nbsp;:&nbsp;list<br>
@@ -197,8 +190,7 @@ list<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 attribute&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;of&nbsp;interest.<br>
 deepcopy&nbsp;:&nbsp;bool<br>
@@ -208,7 +200,7 @@ Returns<br>
 -------<br>
 str&nbsp;||&nbsp;list&nbsp;||&nbsp;numpy.ndarray&nbsp;||&nbsp;dict&nbsp;||&nbsp;pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;String&nbsp;if&nbsp;'eRC'&nbsp;is&nbsp;requested;&nbsp;list&nbsp;if&nbsp;'lm_filelist'&nbsp;or&nbsp;'lm_file_ranges'&nbsp;is&nbsp;requested;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;&nbsp;if&nbsp;'time',&nbsp;'energies',&nbsp;or&nbsp;'wc'&nbsp;is&nbsp;requested;&nbsp;Reader&nbsp;if&nbsp;'reader'&nbsp;is&nbsp;requested;&nbsp;dataframe<br>
+&nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;&nbsp;if&nbsp;'time'&nbsp;or&nbsp;'energies'&nbsp;is&nbsp;requested;&nbsp;Reader&nbsp;if&nbsp;'reader'&nbsp;is&nbsp;requested;&nbsp;dataframe<br>
 &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;'lm_frame'&nbsp;is&nbsp;requested,&nbsp;etc.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_clone"><strong>get_clone</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one&nbsp;(but&nbsp;no&nbsp;data).<br>
@@ -232,8 +224,7 @@ str<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 column&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;column&nbsp;of&nbsp;interest.<br>
 file_name&nbsp;:&nbsp;str<br>
@@ -250,8 +241,7 @@ numpy.ndarray<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;file&nbsp;is&nbsp;from.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;that&nbsp;the&nbsp;file&nbsp;is&nbsp;from.<br>
 file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file&nbsp;that&nbsp;data&nbsp;is&nbsp;being&nbsp;requested&nbsp;for.&nbsp;Note&nbsp;that&nbsp;this&nbsp;must&nbsp;be&nbsp;the&nbsp;*full*&nbsp;name&nbsp;of&nbsp;the&nbsp;file,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;including&nbsp;the&nbsp;path&nbsp;from&nbsp;the&nbsp;root&nbsp;directory.<br>
@@ -275,8 +265,7 @@ str<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 trace_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;trace&nbsp;file.<br>
 deepcopy&nbsp;:&nbsp;bool<br>
@@ -292,8 +281,7 @@ pandas.core.frame.DataFrame<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
@@ -308,6 +296,7 @@ etc.),&nbsp;False&nbsp;otherwise.</span></dd></dl>
     existing_filelists=False,
     import_traces=True,
     import_lm=True,
+    import_scints=None,
     clean_energy=False,
     feedback=False,
     mem_frac=1.0
@@ -321,6 +310,8 @@ import_traces&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;function&nbsp;will&nbsp;import&nbsp;any&nbsp;trace&nbsp;files&nbsp;it&nbsp;finds.&nbsp;True&nbsp;by&nbsp;default.<br>
 import_lm&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;function&nbsp;will&nbsp;import&nbsp;any&nbsp;list&nbsp;mode&nbsp;data&nbsp;it&nbsp;finds.&nbsp;True&nbsp;by&nbsp;default.<br>
+import_scints&nbsp;:&nbsp;list<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;provided,&nbsp;only&nbsp;data&nbsp;from&nbsp;the&nbsp;scintillators&nbsp;with&nbsp;the&nbsp;listed&nbsp;names&nbsp;will&nbsp;be&nbsp;imported.<br>
 clean_energy&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;data&nbsp;reader&nbsp;will&nbsp;strip&nbsp;out&nbsp;maximum&nbsp;and&nbsp;low&nbsp;energy&nbsp;counts.&nbsp;False&nbsp;by&nbsp;default.<br>
 feedback&nbsp;:&nbsp;bool<br>
@@ -347,33 +338,12 @@ bool<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;scintillator's&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;scintillator&nbsp;is&nbsp;in&nbsp;<a href="#Detector">Detector</a>,&nbsp;False&nbsp;otherwise.</span></dd></dl>
-
-<dl><dt><a name="Detector-make_spectra"><strong>make_spectra</strong></a>(self, scintillator)</dt><dd><span class="code">Makes&nbsp;an&nbsp;energy&nbsp;spectra&nbsp;histogram&nbsp;for&nbsp;the&nbsp;requested&nbsp;scintillator.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-tuple[numpy.ndarray,&nbsp;numpy.ndarray]<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;numpy&nbsp;arrays:&nbsp;the&nbsp;energy&nbsp;bins,&nbsp;and&nbsp;the&nbsp;energy&nbsp;histogram.</span></dd></dl>
-
-<dl><dt><a name="Detector-plot_spectra"><strong>plot_spectra</strong></a>(self, scintillator)</dt><dd><span class="code">Plots&nbsp;and&nbsp;saves&nbsp;the&nbsp;energy&nbsp;spectra&nbsp;histogram&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.</span></dd></dl>
 
 <dl><dt><a name="Detector-set_attribute"><strong>set_attribute</strong></a>(self, scintillator, attribute, new_info, deepcopy=True)</dt><dd><span class="code">Updates&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
 Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&nbsp;as&nbsp;the&nbsp;old.<br>
@@ -381,8 +351,7 @@ Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 attribute&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;of&nbsp;interest.<br>
 new_info&nbsp;:&nbsp;any<br>
@@ -402,8 +371,7 @@ loc&nbsp;:&nbsp;str<br>
 Parameters<br>
 ----------<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'IP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 column&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;column&nbsp;of&nbsp;interest.<br>
 new_data&nbsp;:&nbsp;numpy.ndarray<br>

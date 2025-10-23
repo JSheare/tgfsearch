@@ -322,42 +322,46 @@ def unpickle_chunk(chunk_path):
 
 def filter_data_files(complete_filelist):
     """Returns an ordered list of data files with duplicate/invalid files filtered out."""
+    valid_filetypes = ['.txt', '.txt.gz', '.xtr', '.xtr.gz', '.csv', '.csv.gz']
     unique_files = set()
     file_names = []
     extensions = []
     for file in complete_filelist:
-        dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
-        while file[dot_index] != '.' and dot_index >= 0:
-            dot_index -= 1
+        if len(file) >= 4:
+            dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
+            while file[dot_index] != '.' and dot_index >= 0:
+                dot_index -= 1
 
-        full_extension = file[dot_index:]
-        if full_extension in ['.txt', '.txt.gz', '.xtr', '.xtr.gz', '.csv']:  # valid files
-            file_name = file[:dot_index]
-        else:
-            continue
+            full_extension = file[dot_index:]
+            if full_extension in valid_filetypes:
+                file_name = file[:dot_index]
+            else:
+                continue
 
-        if file_name not in unique_files:
-            unique_files.add(file_name)
-            file_names.append(file_name)
-            extensions.append(full_extension)
+            if file_name not in unique_files:
+                unique_files.add(file_name)
+                file_names.append(file_name)
+                extensions.append(full_extension)
 
     return [file_names[s] + extensions[s] for s in np.argsort(file_names)]  # Puts the files back in order
 
 
 def separate_data_files(filelist):
     """Returns a pair of ordered lists: one with list mode files, the other with trace files."""
+    lm_filetypes = ['.txt', '.txt.gz', '.csv', '.csv.gz']
     lm_filelist = []
     trace_filelist = []
     for file in filelist:
-        dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
-        while file[dot_index] != '.' and dot_index >= 0:
-            dot_index -= 1
+        if len(file) >= 4:
+            dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
+            while file[dot_index] != '.' and dot_index >= 0:
+                dot_index -= 1
 
-        full_extension = file[dot_index:]
-        if full_extension in ['.txt', '.txt.gz', '.csv']:
-            lm_filelist.append(file)
-        else:
-            trace_filelist.append(file)
+            full_extension = file[dot_index:]
+            if full_extension in lm_filetypes:
+                lm_filelist.append(file)
+            else:
+                trace_filelist.append(file)
 
     return lm_filelist, trace_filelist
 
@@ -644,15 +648,13 @@ def combine_data(detector):
 
     Returns
     -------
-    tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray]
+    tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
             Four numpy arrays:
 
             times
                 An array containing the combined second-of-day times for multiple scintillators.
             energies
                 An array containing the combined energies for multiple scintillators.
-            wallclock
-                An array containing the combined wallclock times for multiple scintillators.
             count_scints
                 An array containing scintillator names. Each entry corresponds to the scintillator
                 that its corresponding count originated from.
@@ -661,27 +663,23 @@ def combine_data(detector):
 
     times = []
     energies = []
-    wallclock = []
     count_scints = []
     for scintillator in detector:
         if detector.data_present_in(scintillator):
             lm_frame = detector.get_attribute(scintillator, 'lm_frame', deepcopy=False)
             times.append(lm_frame['SecondsOfDay'])
             energies.append(lm_frame['energies'])
-            wallclock.append(lm_frame['wc'])
             count_scints.append(np.array([scintillator] * len(times[-1])))
 
     times = np.concatenate(times)
     energies = np.concatenate(energies)
-    wallclock = np.concatenate(wallclock)
     count_scints = np.concatenate(count_scints)
 
     sorting_order = np.argsort(times)
     times = times[sorting_order]
     energies = energies[sorting_order]
-    wallclock = wallclock[sorting_order]
     count_scints = count_scints[sorting_order]
-    return times, energies, wallclock, count_scints
+    return times, energies, count_scints
 
 
 def separate_data(data, count_scints, start=None, stop=None):
@@ -817,8 +815,7 @@ def filter_traces(detector, scintillator):
     detector : tgfsearch.detectors.detector.Detector
         The Detector containing the traces.
     scintillator : str
-        The name of the scintillator of interest. Allowed values (detector dependent):
-        'NaI', 'SP', 'MP', 'LP'.
+        The name of the scintillator of interest.
 
     Returns
     -------
@@ -843,8 +840,8 @@ def trace_to_counts(trace_energies):
     times = []
     energies = []
     peak = []
-    tbnt = []  # What is this?
-    psd = []  # What is this
+    tbnt = []
+    psd = []
 
     n = len(trace_energies)
     di = int(params.DT / params.T_STEP)

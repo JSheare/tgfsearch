@@ -73,15 +73,13 @@ detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
+tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Four&nbsp;numpy&nbsp;arrays:<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;the&nbsp;combined&nbsp;second-of-day&nbsp;times&nbsp;for&nbsp;multiple&nbsp;scintillators.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;energies<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;the&nbsp;combined&nbsp;energies&nbsp;for&nbsp;multiple&nbsp;scintillators.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wallclock<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;the&nbsp;combined&nbsp;wallclock&nbsp;times&nbsp;for&nbsp;multiple&nbsp;scintillators.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count_scints<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;scintillator&nbsp;names.&nbsp;Each&nbsp;entry&nbsp;corresponds&nbsp;to&nbsp;the&nbsp;scintillator<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;its&nbsp;corresponding&nbsp;count&nbsp;originated&nbsp;from.</span></dd></dl>
@@ -163,8 +161,7 @@ Parameters<br>
 detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;containing&nbsp;the&nbsp;traces.<br>
 scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.&nbsp;Allowed&nbsp;values&nbsp;(detector&nbsp;dependent):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'NaI',&nbsp;'SP',&nbsp;'MP',&nbsp;'LP'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>

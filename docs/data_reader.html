@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module data_reader</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">data_reader</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Ctgf%20and%20glow%20search%20stuff%5Csearch%5Ctgfsearch%5Cdata_reader.py">d:\documents\tgf research\tgf and glow search stuff\search\tgfsearch\data_reader.py</a></td></tr></table>
+    <p><span class="code">A&nbsp;module&nbsp;containing&nbsp;functions&nbsp;for&nbsp;reading&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;data&nbsp;files.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="gzip.html">gzip</a><br>
+<a href="json.html">json</a><br>
+</td><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+<a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="re.html">re</a><br>
+<a href="warnings.html">warnings</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-get_passtime"><strong>get_passtime</strong></a>()</dt><dd><span class="code">Returns&nbsp;a&nbsp;fresh&nbsp;instance&nbsp;of&nbsp;the&nbsp;passtime&nbsp;dictionary&nbsp;needed&nbsp;for&nbsp;reading&nbsp;consecutive&nbsp;frames/files.<br>
+&nbsp;<br>
+Passtime&nbsp;entries:<br>
+&nbsp;<br>
+-&nbsp;lastsod:&nbsp;The&nbsp;second&nbsp;of&nbsp;day&nbsp;as&nbsp;calculated&nbsp;for&nbsp;the&nbsp;last&nbsp;event&nbsp;in&nbsp;the&nbsp;previous&nbsp;frame.<br>
+-&nbsp;ppssod:&nbsp;The&nbsp;second&nbsp;of&nbsp;day&nbsp;as&nbsp;calculated&nbsp;for&nbsp;the&nbsp;last&nbsp;GPS&nbsp;pulse&nbsp;per&nbsp;second&nbsp;of&nbsp;the&nbsp;previous&nbsp;frame.<br>
+-&nbsp;lastunix:&nbsp;Unix&nbsp;time&nbsp;(epoch&nbsp;seconds)&nbsp;for&nbsp;the&nbsp;last&nbsp;event&nbsp;of&nbsp;the&nbsp;previous&nbsp;frame&nbsp;(directly&nbsp;equivalent&nbsp;to&nbsp;lastsod<br>
+&nbsp;&nbsp;regardless&nbsp;of&nbsp;data).<br>
+-&nbsp;ppsunix:&nbsp;Unix&nbsp;time&nbsp;(epoch&nbsp;seconds)&nbsp;for&nbsp;the&nbsp;last&nbsp;GPS&nbsp;pulse&nbsp;per&nbsp;second&nbsp;of&nbsp;the&nbsp;previous&nbsp;frame&nbsp;(directly&nbsp;equivalent&nbsp;to<br>
+&nbsp;&nbsp;ppssod,&nbsp;regardless&nbsp;of&nbsp;data).<br>
+-&nbsp;lastwc:&nbsp;Bridgeport&nbsp;wall&nbsp;clock&nbsp;for&nbsp;the&nbsp;last&nbsp;event&nbsp;in&nbsp;the&nbsp;previous&nbsp;frame&nbsp;(no&nbsp;rollover&nbsp;corrections).<br>
+-&nbsp;ppswc:&nbsp;Bridgeport&nbsp;wall&nbsp;clock&nbsp;for&nbsp;the&nbsp;last&nbsp;GPS&nbsp;pulse&nbsp;per&nbsp;second&nbsp;of&nbsp;the&nbsp;previous&nbsp;frame&nbsp;(no&nbsp;rollover&nbsp;corrections).<br>
+-&nbsp;ppsage:&nbsp;the&nbsp;age&nbsp;(in&nbsp;frames)&nbsp;of&nbsp;the&nbsp;recorded&nbsp;pulse&nbsp;per&nbsp;second.<br>
+-&nbsp;frlen:&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;first&nbsp;frame&nbsp;read.<br>
+-&nbsp;prevwc:&nbsp;The&nbsp;most&nbsp;recently&nbsp;parsed&nbsp;frame's&nbsp;wall&nbsp;clock&nbsp;column.&nbsp;Used&nbsp;to&nbsp;check&nbsp;for&nbsp;duplicate&nbsp;frame&nbsp;data.<br>
+-&nbsp;started:&nbsp;flag&nbsp;for&nbsp;whether&nbsp;there&nbsp;is&nbsp;a&nbsp;previous&nbsp;frame.&nbsp;If&nbsp;0,&nbsp;current&nbsp;passtime&nbsp;values&nbsp;will&nbsp;be&nbsp;ignored.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;passtime&nbsp;dictionary.</span></dd></dl>
+ <dl><dt><a name="-read_file"><strong>read_file</strong></a>(file_name, passtime=None, killcr=False)</dt><dd><span class="code">Reads&nbsp;the&nbsp;given&nbsp;data&nbsp;file&nbsp;and&nbsp;returns&nbsp;it&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
+&nbsp;<br>
+List&nbsp;Mode&nbsp;Columns:<br>
+&nbsp;<br>
+-&nbsp;energies:&nbsp;the&nbsp;energy&nbsp;of&nbsp;each&nbsp;count&nbsp;(channel).<br>
+-&nbsp;SecondsOfDay:&nbsp;the&nbsp;second&nbsp;of&nbsp;day&nbsp;of&nbsp;each&nbsp;count.<br>
+-&nbsp;wc:&nbsp;the&nbsp;wallclock&nbsp;tick&nbsp;of&nbsp;each&nbsp;count.<br>
+-&nbsp;flags&nbsp;(sometimes&nbsp;present):&nbsp;the&nbsp;flags&nbsp;for&nbsp;each&nbsp;count.&nbsp;See&nbsp;<a href="#-translate_flags">translate_flags</a>()&nbsp;for&nbsp;an&nbsp;explanation&nbsp;of&nbsp;each&nbsp;flag.<br>
+-&nbsp;peak&nbsp;(sometimes&nbsp;present):&nbsp;the&nbsp;high&nbsp;point&nbsp;of&nbsp;each&nbsp;count&nbsp;pulse&nbsp;(not&nbsp;baseline&nbsp;subtracted).<br>
+-&nbsp;psd&nbsp;(sometimes&nbsp;present):&nbsp;the&nbsp;energy&nbsp;measured&nbsp;during&nbsp;each&nbsp;count's&nbsp;partial&nbsp;integration&nbsp;time.<br>
+&nbsp;<br>
+Trace&nbsp;Columns:<br>
+&nbsp;<br>
+-&nbsp;freeze:&nbsp;the&nbsp;wallclock&nbsp;tick&nbsp;when&nbsp;the&nbsp;trace&nbsp;trigger&nbsp;happened.<br>
+-&nbsp;pulse:&nbsp;the&nbsp;waveform&nbsp;of&nbsp;the&nbsp;trace.<br>
+-&nbsp;BufferNo:&nbsp;the&nbsp;buffer&nbsp;that&nbsp;the&nbsp;trace&nbsp;came&nbsp;from.<br>
+-&nbsp;DateTime:&nbsp;the&nbsp;time&nbsp;when&nbsp;the&nbsp;trace&nbsp;was&nbsp;recorded.<br>
+-&nbsp;Seconds:&nbsp;seconds&nbsp;relative&nbsp;to&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;trace.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+file_name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;data&nbsp;file&nbsp;to&nbsp;be&nbsp;read.<br>
+passtime&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;dictionary&nbsp;used&nbsp;to&nbsp;keep&nbsp;track&nbsp;of&nbsp;information&nbsp;between&nbsp;list&nbsp;mode&nbsp;frames.&nbsp;If&nbsp;not&nbsp;specified,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;one&nbsp;will&nbsp;be&nbsp;automatically&nbsp;instantiated&nbsp;with&nbsp;<a href="#-get_passtime">get_passtime</a>().<br>
+killcr:&nbsp;bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;maximum&nbsp;and&nbsp;low&nbsp;energy&nbsp;counts&nbsp;will&nbsp;be&nbsp;stripped&nbsp;out&nbsp;of&nbsp;list&nbsp;mode&nbsp;data.&nbsp;False&nbsp;by&nbsp;default.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tuple[pandas.core.frame.DataFrame,&nbsp;dict]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;data&nbsp;and&nbsp;the&nbsp;passtime&nbsp;dictionary&nbsp;used&nbsp;to&nbsp;keep&nbsp;track&nbsp;of&nbsp;information<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;between&nbsp;list&nbsp;mode&nbsp;frames.</span></dd></dl>
+ <dl><dt><a name="-read_files"><strong>read_files</strong></a>(file_file)</dt><dd><span class="code">Reads&nbsp;a&nbsp;list&nbsp;of&nbsp;data&nbsp;files&nbsp;and&nbsp;returns&nbsp;them&nbsp;in&nbsp;a&nbsp;single&nbsp;dataframe.&nbsp;See&nbsp;<a href="#-read_file">read_file</a>()&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;column<br>
+names.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+file_file&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file&nbsp;containing&nbsp;the&nbsp;list&nbsp;of&nbsp;data&nbsp;files.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pandas.core.frame.DataFrame<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;data&nbsp;from&nbsp;the&nbsp;listed&nbsp;files.</span></dd></dl>
+ <dl><dt><a name="-translate_flags"><strong>translate_flags</strong></a>(data, start=None, end=None, only_flags=None)</dt><dd><span class="code">Translates&nbsp;the&nbsp;flags&nbsp;column&nbsp;of&nbsp;the&nbsp;given&nbsp;list&nbsp;mode&nbsp;dataframe&nbsp;into&nbsp;a&nbsp;dataframe&nbsp;with&nbsp;columns&nbsp;for&nbsp;each&nbsp;flag.<br>
+&nbsp;<br>
+Flag&nbsp;meanings:<br>
+&nbsp;<br>
+-&nbsp;pps:&nbsp;event&nbsp;was&nbsp;caused&nbsp;by&nbsp;an&nbsp;arriving&nbsp;GPS&nbsp;PPS&nbsp;(pulse&nbsp;per&nbsp;second)&nbsp;pulse.<br>
+-&nbsp;or:&nbsp;event&nbsp;was&nbsp;out&nbsp;of&nbsp;ADC&nbsp;input&nbsp;range&nbsp;(computational&nbsp;over/under&nbsp;flow).<br>
+-&nbsp;ov:&nbsp;event&nbsp;was&nbsp;out&nbsp;of&nbsp;MCA&nbsp;range,&nbsp;or&nbsp;had&nbsp;a&nbsp;negative&nbsp;value&nbsp;(computational&nbsp;over/under&nbsp;flow).<br>
+-&nbsp;ps:&nbsp;event&nbsp;was&nbsp;flagged&nbsp;as&nbsp;piled&nbsp;up.<br>
+-&nbsp;xt:&nbsp;event&nbsp;was&nbsp;caused&nbsp;by&nbsp;an&nbsp;external&nbsp;trigger.<br>
+-&nbsp;he:&nbsp;high&nbsp;at&nbsp;end;&nbsp;i.e.&nbsp;ADC&nbsp;above&nbsp;trigger&nbsp;threshold&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;integration&nbsp;window.<br>
+-&nbsp;hs:&nbsp;high&nbsp;at&nbsp;start;&nbsp;i.e.&nbsp;ADC&nbsp;above&nbsp;trigger&nbsp;threshold&nbsp;at&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;integration&nbsp;window.<br>
+-&nbsp;nr:&nbsp;ADC&nbsp;underflow;&nbsp;ADC&nbsp;hit&nbsp;negative&nbsp;rail&nbsp;(0&nbsp;mV)&nbsp;sometime&nbsp;during&nbsp;integration&nbsp;window.<br>
+-&nbsp;gps_sync:&nbsp;the&nbsp;GPS&nbsp;was&nbsp;in&nbsp;sync&nbsp;during&nbsp;the&nbsp;event.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+data&nbsp;:&nbsp;pandas.core.frame.DataFrame<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;list&nbsp;mode&nbsp;data.<br>
+start&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;start&nbsp;index&nbsp;of&nbsp;the&nbsp;slice&nbsp;to&nbsp;translate&nbsp;flags&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,&nbsp;an&nbsp;index&nbsp;of&nbsp;0&nbsp;(beginning&nbsp;of<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dataframe)&nbsp;will&nbsp;be&nbsp;used.<br>
+end&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;end&nbsp;index&nbsp;of&nbsp;the&nbsp;slice&nbsp;to&nbsp;translate&nbsp;flags&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,&nbsp;an&nbsp;index&nbsp;of&nbsp;len(data)&nbsp;(end<br>
+&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;dataframe)&nbsp;will&nbsp;be&nbsp;used.<br>
+only_flags&nbsp;:&nbsp;list[str]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;list&nbsp;of&nbsp;strings&nbsp;corresponding&nbsp;to&nbsp;flags&nbsp;to&nbsp;be&nbsp;translated;&nbsp;all&nbsp;other&nbsp;flags&nbsp;will&nbsp;be&nbsp;ignored.&nbsp;If&nbsp;left<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unspecified,&nbsp;all&nbsp;flags&nbsp;will&nbsp;be&nbsp;translated.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+pandas.core.frame.DataFrame<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;with&nbsp;columns&nbsp;of&nbsp;bools&nbsp;for&nbsp;each&nbsp;flag.</span></dd></dl>
+</td></tr></table>
+</body></html>

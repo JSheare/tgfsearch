@@ -55,10 +55,34 @@ def main():
         print('Error: please provide a first date, a second date, and a unit name.')
         exit()
 
-    if len(sys.argv) > 5 and sys.argv[4] == '-c':
-        import_loc = sys.argv[5]
+    if len(sys.argv) > 4:
+        mode_info = sys.argv[4:]
+    else:
+        mode_info = []
+
+    # Flag for a custom import directory
+    if len(mode_info) >= 2 and '-c' in mode_info:
+        import_loc = mode_info[mode_info.index('-c') + 1]
     else:
         import_loc = ''
+
+    # Flag for ignoring scintillators
+    if len(mode_info) >= 2 and '-i' in mode_info:
+        index = mode_info.index('-i')
+        if index < len(mode_info) - 1:
+            end_index = index + 1
+            for i in range(index + 1, len(mode_info)):
+                if '-' in mode_info[i]:
+                    break
+
+                end_index += 1
+
+            ignore_scints = mode_info[index + 1:end_index]
+        else:
+            ignore_scints = []
+
+    else:
+        ignore_scints = []
 
     # Makes sure inputs are valid
     if not is_valid_search(first_date, second_date, unit, print_feedback=True):
@@ -81,8 +105,13 @@ def main():
                           'the data.')
                     exit()
 
+            import_scints = []
+            for scintillator in detector:
+                if scintillator not in ignore_scints:
+                    import_scints.append(scintillator)
+
             # Measuring the growth factor for the list mode files
-            detector.import_data(import_traces=False, feedback=True)
+            detector.import_data(import_traces=False, import_scints=import_scints, feedback=True)
             fileset_size = 0
             for scintillator in detector:
                 lm_filelist = detector.get_attribute(scintillator, 'lm_filelist', deepcopy=False)
@@ -96,7 +125,7 @@ def main():
             gc.collect()
 
             # Measuring the growth factor for the trace files
-            detector.import_data(import_lm=False, feedback=True)
+            detector.import_data(import_lm=False, import_scints=import_scints, feedback=True)
             fileset_size = 0
             for scintillator in detector:
                 trace_filelist = detector.get_attribute(scintillator, 'trace_filelist', deepcopy=False)

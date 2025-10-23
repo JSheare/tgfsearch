@@ -1,4 +1,7 @@
 """Child class of Detector made to handle data for instruments with arbitrary scintillator configurations."""
+import json as json
+import os as os
+
 
 from tgfsearch.detectors.detector import Detector
 from tgfsearch.detectors.scintillator import Scintillator
@@ -7,8 +10,6 @@ from tgfsearch.detectors.scintillator import Scintillator
 class AdaptiveDetector(Detector):
     def __init__(self, date_str):
         super().__init__('ADAPTIVE', date_str, read_identity=False)
-        self.spectra_params['bin_range'] = 65535.0
-        self.spectra_params['bin_size'] = 1
 
     def _reset_identity(self):
         """Resets everything back to its default state (no identity)."""
@@ -34,6 +35,22 @@ class AdaptiveDetector(Detector):
             self.deployment = self._get_deployment()
             self._results_loc = self._results_loc.replace('Results/ADAPTIVE', f'Results/{self.unit}')
 
+        # Getting the default growth factors (using Thor format because it's the most likely)
+        try:
+            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
+                      'r') as config_file:
+                entries = json.load(config_file)
+
+                # Getting the default growth factors (using Thor format because it's the most likely)
+                default_lm_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
+                default_trace_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
+
+                # Getting all supported scintillators and their priorities (greatest to least)
+                scintillator_priority = entries['scintillator_priority']
+
+        except json.decoder.JSONDecodeError:
+            raise SyntaxError('invalid syntax in detector config file.')
+
         # Attempting to infer scintillator configuration based on the data files present
         # Walking each file to determine its corresponding scintillator
         for file in all_files:
@@ -45,27 +62,19 @@ class AdaptiveDetector(Detector):
                 index = i
 
             # Making a new Scintillator if one doesn't exist already
-            match file[index + 7: index + 10]:
-                case 'lpl':
-                    scintillator = 'LP'
-                case 'ipl':
-                    scintillator = 'IP'
-                case 'spl':
-                    scintillator = 'SP'
-                case 'nai':
-                    scintillator = 'NaI'
-                case 'mpl':
-                    scintillator = 'MP'
-                case _:
-                    raise ValueError('unsupported scintillator type')
+            scintillator = file[index + 7: index + 10]
+            if scintillator not in scintillator_priority:
+                raise ValueError('unknown or unsupported scintillator type')
 
             if scintillator not in self._scintillators:
                 eRC = file[index + 3: index + 7]
                 self._scintillators[scintillator] = Scintillator(scintillator, eRC)
+                self.lm_growth_factors[scintillator] = default_lm_growth
+                self.trace_growth_factors[scintillator] = default_trace_growth
                 self.scint_list.append(scintillator)
 
-        # Assigning the default scintillator based on the following priority (greatest to least)
-        for scint in ['LP', 'IP', 'MP', 'NaI', 'SP']:
+        # Assigning the default scintillator based on the above priority
+        for scint in scintillator_priority:
             if scint in self._scintillators:
                 self.default_scintillator = scint
                 break

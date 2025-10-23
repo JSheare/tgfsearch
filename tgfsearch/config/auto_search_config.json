@@ -1,9 +1,54 @@
 {
+  "FRANCE": {
+    "1": {
+      "subtree": "FRANCE/Data",
+      "before_date": "999999",
+      "after_date": "000000",
+      "mode_info": []
+    }
+  },
+
   "GODOT": {
     "1": {
       "subtree": "GODOT/Data",
       "before_date": "999999",
       "after_date": "000000",
+      "mode_info": []
+    }
+  },
+
+  "MINITHOR1": {
+    "1": {
+      "subtree": "MINITHOR1/Data",
+      "before_date": "999999",
+      "after_date": "000000",
+      "mode_info": []
+    }
+  },
+
+  "ISRAEL": {
+    "1": {
+      "subtree": "ISRAEL/Data",
+      "before_date": "999999",
+      "after_date": "000000",
+      "mode_info": []
+    }
+  },
+
+  "SANTIS": {
+    "1": {
+      "subtree": "SANTIS/DATA",
+      "before_date": "211203",
+      "after_date": "000000",
+      "mode_info": []
+    }
+  },
+
+  "SPLIT": {
+    "1": {
+      "subtree": "SPLIT/Data",
+      "before_date": "999999",
+      "after_date": "211203",
       "mode_info": []
     }
   },
@@ -74,45 +119,9 @@
     }
   },
 
-  "SANTIS": {
+  "TRIGGER": {
     "1": {
-      "subtree": "SANTIS/DATA",
-      "before_date": "211203",
-      "after_date": "000000",
-      "mode_info": []
-    }
-  },
-
-  "CROATIA": {
-    "1": {
-      "subtree": "SANTIS/Data",
-      "before_date": "999999",
-      "after_date": "211203",
-      "mode_info": []
-    }
-  },
-
-  "MINITHOR1": {
-    "1": {
-      "subtree": "MINITHOR1/Data",
-      "before_date": "999999",
-      "after_date": "000000",
-      "mode_info": []
-    }
-  },
-
-  "ISRAEL": {
-    "1": {
-      "subtree": "ISRAEL/Data",
-      "before_date": "999999",
-      "after_date": "000000",
-      "mode_info": []
-    }
-  },
-
-  "FRANCE": {
-    "1": {
-      "subtree": "FRANCE/Data",
+      "subtree": "TRIGGER/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []

@@ -328,6 +328,7 @@ def short_event_search(detector, modes, scintillator, rollgap, times, energies):
 
             # Adds the event to the list if it passed all the filters
             if good_event:
+
                 short_events.append(ShortEvent(event_start, event_length, scintillator))
 
             event_start = 0
@@ -480,26 +481,36 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     # Subplot timescales
     timescales = [params.SE_TIMESCALE_ONE, params.SE_TIMESCALE_TWO, params.SE_TIMESCALE_THREE]
 
-    # Dot colors. Dots for unsupported scintillators will be blue (see below)
-    colors = {'NaI': params.NAI_COLOR, 'SP': params.SP_COLOR, 'MP': params.MP_COLOR, 'LP': params.LP_COLOR}
+    # Dot colors. Dots for unsupported scintillators will be black (see below)
+    try:
+        with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json', 'r') as file:
+            colors = json.load(file)['short_event_search_colors']
+    except json.decoder.JSONDecodeError:
+        raise SyntaxError('invalid syntax in search config file.')
 
-    # Measuring a rough average count rate in the vicinity around the event
-    measure_counts = 400
-    if event.start - measure_counts >= 0:
-        average_countrate = measure_counts/(times[event.start - 1] - times[event.start - measure_counts])
-    else:
-        # -1 because event.stop is one count after the end of the event, so we include it in the measurement
-        if event.stop + (measure_counts - 1) >= len(times):
-            measure_counts = len(times) - event.stop
+    # Determining the best place to center the plot around and slicing the arrays accordingly
+    event_times = times[event.start:event.stop]
+    best_index = np.argmin(np.abs(event_times - np.roll(event_times, 1))) + event.start
+    half_interval = params.SE_TIMESCALE_THREE / 2
+    left_edge = best_index
+    right_edge = best_index
 
-        average_countrate = measure_counts/(times[event.stop + (measure_counts - 1)] - times[event.stop])
+    # Finding the best left edge to use
+    while True:
+        if left_edge < 0 or times[best_index] - times[left_edge] > half_interval:
+            left_edge += 1
+            break
 
-    # Using the average count rate to make shortened arrays that are ~max(timescales) long
-    # Adding an extra 10% to the average because it usually undershoots
-    average_countrate += average_countrate * 0.10
-    spacer = int(0.5 * max(timescales) * average_countrate)
-    left_edge = 0 if event.start - spacer < 0 else event.start - spacer
-    right_edge = len(times) - 1 if event.stop + spacer >= len(times) else event.stop + spacer
+        left_edge -= 1
+
+    # Finding the best right edge to use
+    while True:
+        if right_edge >= len(times) or times[right_edge] - times[best_index] > half_interval:
+            right_edge -= 1
+            break
+
+        right_edge += 1
+
     if count_scints is not None:
         times_dict = tl.separate_data(times, count_scints, left_edge, right_edge)
         energies_dict = tl.separate_data(energies, count_scints, left_edge, right_edge)
@@ -518,8 +529,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     ax_list = [ax1, ax2, ax3]
     assert len(ax_list) == len(timescales)
 
-    event_times = times[event.start:event.stop]
-    best_time = event_times[np.argmin(np.abs(event_times - np.roll(event_times, 1)))]
+    best_time = event_times[best_index - event.start]
     for i in range(len(ax_list)):
         ts = timescales[i]
         ax = ax_list[i]
@@ -529,7 +539,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
         ax.set_yscale('log')
         ax.set_ylim((0.6, 1e5))
         for scintillator in times_dict:
-            color = colors[scintillator] if scintillator in colors else 'b'
+            color = colors[scintillator] if scintillator in colors else 'k'
             # 0.6 to avoid annoying divide by zero warnings
             ax.scatter(times_dict[scintillator], energies_dict[scintillator] + 0.6,
                        s=dot_size, zorder=1, alpha=params.DOT_ALPHA, label=scintillator, color=color)
@@ -579,11 +589,10 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
 
 
 # Makes the json file for a short event
-def make_se_json(detector, event, times, energies, wallclock, count_scints):
+def make_se_json(detector, event, times, energies, count_scints):
     event_path = f'{detector.get_results_loc()}/event_files/short_events/'
     tl.make_path(event_path)
     event_dict = dict()
-    event_dict['wc'] = wallclock[event.start:event.stop].tolist()
     event_dict['SecondsOfDay'] = times[event.start:event.stop].tolist()
     event_dict['energies'] = energies[event.start:event.stop].tolist()
     event_dict['count_scintillator'] = count_scints[event.start:event.stop].tolist() if count_scints is not None else (
@@ -634,16 +643,14 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
                             f'({scintillator})...', detector.log)
             times = detector.get_lm_data(scintillator, 'SecondsOfDay')
             energies = detector.get_lm_data(scintillator, 'energies')
-            wallclock = detector.get_lm_data(scintillator, 'wc')
             count_scints = None
 
         # Normal operating mode (combining all scintillator data)
         else:
-            scintillator = 'CS'  # Combined scintillators
+            scintillator = 'cs'  # Combined scintillators
             tl.print_logger('Searching combined scintillator data...', detector.log)
             (times,
              energies,
-             wallclock,
              count_scints) = tl.combine_data(detector)
 
         # Finding potential events with the search algorithm in find_short_events
@@ -715,7 +722,7 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
                 make_se_scatterplot(detector, event, times, energies, count_scints)
 
                 # Makes the json file for the event
-                make_se_json(detector, event, times, energies, wallclock, count_scints)
+                make_se_json(detector, event, times, energies, count_scints)
 
                 plots_made += 1
 
@@ -729,8 +736,11 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
 
 # Returns the list of preferred scintillators to be used in the long event search depending on the Detector
 def get_le_scint_prefs(detector):
-    with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/long_event_search_scints.json', 'r') as file:
-        all_preferences = json.load(file)
+    try:
+        with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json', 'r') as file:
+            all_preferences = json.load(file)['long_event_search_scints']
+    except json.decoder.JSONDecodeError:
+        raise SyntaxError('invalid syntax in search config file.')
 
     if detector.unit in all_preferences:
         preferences = []
@@ -753,7 +763,7 @@ def make_le_hist(detector, scintillator, hist_end, bin_size):
     if scintillator == 'NaI':
         times = np.delete(times, np.where(energies < params.NAI_CHANNEL_CUTOFF))
     else:
-        times = np.delete(times, np.where(energies < params.LP_CHANNEL_CUTOFF))
+        times = np.delete(times, np.where(energies < params.LPL_CHANNEL_CUTOFF))
 
     hist_allday = np.histogram(times, bins=bins_allday)[0]
     return bins_allday[:-1], hist_allday  # Bins is always longer than hist by one for some reason
@@ -1020,10 +1030,9 @@ def make_le_txt(detector, event, bin_size, event_num):
         print(f'{timestamp} UTC ({event.start_sec} '
               f'seconds of day), {event.stop_sec - event.start_sec} seconds long, highest z-score: '
               f'{event.highest_score}, {bin_size} sec bins',
-              file=detector.log)
+              file=event_file)
         for scintillator in event.lm_files:
             print(f'{scintillator}: {event.lm_files[scintillator]}', file=event_file)
-
 
 
 # Runs the long event search
@@ -1198,14 +1207,14 @@ def get_lm_sets(partition_points, lm_filelist):
 
 
 # Returns the total memory in bytes of all files contained in the partition defined by points start and end
-def get_partition_memory(detector, start, end, trace_map, lm_filelist):
+def get_partition_memory(detector, scintillator, start, end, trace_map, lm_filelist):
     memory = 0
     for i in range(start, end):
         file = lm_filelist[i]
-        memory += tl.file_size(file) * detector.lm_growth_factor
+        memory += tl.file_size(file) * detector.lm_growth_factors[scintillator]
         if file in trace_map:
             for trace in trace_map[file]:
-                memory += tl.file_size(trace) * detector.trace_growth_factor
+                memory += tl.file_size(trace) * detector.trace_growth_factors[scintillator]
 
     return memory
 
@@ -1257,7 +1266,8 @@ def make_chunks(detector):
             trace_map = trace_maps[scintillator]
             lm_sets = all_lm_sets[scintillator]
             lm_filelist = lm_filelists[scintillator]
-            new_memory += get_partition_memory(detector, lm_sets[i], lm_sets[i + 1], trace_map, lm_filelist)
+            new_memory += get_partition_memory(detector, scintillator, lm_sets[i], lm_sets[i + 1],
+                                               trace_map, lm_filelist)
 
         total_memory += new_memory
         # Making a new chunk if the amount of new memory added by partitioning at i + 1 takes us over the limit
