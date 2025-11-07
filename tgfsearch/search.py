@@ -203,7 +203,7 @@ def get_hl_channel_ratio(energies, start, stop):
 
 # Returns the n highest energy count on the given range
 def get_n_highest_count(energies, start, stop, n):
-    if n == 0 or n > stop - start:
+    if n <= 0 or n > stop - start:
         return 0.
 
     priority_queue = []
@@ -1517,7 +1517,7 @@ def program(first_date, second_date, unit, mode_info):
                         extrema += chunk.get_attribute(scintillator, 'lm_file_ranges')
 
                     # Pickle chunk and add its path to the list
-                    chunk_path_list.append(tl.pickle_chunk(chunk, f'chunk{chunk_num}'))
+                    chunk_path_list.append(tl.pickle_detector(chunk, f'chunk{chunk_num}'))
 
                     # Eliminates the chunk from active memory
                     del chunk
@@ -1533,7 +1533,7 @@ def program(first_date, second_date, unit, mode_info):
                     tl.print_logger('\n', detector.log)
                     tl.print_logger('Filtering traces...', detector.log)
                     for chunk_path in chunk_path_list:
-                        chunk = tl.unpickle_chunk(chunk_path)
+                        chunk = tl.unpickle_detector(chunk_path)
                         trace_dict = find_traces(chunk)
                         chunk_trace_dicts[chunk_path] = trace_dict
                         del chunk
@@ -1558,7 +1558,7 @@ def program(first_date, second_date, unit, mode_info):
                     weather_cache = {}
                     chunk_num = 1
                     for chunk_path in chunk_path_list:
-                        chunk = tl.unpickle_chunk(chunk_path)
+                        chunk = tl.unpickle_detector(chunk_path)
                         chunk.log = log
                         tl.print_logger(f'Chunk {chunk_num} (of {num_chunks}):', detector.log)
                         # Calling the short event search algorithm
@@ -1600,7 +1600,7 @@ def program(first_date, second_date, unit, mode_info):
                         bins_allday = None
                         hist_allday = None
                         for chunk_path in chunk_path_list:
-                            chunk = tl.unpickle_chunk(chunk_path)
+                            chunk = tl.unpickle_detector(chunk_path)
                             for scintillator in le_scint_list:
                                 if chunk.data_present_in(scintillator):
                                     # Histograms the counts from each scintillator and combines them with the main one

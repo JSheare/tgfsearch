@@ -1,4 +1,6 @@
 {
+  "default_data_root" : "/media/david/AllDetectorData/Detectors",
+
   "identities" : {
     "FRANCE": {
       "subtree": "FRANCE/Data",
@@ -160,6 +162,10 @@
   },
 
   "scintillator_priority" : ["lpl", "ipl", "spl", "nai", "mpl", "gpl"],
+
+  "lm_extensions" : [".csv", ".txt"],
+
+  "trace_extensions" : [".xtr"],
 
   "growth_factors" : {
     "godot_lm" : {

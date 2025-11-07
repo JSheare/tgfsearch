@@ -427,7 +427,7 @@ def _json_nrl_lm_parser(passtime, lines):
 def _read_lm_file(passtime, parser, killcr):
     data_list = []
     started = passtime['started']
-    long_gap_counts = 70
+    long_gap_counts = 25
     for header, data, adc_rate, rollover_period in parser:
         last_unix = passtime['lastunix']
         _process_data_timing(passtime, header, data, adc_rate, rollover_period)

@@ -1,7 +1,7 @@
 {
   "FRANCE": {
     "1": {
-      "subtree": "FRANCE/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/FRANCE/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -10,7 +10,7 @@
 
   "GODOT": {
     "1": {
-      "subtree": "GODOT/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/GODOT/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -19,7 +19,7 @@
 
   "MINITHOR1": {
     "1": {
-      "subtree": "MINITHOR1/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/MINITHOR1/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -28,7 +28,7 @@
 
   "ISRAEL": {
     "1": {
-      "subtree": "ISRAEL/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/ISRAEL/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -37,7 +37,7 @@
 
   "SANTIS": {
     "1": {
-      "subtree": "SANTIS/DATA",
+      "tree": "/media/david/AllDetectorData/Detectors/SANTIS/DATA",
       "before_date": "211203",
       "after_date": "000000",
       "mode_info": []
@@ -46,7 +46,7 @@
 
   "SPLIT": {
     "1": {
-      "subtree": "SPLIT/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/SPLIT/Data",
       "before_date": "999999",
       "after_date": "211203",
       "mode_info": []
@@ -55,19 +55,19 @@
 
   "THOR1": {
     "1": {
-      "subtree": "THOR/THOR1/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
       "before_date": "220830",
       "after_date": "000000",
       "mode_info": []
     },
     "2": {
-      "subtree": "THOR/THOR1/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
       "before_date": "230209",
       "after_date": "220830",
       "mode_info": ["--aircraft"]
     },
     "3": {
-      "subtree": "THOR/THOR1/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
       "before_date": "999999",
       "after_date": "230209",
       "mode_info": []
@@ -76,7 +76,7 @@
 
   "THOR2": {
     "1": {
-      "subtree": "THOR/THOR2/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR2/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -85,7 +85,7 @@
 
   "THOR3": {
     "1": {
-      "subtree": "THOR/THOR3/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR3/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -94,7 +94,7 @@
 
   "THOR4": {
     "1": {
-      "subtree": "THOR/THOR4/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR4/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -103,7 +103,7 @@
 
   "THOR5": {
     "1": {
-      "subtree": "THOR/THOR5/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR5/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -112,7 +112,7 @@
 
   "THOR6": {
     "1": {
-      "subtree": "THOR/THOR6/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR6/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []
@@ -121,7 +121,7 @@
 
   "TRIGGER": {
     "1": {
-      "subtree": "TRIGGER/Data",
+      "tree": "/media/david/AllDetectorData/Detectors/TRIGGER/Data",
       "before_date": "999999",
       "after_date": "000000",
       "mode_info": []

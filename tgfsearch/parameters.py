@@ -1,7 +1,6 @@
 """Parameters for use by the TGF search program and its modules."""
 
 """General Parameters"""
-DEFAULT_DATA_ROOT = '/media/david/AllDetectorData/Detectors'
 SEC_PER_DAY = 86400  # Number of seconds in a day
 SEC_PER_HOUR = 3600  # Number of seconds in an hour
 CENTURY = '20'  # The current century (numerically)

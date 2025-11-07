@@ -307,65 +307,6 @@ def unpickle_detector(pickle_path):
     return detector
 
 
-def pickle_chunk(chunk, file_name):
-    """Pickles daily chunks for the program's low memory mode."""
-    return pickle_detector(chunk, file_name)
-
-
-def unpickle_chunk(chunk_path):
-    """Unpickles and loads daily chunks for the program's low memory mode."""
-    with open(chunk_path, 'rb') as file:
-        chunk = pickle.load(file)
-
-    return chunk
-
-
-def filter_data_files(complete_filelist):
-    """Returns an ordered list of data files with duplicate/invalid files filtered out."""
-    valid_filetypes = ['.txt', '.txt.gz', '.xtr', '.xtr.gz', '.csv', '.csv.gz']
-    unique_files = set()
-    file_names = []
-    extensions = []
-    for file in complete_filelist:
-        if len(file) >= 4:
-            dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
-            while file[dot_index] != '.' and dot_index >= 0:
-                dot_index -= 1
-
-            full_extension = file[dot_index:]
-            if full_extension in valid_filetypes:
-                file_name = file[:dot_index]
-            else:
-                continue
-
-            if file_name not in unique_files:
-                unique_files.add(file_name)
-                file_names.append(file_name)
-                extensions.append(full_extension)
-
-    return [file_names[s] + extensions[s] for s in np.argsort(file_names)]  # Puts the files back in order
-
-
-def separate_data_files(filelist):
-    """Returns a pair of ordered lists: one with list mode files, the other with trace files."""
-    lm_filetypes = ['.txt', '.txt.gz', '.csv', '.csv.gz']
-    lm_filelist = []
-    trace_filelist = []
-    for file in filelist:
-        if len(file) >= 4:
-            dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
-            while file[dot_index] != '.' and dot_index >= 0:
-                dot_index -= 1
-
-            full_extension = file[dot_index:]
-            if full_extension in lm_filetypes:
-                lm_filelist.append(file)
-            else:
-                trace_filelist.append(file)
-
-    return lm_filelist, trace_filelist
-
-
 def convert_to_local(detector, event_time):
     """Converts the Detector date and event time to what they would actually be in local time.
 

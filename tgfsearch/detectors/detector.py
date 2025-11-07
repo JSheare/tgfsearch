@@ -151,7 +151,7 @@ class Detector:
                 'notes': ''}
 
     def _read_identity(self):
-        """Gets and fills in the identity of the Detector from a config file based on the name and date."""
+        """Gets and fills in the identity of the Detector from the config file based on the name and date."""
         try:
             with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
                       'r') as file:
@@ -162,7 +162,7 @@ class Detector:
         if self.unit in entries['identities']:
             identity = entries['identities'][self.unit]
             try:
-                self._import_loc = f'{params.DEFAULT_DATA_ROOT}/{identity["subtree"]}/{self.date_str}'
+                self._import_loc = f'{entries["default_data_root"]}/{identity["subtree"]}/{self.date_str}'
 
                 # Getting the right scintillator configuration based on the date
                 correct_date_str = ''
@@ -597,6 +597,43 @@ class Detector:
 
         return complete_filelist
 
+    def _get_scint_filelists(self, scintillator):
+        """Returns the list mode and trace filelists for the given scintillator."""
+        complete_filelist = self._get_serial_num_filelist(self._scintillators[scintillator].eRC)
+        try:
+            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
+                      'r') as file:
+                entries = json.load(file)
+        except json.decoder.JSONDecodeError:
+            raise SyntaxError('invalid syntax in detector config file.')
+        except KeyError:
+            raise KeyError('missing valid file extension information in detector config file.')
+
+        lm_extensions = entries['lm_extensions']
+        trace_extensions = entries['trace_extensions']
+        unique_files = set()
+        lm_filelist = []
+        trace_filelist = []
+        for file in complete_filelist:
+            if len(file) >= 4:
+                dot_index = len(file) - 4 if file[-3:] == '.gz' else len(file) - 1
+                end = dot_index + 1
+                while file[dot_index] != '.' and dot_index >= 0:
+                    dot_index -= 1
+
+                extension = file[dot_index:end]
+                if ((extension in lm_extensions or extension in trace_extensions) and
+                        file[:dot_index] not in unique_files):
+                    if extension in trace_extensions:
+                        trace_filelist.append(file)
+                    else:
+                        lm_filelist.append(file)
+
+        lm_filelist.sort()
+        trace_filelist.sort()
+        return lm_filelist, trace_filelist
+
+
     @staticmethod
     def _read_data_file(reader, filelist, clean_energy, connection):
         """Reading the given data files and sending them to the given pipe. Meant to be run in a subprocess, which 
@@ -861,8 +898,7 @@ class Detector:
         if not existing_filelists:
             # Locates the files to be imported
             for scintillator in scintillators:
-                complete_filelist = self._get_serial_num_filelist(self._scintillators[scintillator].eRC)
-                lm_filelist, trace_filelist = tl.separate_data_files(tl.filter_data_files(complete_filelist))
+                lm_filelist, trace_filelist = self._get_scint_filelists(scintillator)
                 if import_lm:
                     self._scintillators[scintillator].lm_filelist = lm_filelist
 

@@ -235,6 +235,188 @@ flag. Here's an example where only events with a score at or above 0.5 are inclu
     tgf-collect yymmdd yymmdd detector -ms 0.5
 
 
+# **Adding Support for New Instruments and Configurations:**
+If you want to add support for a new instrument or a new instrument configuration, there are three config files that you 
+will likely need to edit:
+
+- auto_search_config.json
+
+- detector_config.json
+
+- search_config.json
+
+All three config files can be found in the "config" subdirectory of the package directory, and all three are 
+JSON-formatted. Below are some details on the structure of each and how to go about editing them.
+
+## **auto_search_config:**
+The auto search config file details all the configuration information pertaining to the package's auto search utility.
+Each entry details an instrument scheduled for a search, and each subentry details a different search configuration for
+the instrument.
+
+### **Structure of the file:**
+Every search configuration has the following subentries:
+
+- tree: the location of the data.
+
+- before_date: the end date for this search configuration (non-inclusive) in YYMMDD format.
+
+- after_date: the start date for this search configuration (inclusive) in YYMMDD format.
+
+- mode_info: an array containing the program flags to be used for this search configuration.
+
+Here's an example of an entry in the auto search config file:
+```
+"THOR1": {
+  "1": {
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
+      "before_date": "220830",
+      "after_date": "000000",
+      "mode_info": []
+  },
+  "2": {
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
+      "before_date": "230209",
+      "after_date": "220830",
+      "mode_info": ["--aircraft"]
+  },
+  "3": {
+      "tree": "/media/david/AllDetectorData/Detectors/THOR/THOR1/Data",
+      "before_date": "999999",
+      "after_date": "230209",
+      "mode_info": []
+  }
+}
+```
+This details three search configurations for THOR1, each of which is delineated by a number. The second search
+configuration ("2") describes a search of THOR1 data in the directory named 
+"/media/david/AllDetectorData/Detectors/THOR/THOR1/Data" from August 30th, 2022 up to February 9th, 2023 using the 
+program's aircraft mode.
+
+### **Updating auto_search_config:**
+If you want to update what scheduled searches the auto search runs, first either find the entry for the relevant
+instrument or add it if it doesn't exist. Then, add a new subentry for the new search configuration with the desired
+data location, date range, and program modes. If the instrument already has one or more search configurations, be sure 
+to give the new one a number that hasn't been used already.
+
+## **detector_config:**
+The detector config details all the configuration information pertaining to instrument and data file support for the
+package. 
+
+### **Structure of the file:**
+The file contains the following entries:
+
+- default_data_root: the default main data directory.
+
+- identities: a collection of supported instruments and their configurations. Each subentry details one instrument:
+  - Each instrument entry contains the following subentries:
+    - subtree: the location of the instrument's data within the main data directory specified by the default_data_root
+      parameter. The default data location for the instrument will be default_data_root + '/' + subtree.
+    - scintillators: the instrument's scintillator configurations after various dates (inclusive). Each date subentry 
+      contains:
+      - One entry for each scintillator in the configuration, with subentries for the scintillator's eRC number and data
+        file format.
+      - An entry specifying the configuration's default scintillator.
+  - Here's an example of an instrument entry:
+    ```
+    "THOR2": {
+      "subtree": "THOR/THOR2/Data",
+      "scintillators": {
+        "000000": {
+                  "nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
+                  "spl": {"eRC": "4176", "file_format": "ssv_nrl_lm"},
+                  "mpl": {"eRC": "4167", "file_format": "ssv_nrl_lm"},
+                  "lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"},
+                  "default": "lpl"},
+        "230316": {
+                  "nai": {"eRC": "4182", "file_format": "thor_lm"},
+                  "spl": {"eRC": "4172", "file_format": "thor_lm"},
+                  "mpl": {"eRC": "4167", "file_format": "thor_lm"},
+                  "lpl": {"eRC": "4187", "file_format": "thor_lm"},
+                  "default": "lpl"}
+      }
+    },
+    ```
+    This details support for THOR2. Its data is, by default, located in the directory named 
+    "default_data_root/THOR/THOR2/Data", and it has two scintillator configurations:
+    - The first configuration is valid past 000000 (beginning of time) and has four scintillators: a sodium iodide 
+      (nai, eRC 3182), a small plastic (spl, eRC 4176), a medium plastic (mpl, eRC 4167), and a large plastic 
+      (lpl, eRC 4187). All scintillators make data with the ssv_nrl_lm format and the configuration uses the large 
+      plastic as its default.
+    - The second configuration is valid past March 16th, 2023 and has four scintillators: a sodium iodide (nai, 
+      eRC 4182), a small plastic (spl, eRC 4172), a medium plastic (mpl, eRC 4167), and a large plastic (lpl, eRC 4187). 
+      All scintillators make data with the thor_lm format and the configuration uses the large plastic as its default.
+
+- scintillator_priority: an array detailing the supported scintillators in their descending order of priority.
+
+- lm_extensions: an array detailing the supported list mode data file extensions (the compressed variants of these 
+  extensions are implicitly supported)
+
+- trace_extensions: an array detailing the supported trace data file extensions (the compressed variants of these 
+  extensions are implicitly supported)
+
+- growth_factors: a collection of supported data file formats and their growth factors. Growth factors capture the
+  relationship between data file size and Detector object size. Each subentry details one data file format:
+  - Each data file format entry has two subentries:
+    - lm_growth_factor: the average size increase of Detector in bytes per byte of list mode data.
+    - trace_growth_factor: the average size increase of Detector in bytes per byte of trace data
+
+### **Updating detector_config:**
+To update support for an instrument, first find the instrument's entry in identities or add it if it doesn't exist.
+Then, add or update the necessary information according to the structure of identity detailed above. 
+
+If the new support includes a new scintillator type, add it to the appropriate position in scintillator_priority.
+
+If the new support includes a new file extension, add it to either lm_extensions or trace_extensions as appropriate.
+
+Finally, if the new support includes a new data file format, add it to growth_factors with (temporary) values of 1.0 for
+lm_growth_factor and trace_growth_factor. To get the real growth factors, you can run the package's built-in memory test
+utility on an instrument that creates files with the new format:
+
+To use it, run a command of the following form:
+
+    tgf-mem yymmdd yymmdd detector
+
+Where the first 'yymmdd' is the first date in the desired test range and the second 'yymmdd' is the last. The utility
+will run a growth factor on the days in the specified range and yield the average list mode and trace data growth
+factors.
+
+In case you want to ignore some of the instrument's scintillators during the test, you can use the '-i' flag:
+
+    tgf-mem yymmdd yymmdd -i scint1 scint2
+
+Where scint1 and scint2 are the abbreviations of scintillators that will be ignored. You can ignore as many
+scintillators as you want.
+
+Finally, the utility allows you to specify a custom import location for the data using the '-c' flag:
+
+    tgf-mem yymmdd yymmdd detector -c "import_directory"
+
+## **search_config:**
+The search config file details all the configuration information pertaining to the search program itself.
+
+### **Structure of the file:**
+The file contains the following entries:
+
+- short_event_search_colors: an array detailing the colors to be used on the short event scatter plots for each
+  scintillator.
+
+- long_event_search_scints: a collection of arrays detailing the scintillators that should be used in the long event
+  search for each supported instrument. 
+  - Here's an example of the subentry for GODOT:
+    ```
+    "GODOT":["nai", "lpl"]
+    ```
+    This indicates that, when performing the long event search on Godot, data from the sodium iodide and large plastic
+    scintillators will be combined.
+
+### **Updating search_config:**
+To add support for a new scintillator, add it to short_event_search_colors with the desired color, and if necessary add
+it to the entry for the relevant instrument in long_event_search_scints.
+
+To add support for a new instrument, add a new entry for that instrument to long_event_search_scints with at least one 
+scintillator.
+
+
 # **Using Data Tools:**
 In addition to the search program and associated utilities, the package also includes data handling tools that you can 
 use to build your own programs and scripts. This section will serve as an example for how to use many of these tools, 
@@ -577,10 +759,6 @@ Full Detector documentation for these methods (and more) can be found [here](htt
   - Pickles Detectors.
 - tgf.unpickle_detector()
   - Unpickles Detectors.
-- tgf.filter_files()
-  - Returns an ordered list of files with duplicate/invalid files filtered out.
-- tgf.separate_files()
-  - Returns a pair of ordered lists: one with list mode files, the other with trace files.
 - tgf.scrape_weather()
   - Scrapes weather from weather underground and returns the results as a pandas data frame.
 - tgf.combine_data()
@@ -598,4 +776,5 @@ Full tools documentation for these functions (and others) can be found [here](ht
 
 ## **Other Documentation:**
 - [Scintillator](https://html-preview.github.io/?url=https://github.com/JSheare/TGF_and_glow_search_program/blob/master/docs/scintillator.html)
+- [Reader](https://html-preview.github.io/?url=https://github.com/JSheare/TGF_and_glow_search_program/blob/master/docs/reader.html)
 - [Reader Helper](https://html-preview.github.io/?url=https://github.com/JSheare/TGF_and_glow_search_program/blob/master/docs/reader.html)

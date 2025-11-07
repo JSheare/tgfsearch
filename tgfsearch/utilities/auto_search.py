@@ -10,7 +10,6 @@ import traceback as traceback
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-import tgfsearch.parameters as params
 import tgfsearch.tools as tl
 from tgfsearch.search import program
 
@@ -50,13 +49,18 @@ def main():
         checked_dates = {}
 
     # Reads the config file
-    with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/auto_search_config.json',
-              'r') as file:
-        config = json.load(file)
+    try:
+        with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/auto_search_config.json',
+                'r') as file:
+            config = json.load(file)
+
+    except json.decoder.JSONDecodeError:
+        print('Error: Invalid syntax in auto search config file.')
+        exit()
 
     for unit in config:
         for sub_entry in config[unit]:
-            subtree = config[unit][sub_entry]['subtree']
+            tree = config[unit][sub_entry]['tree']
             # The convention that I've chosen is that after date is inclusive and before date is not
             before_date = int(config[unit][sub_entry]['before_date'])
             after_date = int(config[unit][sub_entry]['after_date'])
@@ -64,7 +68,7 @@ def main():
                 checked_dates[unit] = []
 
             queue = []
-            date_paths = glob.glob(f'{params.DEFAULT_DATA_ROOT}/{subtree}/*')
+            date_paths = glob.glob(f'{tree}/*')
             date_paths.sort()
             for date_path in date_paths:
                 if len(date_path) >= 6:
@@ -80,7 +84,7 @@ def main():
                 mode_info = list(config[unit][sub_entry]['mode_info'])  # Implicit copy
                 # Adding custom import/export directories
                 mode_info.append('-c')
-                mode_info.append(f'{params.DEFAULT_DATA_ROOT}/{subtree}/{date}')
+                mode_info.append(f'{tree}/{date}')
                 mode_info.append(results_loc)
 
                 print(f'Running search: {date} {unit} {mode_info}...')
