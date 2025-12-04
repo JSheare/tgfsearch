@@ -49,15 +49,13 @@ class Detector:
         For each scintillator, the average bytes of Detector memory added per byte of trace mode data file imported.
     _import_loc : str
         The directory where data files for the day are located.
-    _results_loc : str
-        The directory where results will be exported.
+    _export_loc : str
+        The directory where data and results will be exported.
     _scintillators : dict
         A dictionary containing Scintillators. These keep track of data for each of the instrument's
         scintillators. Note the name mangling underscore.
     scint_list : list
         A list of the instrument's scintillator names.
-    default_scintillator : str
-        A string representing the default scintillator.
     deployment : dict
         Deployment information for the instrument on the requested day (if available).
 
@@ -77,10 +75,9 @@ class Detector:
         self.lm_growth_factors = {}
         self.trace_growth_factors = {}
         self._import_loc = ''
-        self._results_loc = ''
+        self._export_loc = ''
         self._scintillators = {}
         self.scint_list = []
-        self.default_scintillator = ''
         self.deployment = self._get_deployment()
 
         # Allows us to disable identity reading if we need to, but without advertising it in the documentation
@@ -89,7 +86,7 @@ class Detector:
         else:
             self._read_identity()
 
-        self.set_results_loc(os.getcwd().replace('\\', '/'))
+        self.set_export_loc(os.getcwd().replace('\\', '/'))
 
     def __del__(self):
         self.clear()
@@ -114,14 +111,17 @@ class Detector:
         return default_string + f' Has data = {has_data} ' + data_string
 
     def __iter__(self):
-        """Iterator dunder. Returns a generator that yields the Detector's scintillator names."""
+        """Iterator dunder. Returns a generator that yields the Detector's scintillator names according to the order
+        of priority specified in the Detector config file."""
         for scintillator in self.scint_list:
             yield scintillator
 
     def __bool__(self):
-        """Bool casting overload. Returns True if data for the default scintillator is present."""
+        """Bool casting overload. Returns True if data for any scintillator is present."""
         if self._has_identity:
-            return self.data_present_in(self.default_scintillator)
+            for scintillator in self._scintillators:
+                if self.data_present_in(scintillator):
+                    return True
 
         return False
 
@@ -172,17 +172,20 @@ class Detector:
                     else:
                         break
 
+                # Putting the scintillators in the correct order of priority
                 for scintillator in identity['scintillators'][correct_date_str]:
+                    self.scint_list.append(scintillator)
+
+                self.scint_list.sort(key=lambda scint: entries['scintillator_priority'].index(scint))
+
+                # Creating the scintillator objects
+                for scintillator in self.scint_list:
                     scint_entry = identity['scintillators'][correct_date_str][scintillator]
-                    if scintillator == 'default':
-                        self.default_scintillator = scint_entry
-                    else:
-                        self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['eRC'])
-                        self.lm_growth_factors[scintillator] = (
-                            entries['growth_factors'][scint_entry['file_format']]['lm_growth_factor'])
-                        self.trace_growth_factors[scintillator] = (
-                            entries['growth_factors'][scint_entry['file_format']]['trace_growth_factor'])
-                        self.scint_list.append(scintillator)
+                    self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['eRC'])
+                    self.lm_growth_factors[scintillator] = (
+                        entries['growth_factors'][scint_entry['file_format']]['lm_growth_factor'])
+                    self.trace_growth_factors[scintillator] = (
+                        entries['growth_factors'][scint_entry['file_format']]['trace_growth_factor'])
 
                 self._has_identity = True
             except KeyError:
@@ -195,10 +198,6 @@ class Detector:
         """Returns True if the Detector has an established identity (established name, scintillator configuration,
         etc.), False otherwise."""
         return self._has_identity
-
-    def file_form(self, eRC):
-        """Returns the regex for a scintillator's files given the scintillator's eRC serial number."""
-        return f'eRC{eRC}*_*_{self.date_str}_*'
 
     def get_import_loc(self):
         """Returns the directory where data will be imported from.
@@ -229,25 +228,25 @@ class Detector:
 
         self._import_loc = loc
 
-    def get_results_loc(self):
-        """Returns the directory where all results will be stored.
+    def get_export_loc(self):
+        """Returns the directory where all data and results will be exported.
 
         Returns
         -------
         str
-            The results directory as a string.
+            The export directory as a string.
 
         """
 
-        return self._results_loc
+        return self._export_loc
 
-    def set_results_loc(self, loc, subdir=True):
-        """Sets the directory where all results will be stored.
+    def set_export_loc(self, loc, subdir=True):
+        """Sets the directory where all data and results will be stored.
 
         Parameters
         ----------
         loc : str
-            The results directory as a string.
+            The export directory as a string.
 
         subdir : bool
             Optional. If True, results will be exported to a subdirectory of the form 'Results/unit/yymmdd' inside
@@ -261,9 +260,9 @@ class Detector:
                 loc = loc[:-1]
 
         if subdir:
-            self._results_loc = loc + f'/Results/{self.unit}/{self.date_str}'
+            self._export_loc = loc + f'/Results/{self.unit}/{self.date_str}'
         else:
-            self._results_loc = loc
+            self._export_loc = loc
 
     def is_named(self, name):
         """Returns True if the Detector has the same name as the passed string.
@@ -337,7 +336,7 @@ class Detector:
         Returns
         -------
         str || list || numpy.ndarray || dict || pandas.core.frame.DataFrame
-            String if 'eRC' is requested; list if 'lm_filelist' or 'lm_file_ranges' is requested;
+            String if 'eRC' is requested; list if 'lm_filelist', 'trace_filelist', or 'lm_file_ranges' is requested;
             numpy array  if 'time' or 'energies' is requested; Reader if 'reader' is requested; dataframe
             if 'lm_frame' is requested, etc.
 
@@ -351,7 +350,8 @@ class Detector:
 
     def set_attribute(self, scintillator, attribute, new_info, deepcopy=True):
         """Updates the requested attribute for a particular scintillator.
-        Note: new info must be of the same type as the old.
+        Note: new info must be of the same type as the old, and if either a list mode or trace file list is supplied
+        it is assumed that the list is in order and contains no duplicates.
 
         Parameters
         ----------
@@ -586,14 +586,18 @@ class Detector:
         if clear_filelists:
             self.dates_stored = [self.date_str]
 
+    def _file_form(self, eRC):
+        """Returns the pattern for a scintillator's files given the scintillator's eRC serial number."""
+        return f'eRC{eRC}*_*_{self.date_str}_*'
+
     def _get_serial_num_filelist(self, eRC):
         """Returns a list of data files for the scintillator with the given eRC serial number."""
-        complete_filelist = glob.glob(f'{self._import_loc}/{self.file_form(eRC)}')
+        complete_filelist = glob.glob(f'{self._import_loc}/{self._file_form(eRC)}')
         if len(complete_filelist) == 0:  # Here in case the data files are grouped into daily folders
-            complete_filelist = glob.glob(f'{self._import_loc}/{self.date_str}/{self.file_form(eRC)}')
+            complete_filelist = glob.glob(f'{self._import_loc}/{self.date_str}/{self._file_form(eRC)}')
 
         if len(complete_filelist) == 0:  # Here in case the data files are grouped into non-daily folders
-            complete_filelist = glob.glob(f'{self._import_loc}/*/{self.file_form(eRC)}')
+            complete_filelist = glob.glob(f'{self._import_loc}/*/{self._file_form(eRC)}')
 
         return complete_filelist
 
@@ -604,6 +608,7 @@ class Detector:
             with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
                       'r') as file:
                 entries = json.load(file)
+
         except json.decoder.JSONDecodeError:
             raise SyntaxError('invalid syntax in detector config file.')
         except KeyError:
@@ -940,14 +945,13 @@ class Detector:
         -------
         tgfsearch.detectors.detector.Detector
             A new Detector with the same identity as the current one. Identity includes: unit name, date, print
-            feedback setting, deployment info, default scintillator, import directory, export directory,
-            scintillator configuration, and processed data flag.
+            feedback setting, deployment info, import directory, export directory, and scintillator configuration.
 
         """
 
         clone = type(self)(self.unit, self.date_str)
         clone._import_loc = self._import_loc
-        clone._results_loc = self._results_loc
+        clone._export_loc = self._export_loc
         return clone
 
     def splice(self, operand_detector):

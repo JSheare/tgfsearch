@@ -82,15 +82,13 @@ trace_growth_factors&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;each&nbsp;scintillator,&nbsp;the&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
 _import_loc&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;data&nbsp;files&nbsp;for&nbsp;the&nbsp;day&nbsp;are&nbsp;located.<br>
-_results_loc&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;results&nbsp;will&nbsp;be&nbsp;exported.<br>
+_export_loc&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;exported.<br>
 _scintillators&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;Scintillators.&nbsp;These&nbsp;keep&nbsp;track&nbsp;of&nbsp;data&nbsp;for&nbsp;each&nbsp;of&nbsp;the&nbsp;instrument's<br>
 &nbsp;&nbsp;&nbsp;&nbsp;scintillators.&nbsp;Note&nbsp;the&nbsp;name&nbsp;mangling&nbsp;underscore.<br>
 scint_list&nbsp;:&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;the&nbsp;instrument's&nbsp;scintillator&nbsp;names.<br>
-default_scintillator&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;representing&nbsp;the&nbsp;default&nbsp;scintillator.<br>
 deployment&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Deployment&nbsp;information&nbsp;for&nbsp;the&nbsp;instrument&nbsp;on&nbsp;the&nbsp;requested&nbsp;day&nbsp;(if&nbsp;available).<br>&nbsp;</span></td></tr>
 <tr><td>&nbsp;</td>
@@ -98,7 +96,7 @@ deployment&nbsp;:&nbsp;dict<br>
 <dl><dt><a name="Detector-__add__"><strong>__add__</strong></a>(self, operand_detector)</dt><dd><span class="code">Addition&nbsp;operator&nbsp;overload.&nbsp;Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;containing&nbsp;data&nbsp;from&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a><br>
 and&nbsp;the&nbsp;provided&nbsp;one.&nbsp;See&nbsp;<a href="#Detector-splice">splice</a>()&nbsp;method&nbsp;documentation&nbsp;for&nbsp;more&nbsp;information.</span></dd></dl>
 
-<dl><dt><a name="Detector-__bool__"><strong>__bool__</strong></a>(self)</dt><dd><span class="code">Bool&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;for&nbsp;the&nbsp;default&nbsp;scintillator&nbsp;is&nbsp;present.</span></dd></dl>
+<dl><dt><a name="Detector-__bool__"><strong>__bool__</strong></a>(self)</dt><dd><span class="code">Bool&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;for&nbsp;any&nbsp;scintillator&nbsp;is&nbsp;present.</span></dd></dl>
 
 <dl><dt><a name="Detector-__contains__"><strong>__contains__</strong></a>(self, scintillator)</dt><dd><span class="code">Contains&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;string&nbsp;corresponds&nbsp;to&nbsp;a&nbsp;scintillator&nbsp;in&nbsp;<a href="#Detector">Detector</a>,<br>
 False&nbsp;otherwise.</span></dd></dl>
@@ -107,7 +105,8 @@ False&nbsp;otherwise.</span></dd></dl>
 
 <dl><dt><a name="Detector-__init__"><strong>__init__</strong></a>(self, unit, date_str, **kwargs)</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
 
-<dl><dt><a name="Detector-__iter__"><strong>__iter__</strong></a>(self)</dt><dd><span class="code">Iterator&nbsp;dunder.&nbsp;Returns&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;<a href="#Detector">Detector</a>'s&nbsp;scintillator&nbsp;names.</span></dd></dl>
+<dl><dt><a name="Detector-__iter__"><strong>__iter__</strong></a>(self)</dt><dd><span class="code">Iterator&nbsp;dunder.&nbsp;Returns&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;<a href="#Detector">Detector</a>'s&nbsp;scintillator&nbsp;names&nbsp;according&nbsp;to&nbsp;the&nbsp;order<br>
+of&nbsp;priority&nbsp;specified&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;config&nbsp;file.</span></dd></dl>
 
 <dl><dt><a name="Detector-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><span class="code">Debugging&nbsp;string&nbsp;dunder&nbsp;method.&nbsp;Returns&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;'<a href="#Detector">Detector</a>(unit,&nbsp;date_str)'&nbsp;along<br>
 with&nbsp;some&nbsp;info&nbsp;about&nbsp;which&nbsp;Scintillators&nbsp;have&nbsp;data.</span></dd></dl>
@@ -135,8 +134,6 @@ Returns<br>
 -------<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;in&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise.</span></dd></dl>
-
-<dl><dt><a name="Detector-file_form"><strong>file_form</strong></a>(self, eRC)</dt><dd><span class="code">Returns&nbsp;the&nbsp;regex&nbsp;for&nbsp;a&nbsp;scintillator's&nbsp;files&nbsp;given&nbsp;the&nbsp;scintillator's&nbsp;eRC&nbsp;serial&nbsp;number.</span></dd></dl>
 
 <dl><dt><a name="Detector-find_lm_file"><strong>find_lm_file</strong></a>(self, scintillator, count_time)</dt><dd><span class="code">Returns&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
 &nbsp;<br>
@@ -199,7 +196,7 @@ deepcopy&nbsp;:&nbsp;bool<br>
 Returns<br>
 -------<br>
 str&nbsp;||&nbsp;list&nbsp;||&nbsp;numpy.ndarray&nbsp;||&nbsp;dict&nbsp;||&nbsp;pandas.core.frame.DataFrame<br>
-&nbsp;&nbsp;&nbsp;&nbsp;String&nbsp;if&nbsp;'eRC'&nbsp;is&nbsp;requested;&nbsp;list&nbsp;if&nbsp;'lm_filelist'&nbsp;or&nbsp;'lm_file_ranges'&nbsp;is&nbsp;requested;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;String&nbsp;if&nbsp;'eRC'&nbsp;is&nbsp;requested;&nbsp;list&nbsp;if&nbsp;'lm_filelist',&nbsp;'trace_filelist',&nbsp;or&nbsp;'lm_file_ranges'&nbsp;is&nbsp;requested;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;&nbsp;if&nbsp;'time'&nbsp;or&nbsp;'energies'&nbsp;is&nbsp;requested;&nbsp;Reader&nbsp;if&nbsp;'reader'&nbsp;is&nbsp;requested;&nbsp;dataframe<br>
 &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;'lm_frame'&nbsp;is&nbsp;requested,&nbsp;etc.</span></dd></dl>
 
@@ -209,8 +206,14 @@ Returns<br>
 -------<br>
 tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one.&nbsp;Identity&nbsp;includes:&nbsp;unit&nbsp;name,&nbsp;date,&nbsp;print<br>
-&nbsp;&nbsp;&nbsp;&nbsp;feedback&nbsp;setting,&nbsp;deployment&nbsp;info,&nbsp;default&nbsp;scintillator,&nbsp;import&nbsp;directory,&nbsp;export&nbsp;directory,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;scintillator&nbsp;configuration,&nbsp;and&nbsp;processed&nbsp;data&nbsp;flag.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;feedback&nbsp;setting,&nbsp;deployment&nbsp;info,&nbsp;import&nbsp;directory,&nbsp;export&nbsp;directory,&nbsp;and&nbsp;scintillator&nbsp;configuration.</span></dd></dl>
+
+<dl><dt><a name="Detector-get_export_loc"><strong>get_export_loc</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;exported.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;export&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_import_loc"><strong>get_import_loc</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
 &nbsp;<br>
@@ -252,13 +255,6 @@ Returns<br>
 -------<br>
 pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;with&nbsp;the&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;list&nbsp;mode&nbsp;file.</span></dd></dl>
-
-<dl><dt><a name="Detector-get_results_loc"><strong>get_results_loc</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;results&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_trace"><strong>get_trace</strong></a>(self, scintillator, trace_name, deepcopy=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator&nbsp;and&nbsp;trace&nbsp;name.<br>
 &nbsp;<br>
@@ -346,7 +342,8 @@ bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;scintillator&nbsp;is&nbsp;in&nbsp;<a href="#Detector">Detector</a>,&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
 <dl><dt><a name="Detector-set_attribute"><strong>set_attribute</strong></a>(self, scintillator, attribute, new_info, deepcopy=True)</dt><dd><span class="code">Updates&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
-Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&nbsp;as&nbsp;the&nbsp;old.<br>
+Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&nbsp;as&nbsp;the&nbsp;old,&nbsp;and&nbsp;if&nbsp;either&nbsp;a&nbsp;list&nbsp;mode&nbsp;or&nbsp;trace&nbsp;file&nbsp;list&nbsp;is&nbsp;supplied<br>
+it&nbsp;is&nbsp;assumed&nbsp;that&nbsp;the&nbsp;list&nbsp;is&nbsp;in&nbsp;order&nbsp;and&nbsp;contains&nbsp;no&nbsp;duplicates.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -358,6 +355,17 @@ new_info&nbsp;:&nbsp;any<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;new&nbsp;information&nbsp;for&nbsp;the&nbsp;requested&nbsp;attribute.<br>
 deepcopy&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;a&nbsp;deepcopy&nbsp;of&nbsp;new_info.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
+
+<dl><dt><a name="Detector-set_export_loc"><strong>set_export_loc</strong></a>(self, loc, subdir=True)</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+loc&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;export&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.<br>
+&nbsp;<br>
+subdir&nbsp;:&nbsp;bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;results&nbsp;will&nbsp;be&nbsp;exported&nbsp;to&nbsp;a&nbsp;subdirectory&nbsp;of&nbsp;the&nbsp;form&nbsp;'Results/unit/yymmdd'&nbsp;inside<br>
+&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;specified&nbsp;location&nbsp;rather&nbsp;than&nbsp;straight&nbsp;to&nbsp;the&nbsp;location&nbsp;itself.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
 <dl><dt><a name="Detector-set_import_loc"><strong>set_import_loc</strong></a>(self, loc)</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
 &nbsp;<br>
@@ -379,17 +387,6 @@ new_data&nbsp;:&nbsp;numpy.ndarray<br>
 file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file&nbsp;to&nbsp;set&nbsp;data&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;will&nbsp;be&nbsp;set&nbsp;for&nbsp;the&nbsp;whole&nbsp;day.</span></dd></dl>
-
-<dl><dt><a name="Detector-set_results_loc"><strong>set_results_loc</strong></a>(self, loc, subdir=True)</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-loc&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;results&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.<br>
-&nbsp;<br>
-subdir&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;results&nbsp;will&nbsp;be&nbsp;exported&nbsp;to&nbsp;a&nbsp;subdirectory&nbsp;of&nbsp;the&nbsp;form&nbsp;'Results/unit/yymmdd'&nbsp;inside<br>
-&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;specified&nbsp;location&nbsp;rather&nbsp;than&nbsp;straight&nbsp;to&nbsp;the&nbsp;location&nbsp;itself.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
 <dl><dt><a name="Detector-splice"><strong>splice</strong></a>(self, operand_detector)</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;combined&nbsp;data&nbsp;of&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a>&nbsp;and&nbsp;the&nbsp;one&nbsp;provided.<br>
 &nbsp;<br>

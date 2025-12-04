@@ -1,1 +1,1 @@
-{"location": "Mt. Fuji", "instrument": "THOR5", "start_date": "240723", "end_date": "240822", "utc_to_local": 9.0, "dst_in_region": false, "weather_station": "RJTY", "sounding_station": "47646", "latitude": 35.36069893, "longitude": 138.7272547, "altitude": 3.77, "notes": "None"}
+{"location": "Mt. Fuji", "instrument": "THOR5", "start_date": "240723", "end_date": "240822", "tz_identifier": "Japan", "weather_station": "RJTY", "sounding_station": "47646", "latitude": 35.36069893, "longitude": 138.7272547, "altitude": 3.77, "notes": "None"}

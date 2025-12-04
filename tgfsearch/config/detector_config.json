@@ -7,8 +7,7 @@
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "5072", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "5071", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "5071", "file_format": "thor_lm"}}
       }
     },
 
@@ -18,14 +17,12 @@
         "000000": {
                   "spl": {"eRC": "1489", "file_format": "godot_lm"},
                   "nai": {"eRC": "1490", "file_format": "godot_lm"},
-                  "lpl": {"eRC": "1491", "file_format": "godot_lm"},
-                  "default": "lpl"},
+                  "lpl": {"eRC": "1491", "file_format": "godot_lm"}},
         "170524": {
                   "gpl": {"eRC": "1488", "file_format": "godot_lm"},
                   "spl": {"eRC": "1489", "file_format": "godot_lm"},
                   "nai": {"eRC": "1490", "file_format": "godot_lm"},
-                  "lpl": {"eRC": "1491", "file_format": "godot_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "1491", "file_format": "godot_lm"}}
       }
     },
 
@@ -33,8 +30,7 @@
       "subtree": "ISRAEL/Data",
       "scintillators": {
         "000000": {
-                  "mpl": {"eRC": "5069", "file_format": "thor_lm"},
-                  "default": "mpl"}
+                  "mpl": {"eRC": "5069", "file_format": "thor_lm"}}
       }
     },
 
@@ -43,8 +39,7 @@
       "scintillators": {
         "000000": {
                   "ipl": {"eRC": "4194", "file_format": "thor_lm"},
-                  "nai": {"eRC": "4179", "file_format": "thor_lm"},
-                  "default": "ipl"}
+                  "nai": {"eRC": "4179", "file_format": "thor_lm"}}
       }
     },
 
@@ -52,8 +47,7 @@
       "subtree": "SANTIS/Data",
       "scintillators": {
         "000000": {
-                  "lpl": {"eRC": "2549", "file_format": "ssv_nrl_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "2549", "file_format": "ssv_nrl_lm"}}
       }
     },
 
@@ -62,8 +56,7 @@
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "4193", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "2549", "file_format": "json_nrl_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "2549", "file_format": "json_nrl_lm"}}
       }
     },
 
@@ -74,8 +67,7 @@
                   "nai": {"eRC": "4179", "file_format": "thor_lm"},
                   "spl": {"eRC": "4194", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4189", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4195", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "4195", "file_format": "thor_lm"}}
       }
     },
     "THOR2": {
@@ -85,14 +77,12 @@
                   "nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
                   "spl": {"eRC": "4176", "file_format": "ssv_nrl_lm"},
                   "mpl": {"eRC": "4167", "file_format": "ssv_nrl_lm"},
-                  "lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"},
-                  "default": "lpl"},
+                  "lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"}},
         "230316": {
                   "nai": {"eRC": "4182", "file_format": "thor_lm"},
                   "spl": {"eRC": "4172", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4167", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4187", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "4187", "file_format": "thor_lm"}}
       }
     },
 
@@ -103,8 +93,7 @@
                   "nai": {"eRC": "4169", "file_format": "thor_lm"},
                   "spl": {"eRC": "4175", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4174", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4185", "file_format": "thor_lm"},
-                  "default": "lpl "}
+                  "lpl": {"eRC": "4185", "file_format": "thor_lm"}}
       }
     },
 
@@ -115,8 +104,7 @@
                   "nai": {"eRC": "4177", "file_format": "thor_lm"},
                   "spl": {"eRC": "4191", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4192","file_format": "thor_lm"},
-                  "lpl": {"eRC": "4181", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "4181", "file_format": "thor_lm"}}
       }
     },
 
@@ -127,14 +115,12 @@
                   "nai": {"eRC": "4188", "file_format": "thor_lm"},
                   "spl": {"eRC": "4190", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4178", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4173", "file_format": "thor_lm"},
-                  "default": "lpl"},
+                  "lpl": {"eRC": "4173", "file_format": "thor_lm"}},
         "221109": {
                   "nai": {"eRC": "4188", "file_format": "thor_lm"},
                   "spl": {"eRC": "4190", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4169", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4173", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "4173", "file_format": "thor_lm"}}
       }
     },
 
@@ -145,8 +131,7 @@
                   "nai": {"eRC": "4186", "file_format": "thor_lm"},
                   "spl": {"eRC": "4176", "file_format": "thor_lm"},
                   "mpl": {"eRC": "4183", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4180", "file_format": "thor_lm"},
-                  "default": "lpl"}
+                  "lpl": {"eRC": "4180", "file_format": "thor_lm"}}
       }
     },
 
@@ -154,14 +139,13 @@
       "subtree": "TRIGGER/Data",
       "scintillators": {
         "000000": {
-                  "mpl": {"eRC": "4168", "file_format": "thor_lm"},
-                  "default": "mpl"
+                  "mpl": {"eRC": "4168", "file_format": "thor_lm"}
         }
       }
     }
   },
 
-  "scintillator_priority" : ["lpl", "ipl", "spl", "nai", "mpl", "gpl"],
+  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"],
 
   "lm_extensions" : [".csv", ".txt"],
 

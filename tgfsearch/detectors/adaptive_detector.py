@@ -15,7 +15,7 @@ class AdaptiveDetector(Detector):
         """Resets everything back to its default state (no identity)."""
         self.clear()
         self._has_identity = False
-        self._results_loc = self._results_loc.replace(f'Results/{self.unit}', 'Results/ADAPTIVE')
+        self._export_loc = self._export_loc.replace(f'Results/{self.unit}', 'Results/ADAPTIVE')
         self.unit = 'ADAPTIVE'
         self._scintillators.clear()
         self.scint_list.clear()
@@ -31,28 +31,28 @@ class AdaptiveDetector(Detector):
         parent_dirs = all_files[0].replace('\\', '/').split('/')[:-1]
         if len(parent_dirs) >= 3:
             self.unit = parent_dirs[-3].upper()
-            # Regenerating deployment info and results directory with the new name
+            # Regenerating deployment info and results directory based on the new name
             self.deployment = self._get_deployment()
-            self._results_loc = self._results_loc.replace('Results/ADAPTIVE', f'Results/{self.unit}')
+            self._export_loc = self._export_loc.replace('Results/ADAPTIVE', f'Results/{self.unit}')
 
-        # Getting the default growth factors (using Thor format because it's the most likely)
         try:
             with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
                       'r') as config_file:
                 entries = json.load(config_file)
 
-                # Getting the default growth factors (using Thor format because it's the most likely)
-                default_lm_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
-                default_trace_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
-
-                # Getting all supported scintillators and their priorities (greatest to least)
-                scintillator_priority = entries['scintillator_priority']
-
         except json.decoder.JSONDecodeError:
             raise SyntaxError('invalid syntax in detector config file.')
 
+        # Getting the default growth factors (using Thor format because it's the most likely)
+        default_lm_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
+        default_trace_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
+
+        # Getting all supported scintillators and their priorities (greatest to least)
+        scintillator_priority = entries['scintillator_priority']
+
         # Attempting to infer scintillator configuration based on the data files present
         # Walking each file to determine its corresponding scintillator
+        scintillator_numbers = {}
         for file in all_files:
             index = 0
             for i in range(len(file) - 1, 0, -1):
@@ -61,23 +61,23 @@ class AdaptiveDetector(Detector):
 
                 index = i
 
-            # Making a new Scintillator if one doesn't exist already
+            # Recording the scintillator name and eRC number if it hasn't been seen yet
             scintillator = file[index + 7: index + 10]
             if scintillator not in scintillator_priority:
                 raise ValueError('unknown or unsupported scintillator type')
 
-            if scintillator not in self._scintillators:
-                eRC = file[index + 3: index + 7]
-                self._scintillators[scintillator] = Scintillator(scintillator, eRC)
-                self.lm_growth_factors[scintillator] = default_lm_growth
-                self.trace_growth_factors[scintillator] = default_trace_growth
+            if scintillator not in scintillator_numbers:
+                scintillator_numbers[scintillator] = file[index + 3: index + 7]  # Recording the eRC number
                 self.scint_list.append(scintillator)
 
-        # Assigning the default scintillator based on the above priority
-        for scint in scintillator_priority:
-            if scint in self._scintillators:
-                self.default_scintillator = scint
-                break
+        # Putting the scintillators in the correct order of priority
+        self.scint_list.sort(key=lambda scint: scintillator_priority.index(scint))
+
+        # Making the scintillator objects
+        for scintillator in self.scint_list:
+            self._scintillators[scintillator] = Scintillator(scintillator, scintillator_numbers[scintillator])
+            self.lm_growth_factors[scintillator] = default_lm_growth
+            self.trace_growth_factors[scintillator] = default_trace_growth
 
         self._has_identity = True
 
@@ -90,7 +90,7 @@ class AdaptiveDetector(Detector):
         clone = type(self)(self.date_str)
         if self.has_identity:
             clone._import_loc = self._import_loc
-            clone._results_loc = self._results_loc
+            clone._export_loc = self._export_loc
             clone._infer_identity()
 
         return clone

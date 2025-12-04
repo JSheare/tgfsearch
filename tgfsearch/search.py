@@ -98,7 +98,7 @@ def get_modes(mode_info):
     # Custom mode (use custom import and/or export directories
     modes['custom'] = True if '-c' in mode_info else False
 
-    # Onescint mode (only the default scintillator will be checked by the short event search algorithm)
+    # Onescint mode (only the highest priority scintillator will be checked by the short event search algorithm)
     modes['onescint'] = True if '--onescint' in mode_info else False
 
     # Pickle mode
@@ -130,7 +130,7 @@ def log_error(detector, modes, ex):
     tl.print_logger('\n', detector.log)
     tl.print_logger(f'Search could not be completed due to the following error: {ex}', detector.log)
     tl.print_logger('See error log for details.', detector.log)
-    with open(f'{detector.get_results_loc()}/err.txt', 'w') as err_file:
+    with open(f'{detector.get_export_loc()}/err.txt', 'w') as err_file:
         print('Info:', file=err_file)
         print(f'{detector.date_str} {detector.unit}', file=err_file)
         for mode in modes:
@@ -144,7 +144,7 @@ def log_error(detector, modes, ex):
 def plot_traces(detector, scintillator, trace_names):
     if trace_names:
         # Makes the trace plot path
-        plot_path = f'{detector.get_results_loc()}/traces'
+        plot_path = f'{detector.get_export_loc()}/traces'
         tl.make_path(plot_path)
         for trace_name in trace_names:
             trace = detector.get_trace(scintillator, trace_name, deepcopy=False)
@@ -368,9 +368,7 @@ def calculate_se_score(detector, event, weather_cache, times, energies):
 
     # Calculating the recording the weather subscore
     if detector.deployment['weather_station'] != '':
-        local_date, local_time = tl.convert_to_local(detector, times[event.start])
-        event.weather_conditions = tl.get_weather_conditions(detector, local_date, local_time,
-                                                             weather_cache=weather_cache)
+        event.weather_conditions = tl.get_weather_conditions(detector, times[event.start], weather_cache=weather_cache)
         match event.weather_conditions:
             case 'lightning or hail':
                 event.weather_subscore = 1
@@ -573,7 +571,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     # Note: with this code, if an event happens in that 200-300 seconds of the next day that are included in the
     # last file, the image will have the wrong date in its name (though the timestamp in the scatter plot title will
     # always be correct)
-    scatter_path = f'{detector.get_results_loc()}/scatter_plots'
+    scatter_path = f'{detector.get_export_loc()}/scatter_plots'
     tl.make_path(scatter_path)
     event_num_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.number)))
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
@@ -590,7 +588,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
 
 # Makes the json file for a short event
 def make_se_json(detector, event, times, energies, count_scints):
-    event_path = f'{detector.get_results_loc()}/event_files/short_events/'
+    event_path = f'{detector.get_export_loc()}/event_files/short_events/'
     tl.make_path(event_path)
     event_dict = dict()
     event_dict['SecondsOfDay'] = times[event.start:event.stop].tolist()
@@ -629,7 +627,7 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
         rollgap = round(params.INDIV_ROLLGAP + num_scintillators * params.ROLLGAP_CONTRIBUTION)
 
     for i in range(len(detector.scint_list)):
-        if not modes['allscints'] and detector.scint_list[i] != detector.default_scintillator:
+        if not detector.data_present_in(detector.scint_list[i]) or (not modes['allscints'] and i > 0):
             continue
 
         tl.print_logger('', detector.log)
@@ -714,8 +712,11 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
                 print(f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)} UTC '
                       f'({start_second} seconds of day) - weather: {event.weather_conditions}',
                       file=detector.log)
-                print(f'    Score: {event.total_score}, Rank: {event.rank}, Subscores: [Length: {event.len_subscore}, '
-                      f'Clumpiness: {event.clumpiness_subscore}, HEL: {event.hel_subscore}]\n',
+                print(f'    Score: {event.total_score}, Rank: {event.rank}, Subscores: '
+                      f'[Length: {event.len_subscore}, '
+                      f'Clumpiness: {event.clumpiness_subscore}, '
+                      f'HEL: {event.hel_subscore}, '
+                      f'Weather: {event.weather_subscore}]\n',
                       file=detector.log)
 
                 # Makes the scatter plot for the event
@@ -749,8 +750,8 @@ def get_le_scint_prefs(detector):
                 preferences.append(scintillator)
 
         return preferences
-    else:
-        return [detector.default_scintillator]
+
+    return []
 
 
 # Makes histogram used in long event search. If possible, cuts out counts below a certain energy
@@ -1019,7 +1020,7 @@ def find_le_files(detector, le_scint_list, event):
 
 # Makes the text file for a long event
 def make_le_txt(detector, event, bin_size, event_num):
-    event_path = f'{detector.get_results_loc()}/event_files/long_events/{bin_size}_sec_bins/'
+    event_path = f'{detector.get_export_loc()}/event_files/long_events/{bin_size}_sec_bins/'
     tl.make_path(event_path)
     timestamp = dt.datetime.fromtimestamp(event.start_sec + detector.first_sec, dt.UTC)
     with open(f'{event_path}/'
@@ -1137,7 +1138,7 @@ def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
 
     # Saves the histogram(s):
     tl.print_logger('Saving Histogram...', detector.log)
-    hist_path = f'{detector.get_results_loc()}'
+    hist_path = f'{detector.get_export_loc()}'
     tl.make_path(hist_path)
     figure.savefig(f'{hist_path}/'
                    f'{detector.date_str}_'
@@ -1237,13 +1238,18 @@ def make_chunks(detector):
     lm_filelists = {scintillator: detector.get_attribute(scintillator, 'lm_filelist')
                     for scintillator in detector}
 
-    # Making the partition points using the default scintillator filelist. Using the times of files ensures that we're
-    # partitioning the day according to the data's approximate density, and we have to use the default scintillator
-    # to ensure that default scintillator data is present in every chunk
-    if len(lm_filelists[detector.default_scintillator]) == 0:
-        raise FileNotFoundError('data missing for one or more scintillators.')
+    # Making the partition points using the filelist of the highest priority scintillator. Using the times of files
+    # ensures that we're partitioning the day according to the data's approximate density
+    best_scintillator = ''
+    for scintillator in detector:
+        if len(lm_filelists[scintillator]) > 0:
+            best_scintillator = scintillator
+            break
 
-    partition_points = ([0] + [int(tl.file_timestamp(file)) for file in lm_filelists[detector.default_scintillator]] +
+    if best_scintillator == '':
+        raise FileNotFoundError('no data present.')
+
+    partition_points = ([0] + [int(tl.file_timestamp(file)) for file in lm_filelists[best_scintillator]] +
                         [240000])
 
     # For each scintillator, mapping traces to their corresponding list mode files and mapping sets of the list
@@ -1348,7 +1354,7 @@ def program(first_date, second_date, unit, mode_info):
 
                     export_index = index + 2
                     if mode_info[export_index] != 'none' and mode_info[export_index] != '/':
-                        detector.set_results_loc(mode_info[export_index])
+                        detector.set_export_loc(mode_info[export_index])
 
             if not detector.has_identity():
                 raise FileNotFoundError("couldn't infer identity.")
@@ -1359,7 +1365,7 @@ def program(first_date, second_date, unit, mode_info):
             exit()
 
         # Logs relevant data files and events in a .txt File
-        log_path = f'{detector.get_results_loc()}'
+        log_path = f'{detector.get_export_loc()}'
         tl.make_path(log_path)
         log = open(f'{log_path}/log.txt', 'w')
         print(f'{tl.short_to_full_date(date_str)}:', file=log)
@@ -1368,7 +1374,7 @@ def program(first_date, second_date, unit, mode_info):
         try:
             # Imports the data
             if modes['pickle']:  # In pickle mode: reads the pickle file, or exports one if it doesn't exist yet
-                pickle_paths = glob.glob(f'{detector.get_results_loc()}/detector.pickle')
+                pickle_paths = glob.glob(f'{detector.get_export_loc()}/detector.pickle')
                 if len(pickle_paths) > 0:
                     detector = tl.unpickle_detector(pickle_paths[0])
                     detector.log = log
@@ -1395,8 +1401,8 @@ def program(first_date, second_date, unit, mode_info):
                 trace_dict = {scintillator: [] for scintillator in detector}
 
             # Checks to see that necessary list mode data is present
-            if not detector.data_present_in(detector.default_scintillator):
-                raise FileNotFoundError('data missing for one or more scintillators.')
+            if not detector:
+                raise FileNotFoundError('no data present.')
 
             # Short event search
             if not modes['skshort']:
@@ -1414,16 +1420,20 @@ def program(first_date, second_date, unit, mode_info):
                 tl.print_logger('\n', detector.log)
                 tl.print_logger('Starting search for glows...', detector.log)
 
-                # Choosing whether to use preferred scintillators for long event search based on whether they have data
-                le_scint_prefs = get_le_scint_prefs(detector)
+                # Choosing whether to use preferred scintillators for the long event search based on whether they have
+                # data present
                 le_scint_list = []
-                for scintillator in le_scint_prefs:
+                for scintillator in get_le_scint_prefs(detector):
                     if detector.data_present_in(scintillator):
                         le_scint_list.append(scintillator)
 
-                # Uses default scintillator data if data isn't present in any of the preferred scintillators
+                # In the case that either 1) there aren't any preferred scintillators or 2) none of the preferred
+                # scintillators have data present, we instead use the highest priority scintillator with data present
                 if len(le_scint_list) == 0:
-                    le_scint_list.append(detector.default_scintillator)
+                    for scintillator in detector:
+                        if detector.data_present_in(scintillator):
+                            le_scint_list.append(scintillator)
+                            break
 
                 print(f'Using the following scintillators: {", ".join(le_scint_list)}', file=detector.log)
 
@@ -1458,7 +1468,7 @@ def program(first_date, second_date, unit, mode_info):
 
         except FileNotFoundError:  # Missing necessary data
             tl.print_logger('\n', detector.log)
-            tl.print_logger('No/missing necessary data for specified day.', detector.log)
+            tl.print_logger('No/missing data for specified day.', detector.log)
 
         except Exception as ex:  # Logging errors
             log_error(detector, modes, ex)
@@ -1485,8 +1495,7 @@ def program(first_date, second_date, unit, mode_info):
                 print('Importing data...')
 
                 chunk_num = 1
-                has_data = True
-                le_scint_data = {scintillator: False for scintillator in get_le_scint_prefs(detector)}
+                scint_data = {scintillator: False for scintillator in detector}
                 # Passes reader objects between chunks
                 reader_dict = {scintillator: chunk_list[0].get_attribute(scintillator, 'reader', deepcopy=False)
                                for scintillator in chunk_scint_list}
@@ -1502,14 +1511,10 @@ def program(first_date, second_date, unit, mode_info):
                     tl.print_logger(f'Chunk {chunk_num} (of {num_chunks}):', detector.log)
                     chunk.import_data(existing_filelists=True, clean_energy=modes['clnenrg'], feedback=True)
 
-                    # Checking that data is present in the necessary scintillators
-                    if not chunk.data_present_in(chunk.default_scintillator):
-                        has_data = False
-
-                    # Checking that data is present in the preferred scintillators for the long event search
-                    for scintillator in le_scint_data:
-                        if not le_scint_data[scintillator]:
-                            le_scint_data[scintillator] = chunk.data_present_in(scintillator)
+                    # Keeping track of which scintillators have data in at least one chunk
+                    for scintillator in chunk:
+                        if not scint_data[scintillator]:
+                            scint_data[scintillator] = chunk.data_present_in(scintillator)
 
                     # Makes a full list of filetime extrema for long event search
                     for scintillator in chunk:
@@ -1543,9 +1548,14 @@ def program(first_date, second_date, unit, mode_info):
                     for chunk_path in chunk_path_list:
                         chunk_trace_dicts[chunk_path] = {scintillator: [] for scintillator in chunk_scint_list}
 
-                # Skips the day if necessary list mode data is missing in any of the chunks
-                if not has_data:
-                    raise FileNotFoundError('data missing for one or more scintillators.')
+                # Skips the day if data is missing
+                data_present = False
+                for scintillator in scint_data:
+                    if not data_present:
+                        data_present = scint_data[scintillator]
+
+                if not data_present:
+                    raise FileNotFoundError('no data present.')
 
                 # Short event search
                 if not modes['skshort']:
@@ -1574,14 +1584,20 @@ def program(first_date, second_date, unit, mode_info):
                     tl.print_logger('\n', detector.log)
                     tl.print_logger('Starting search for glows...', detector.log)
                     le_scint_list = []
-                    # Scintillator will be used if it has data in at least one chunk
-                    for scintillator in le_scint_data:
-                        if le_scint_data[scintillator]:
+                    # Choosing whether to use preferred scintillators for the long event search based on whether they
+                    # have data present in at least one chunk
+                    for scintillator in get_le_scint_prefs(detector):
+                        if scint_data[scintillator]:
                             le_scint_list.append(scintillator)
 
-                    # Otherwise, default scintillator data will be used
+                    # In the case that either 1) there aren't any preferred scintillators or 2) none of the preferred
+                    # scintillators have data present, we instead use the highest priority scintillator with
+                    # data present
                     if len(le_scint_list) == 0:
-                        le_scint_list.append(detector.default_scintillator)
+                        for scintillator in scint_data:
+                            if scint_data[scintillator]:
+                                le_scint_list.append(scintillator)
+                                break
 
                     # Determining the end point of the histogram based on the last counts of each scintillator. Using
                     # the earliest to ensure that the last bin has data from all scintillators
@@ -1621,7 +1637,7 @@ def program(first_date, second_date, unit, mode_info):
 
             except FileNotFoundError:  # Missing necessary data
                 tl.print_logger('\n', detector.log)
-                tl.print_logger('No/missing necessary data for specified day.', detector.log)
+                tl.print_logger('No/missing data for specified day.', detector.log)
 
             except Exception as ex:  # Logging errors
                 log_error(detector, modes, ex)

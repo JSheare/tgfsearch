@@ -1,10 +1,12 @@
 """Tools for use by the TGF search program and its modules."""
 import datetime as dt
+import io as io
 import numpy as np
 import os as os
 import pandas as pd
 import pickle as pickle
 import struct as struct
+import zoneinfo as zi
 from selenium import webdriver as webdriver
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
@@ -262,7 +264,7 @@ def pickle_detector(detector, file_name, path=None):
         The name of the pickle file.
     path : str
         Optional. The directory where the pickle file will be saved. If not provided, the file will be saved
-            to the Detector's daily results directory.
+            to the Detector's export directory.
 
     Returns
     -------
@@ -272,7 +274,7 @@ def pickle_detector(detector, file_name, path=None):
     """
 
     if path is None:
-        path = f'{detector.get_results_loc()}'
+        path = f'{detector.get_export_loc()}'
 
     make_path(path)
 
@@ -307,260 +309,6 @@ def unpickle_detector(pickle_path):
     return detector
 
 
-def convert_to_local(detector, event_time):
-    """Converts the Detector date and event time to what they would actually be in local time.
-
-    Parameters
-    ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector where the date is stored.
-    event_time : float
-        The time of the day when the event occurred in seconds since the beginning of the day.
-
-    Returns
-    -------
-    tuple[str, float]
-        An updated date in local time and an updated event time in local time.
-
-    """
-
-    date_str = detector.date_str
-    timezone_conversion = detector.deployment['utc_to_local']
-
-    # Just in case the event happened in the ~300 seconds of the next day typically included in the dataset
-    if event_time > params.SEC_PER_DAY:
-        event_time -= params.SEC_PER_DAY
-        date_str = roll_date_forward(date_str)
-
-    # Corrects the UTC conversion if we're in daylight savings time
-    if detector.deployment['dst_in_region']:
-        timezone_conversion = dst_conversion(date_str, event_time, timezone_conversion)
-
-    # If the event happened the next day local time
-    if (event_time + (params.SEC_PER_HOUR * timezone_conversion)) > params.SEC_PER_DAY:
-        date_str = roll_date_forward(date_str)
-        event_time = (event_time + (params.SEC_PER_HOUR * timezone_conversion)) - params.SEC_PER_DAY
-    # If the event happened the previous day local time
-    elif (event_time + (params.SEC_PER_HOUR * timezone_conversion)) < 0:
-        date_str = roll_date_backward(timezone_conversion)
-        event_time = (event_time + (params.SEC_PER_HOUR * timezone_conversion)) + params.SEC_PER_DAY
-    else:
-        event_time = event_time + (params.SEC_PER_HOUR * timezone_conversion)
-
-    return short_to_full_date(date_str), event_time
-
-
-def scrape_weather(full_date_str, station):
-    """Scrapes weather from weather underground and returns the results as a pandas data frame.
-
-    Parameters
-    ----------
-    full_date_str : str
-        The date that weather data is being requested for in yyyy-mm-dd format.
-    station : str
-        The four-letter name of the weather station that data is being requested for.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        A pandas dataframe with weather information for the specified day.
-
-    """
-
-    try:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Runs chrome in headless mode (no browser tab)
-        # The below options prevent an annoying logging entry from being printed to stdout
-        chrome_options.add_experimental_option("excludeSwitches", ['enable-logging'])
-        chrome_options.add_argument("--log-level=3")
-        chrome_options.set_capability("browserVersion", "117")
-        chrome_options.add_argument("start-maximized")
-
-        driver = webdriver.Chrome(options=chrome_options)
-
-        url = f'https://www.wunderground.com/history/daily/{station.upper()}/date/{full_date_str}'
-        driver.get(url)
-        tables = WebDriverWait(driver, 20).until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, "table")))
-
-        table = pd.read_html(tables[1].get_attribute('outerHTML'))[0]
-
-        return table.dropna()  # This is a dataframe containing the table we want
-    except:
-        return pd.DataFrame()
-
-
-def get_weather_conditions(detector, full_date_str, event_time, weather_cache=None):
-    """Scrapes weather underground and returns the weather around the time of an event.
-
-    Parameters
-    ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector that contains the name of the nearest weather station.
-    full_date_str : str
-        The date that the event occurred on (in local time) in yyyy-mm-dd format.
-    event_time : float
-        The time that the event occurred at during the day (in local time) in units of seconds since beginning of day.
-    weather_cache : dict
-       Optional. A cache containing weather tables that have already been retrieved. The keys are dates in
-       yyyy-mm-dd format.
-
-    Returns
-    -------
-    str
-        The weather conditions around the time of the event as a string.
-
-    """
-
-    if weather_cache is None:
-        weather_cache = {}
-
-    if full_date_str in weather_cache and weather_cache[full_date_str] is not None:
-        weather_table = weather_cache[full_date_str]
-    else:
-        weather_table = scrape_weather(full_date_str, detector.deployment['weather_station'])
-        weather_cache[full_date_str] = weather_table
-
-    # If changing weather scores here remember to update them in weather_from_score below
-    if not weather_table.empty:
-        # Finds the time in the table that's closest to the time of the event
-        index = 0
-        best_diff = float('inf')
-        best_index = 0
-        for clock_hour in weather_table['Time']:
-            if not isinstance(clock_hour, float):
-                time_sec = convert_clock_hour(clock_hour)
-                time_diff = abs(event_time - time_sec)
-                if time_diff < best_diff:
-                    best_diff = time_diff
-                    best_index = index
-            else:
-                break
-
-            index += 1
-
-        # Gets the weather conditions at the closest hour to the event and the surrounding hour_padding hours
-        weather = []
-        for i in range(best_index - params.WEATHER_PADDING, best_index + params.WEATHER_PADDING + 1):
-            if 0 <= i < index:
-                weather.append(weather_table['Condition'][i])
-            else:
-                weather.append(None)
-
-        heavy_rain = False
-        rain = False
-        for condition in weather:
-            if condition:
-                for variation in ['Thunder', 'T-Storm', 'Storm', 'Lightning', 'Hail']:
-                    if variation in condition:
-                        return 'lightning or hail'
-
-                if 'Heavy' in condition:
-                    heavy_rain = True
-                elif 'Rain' in condition:
-                    rain = True
-
-        if heavy_rain:
-            return 'heavy rain'
-        elif rain:
-            return 'light rain'
-
-        return 'fair'
-    else:
-        return 'error getting weather data'
-
-
-def dst_status(date_str):
-    """Returns string statuses depending on whether a day falls inside/outside/on the edge of dst.
-
-    Parameters
-    ----------
-    date_str : str
-        The date to be checked in yymmdd format.
-
-    Returns
-    -------
-    str
-        A status for the date: 'inside' if the date is inside dst, 'outside' if out, or 'beginning'/'end' for
-        the boundaries.
-
-    """
-
-    year = int(params.CENTURY + date_str[0:2])
-    month = int(date_str[2:4])
-    day = int(date_str[4:])
-
-    # January, February, and December are never DST
-    if month < 3 or month > 11:
-        return 'outside'
-    # April to October are always DST
-    elif 3 < month < 11:
-        return 'inside'
-    # DST starts on the second Sunday of March (which is always between the 8th and the 14th)
-    elif month == 3:
-        second_sunday = 8 + (6 - dt.datetime(year, month, 8).weekday())
-        if day < second_sunday:
-            return 'outside'
-        elif day > second_sunday:
-            return 'inside'
-        else:
-            return 'beginning'
-    # DST ends on the first Sunday of November (so the previous Sunday must be before the 1st)
-    else:
-        first_sunday = 1 + (6 - dt.datetime(year, month, 1).weekday())
-        if day < first_sunday:
-            return 'inside'
-        elif day > first_sunday:
-            return 'outside'
-        else:
-            return 'end'
-
-
-def dst_conversion(date_str, event_time, timezone_conversion):
-    """Returns an updated UTC to local conversion number depending on the given date and time.
-
-    Parameters
-    ----------
-    date_str : str
-        The date to be converted in yymmdd format.
-    event_time : float
-        The time that the event occurred in units of seconds since the beginning of the day.
-    timezone_conversion : int
-        A number giving the hour difference between local time and UTC.
-
-    Returns
-    -------
-    int
-        An updated timezone conversion that accounts for dst.
-
-    """
-
-    temp_time = event_time + (timezone_conversion * params.SEC_PER_HOUR)
-    if temp_time > params.SEC_PER_DAY:
-        temp_time -= params.SEC_PER_DAY
-        temp_date = roll_date_forward(date_str)
-    elif temp_time < 0:
-        temp_time += params.SEC_PER_DAY
-        temp_date = roll_date_backward(date_str)
-    else:
-        temp_date = date_str
-
-    temp_date_status = dst_status(temp_date)
-    if temp_date_status == 'inside':  # Squarely inside dst
-        return timezone_conversion + 1
-    elif temp_date_status == 'outside':  # Squarely outside dst
-        return timezone_conversion
-    elif temp_date_status == 'beginning':  # Beginning of dst (2nd Sunday of March at 2:00AM)
-        if temp_time >= params.TWO_AM:
-            return timezone_conversion + 1
-        else:
-            return timezone_conversion
-    else:  # End of dst (1st Sunday of November at 2:00AM)
-        if (temp_time + params.SEC_PER_HOUR) >= params.TWO_AM:  # + sec_per_hour b/c temp time should be in dst
-            return timezone_conversion
-        else:
-            return timezone_conversion + 1
-
-
 def convert_clock_hour(clock_hour):
     """Converts a timestamp of the form hh:mm AM/PM into seconds since the beginning of the day."""
 
@@ -577,6 +325,172 @@ def convert_clock_hour(clock_hour):
         hour += 12
 
     return float((hour * params.SEC_PER_HOUR) + (minute * 60))
+
+
+def get_weather_table(local_date, deployment_info):
+    """Scrapes weather data from the internet and returns the results as a pandas data frame.
+
+    Parameters
+    ----------
+    local_date : str
+        The local date that weather data is being requested for in yyyy-mm-dd format.
+    deployment_info : dict
+        A dictionary containing deployment information, including the timezone identifier and weather station callsign.
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame
+        A pandas dataframe with weather information for the given day. Time entries are epoch timestamps. An empty
+        table is returned if the scraping fails.
+
+    """
+
+    local_dt = dt.datetime(int(local_date[0:4]), int(local_date[5:7]), int(local_date[8:10]),
+                           tzinfo=zi.ZoneInfo(deployment_info['tz_identifier']))
+    try:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # Runs chrome in headless mode (no browser tab)
+        # The below options prevent an annoying logging entry from being printed to stdout
+        chrome_options.add_experimental_option("excludeSwitches", ['enable-logging'])
+        chrome_options.add_argument("--log-level=3")
+        chrome_options.set_capability("browserVersion", "117")
+        chrome_options.add_argument("start-maximized")
+
+        driver = webdriver.Chrome(options=chrome_options)
+
+        url = (f'https://www.wunderground.com/history/daily/'
+                   f'{deployment_info["weather_station"]}/date/{local_dt.date()}')
+
+        driver.get(url)
+        tables = WebDriverWait(driver, 20).until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, "table")))
+        table = pd.read_html(io.StringIO(tables[1].get_attribute('outerHTML')))[0].dropna()
+    except:
+        return pd.DataFrame()
+
+    local_daystart_timestamp = (local_dt.timestamp() - (local_dt.hour * params.SEC_PER_HOUR) - (local_dt.minute * 60) -
+                                local_dt.second - (local_dt.microsecond * 1e-6))
+    table['Time'] = [local_daystart_timestamp + convert_clock_hour(hour) for hour in table['Time']]
+    return table
+
+
+def assemble_weather_info(detector, event_time, weather_cache):
+    """Returns a table of weather information from around the vicinity of the given event time. The function will
+    attempt to make a table with at least +/- params.WEATHER_PADDING hours around the given time. An empty table will be
+    returned if no information could be retrieved."""
+    event_timestamp = event_time + detector.first_sec
+    local_dt = dt.datetime.fromtimestamp(event_timestamp).astimezone(zi.ZoneInfo(detector.deployment['tz_identifier']))
+    local_date = local_dt.date()
+    local_date_str = str(local_date)
+    if local_date_str in weather_cache:
+        table = weather_cache[local_date_str]
+    else:
+        table = get_weather_table(local_date_str, detector.deployment)
+        # Returning an empty table immediately to avoid erroneously caching it and/or concatenating with it
+        if table.empty:
+            return table
+
+        weather_cache[local_date_str] = table
+
+    # Checking to see if we need to retrieve weather data from the previous local day based on the window size
+    left_dt = dt.datetime.fromtimestamp(
+        event_timestamp - params.WEATHER_PADDING * params.SEC_PER_HOUR).astimezone(
+        zi.ZoneInfo(detector.deployment['tz_identifier']))
+    left_date = left_dt.date()
+    left_date_str = str(left_date)
+    if left_date < local_date:
+        if left_date_str not in weather_cache:
+            left_table = get_weather_table(left_date_str, detector.deployment)
+            # If this table is empty, concatenation will fail. To avoid this, and to avoid caching the empty table, we
+            # just return the table that we already have
+            if left_table.empty:
+                return table
+
+            weather_cache[left_date_str] = left_table
+
+        return pd.concat([weather_cache[left_date_str], table])
+
+    # Checking to see if we need to retrieve weather data from the next local day based on the window size
+    right_dt = dt.datetime.fromtimestamp(
+        event_timestamp + params.WEATHER_PADDING * params.SEC_PER_HOUR).astimezone(
+        zi.ZoneInfo(detector.deployment['tz_identifier']))
+    right_date = right_dt.date()
+    right_date_str = str(right_date)
+    if right_date > local_date:
+        if right_date_str not in weather_cache:
+            right_table = get_weather_table(right_date_str, detector.deployment)
+            # If this table is empty, concatenation will fail. To avoid this, and to avoid caching the empty table, we
+            # just return the table that we already have
+            if right_table.empty:
+                return table
+
+            weather_cache[right_date_str] = right_table
+
+        return pd.concat([table, weather_cache[right_date_str]])
+
+    return table
+
+
+def get_weather_conditions(detector, event_time, weather_cache=None):
+    """Scrapes weather underground and returns the weather around the time of an event.
+
+    Parameters
+    ----------
+    detector : tgfsearch.detectors.detector.Detector
+        The Detector that contains the name of the nearest weather station.
+    event_time : float
+        The time that the event occurred at during the day in units of seconds since beginning of day.
+    weather_cache : dict
+       Optional. A cache containing weather tables that have already been retrieved. The keys are local dates in
+       yyyy-mm-dd format.
+
+    Returns
+    -------
+    str
+        The weather conditions around the time of the event as a string.
+
+    """
+
+    weather_table = assemble_weather_info(detector, event_time, weather_cache)
+    if not weather_table.empty:
+        # Finds the time in the table that's closest to the time of the event
+        event_timestamp = event_time + detector.first_sec
+        index = 0
+        best_diff = float('inf')
+        best_index = 0
+        for timestamp in weather_table['Time']:
+            diff = abs(event_timestamp - timestamp)
+            if diff < best_diff:
+                best_diff = diff
+                best_index = index
+
+            index += 1
+
+        # Gets the weather conditions at the closest hour to the event and the surrounding params.WEATHER_PADDING hours
+        weather = []
+        for i in range(best_index - params.WEATHER_PADDING, best_index + params.WEATHER_PADDING + 1):
+            if 0 <= i < index:
+                weather.append(weather_table['Condition'][i])
+
+        heavy_rain = False
+        rain = False
+        for condition in weather:
+            for variation in ['Thunder', 'T-Storm', 'Storm', 'Lightning', 'Hail']:
+                if variation in condition:
+                    return 'lightning or hail'
+
+                if 'Heavy' in condition:
+                    heavy_rain = True
+                elif 'Rain' in condition:
+                    rain = True
+
+        if heavy_rain:
+            return 'heavy rain'
+        elif rain:
+            return 'light rain'
+
+        return 'fair'
+    else:
+        return 'error getting weather data'
 
 
 def combine_data(detector):

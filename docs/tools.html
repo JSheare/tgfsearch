@@ -18,14 +18,16 @@
 <tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><table><tr><td class="multicolumn"><a href="datetime.html">datetime</a><br>
 <a href="selenium.webdriver.support.expected_conditions.html">selenium.webdriver.support.expected_conditions</a><br>
-<a href="numpy.html">numpy</a><br>
-</td><td class="multicolumn"><a href="os.html">os</a><br>
+<a href="io.html">io</a><br>
+</td><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+<a href="os.html">os</a><br>
 <a href="tgfsearch.parameters.html">tgfsearch.parameters</a><br>
-<a href="pandas.html">pandas</a><br>
-</td><td class="multicolumn"><a href="pickle.html">pickle</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+<a href="pickle.html">pickle</a><br>
 <a href="struct.html">struct</a><br>
-<a href="selenium.webdriver.html">selenium.webdriver</a><br>
-</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+</td><td class="multicolumn"><a href="selenium.webdriver.html">selenium.webdriver</a><br>
+<a href="zoneinfo.html">zoneinfo</a><br>
+</td></tr></table></td></tr></table><p>
 <table class="section">
 <tr class="decor functions-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
@@ -49,6 +51,9 @@ Returns<br>
 tuple[numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;numpy&nbsp;arrays.&nbsp;The&nbsp;first&nbsp;contains&nbsp;the&nbsp;aligned&nbsp;trace&nbsp;times&nbsp;in&nbsp;seconds&nbsp;of&nbsp;day,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;second&nbsp;contains&nbsp;the&nbsp;bit-corrected&nbsp;trace&nbsp;pulse&nbsp;magnitude.</span></dd></dl>
+ <dl><dt><a name="-assemble_weather_info"><strong>assemble_weather_info</strong></a>(detector, event_time, weather_cache)</dt><dd><span class="code">Returns&nbsp;a&nbsp;table&nbsp;of&nbsp;weather&nbsp;information&nbsp;from&nbsp;around&nbsp;the&nbsp;vicinity&nbsp;of&nbsp;the&nbsp;given&nbsp;event&nbsp;time.&nbsp;The&nbsp;function&nbsp;will<br>
+attempt&nbsp;to&nbsp;make&nbsp;a&nbsp;table&nbsp;with&nbsp;at&nbsp;least&nbsp;+/-&nbsp;params.WEATHER_PADDING&nbsp;hours&nbsp;around&nbsp;the&nbsp;given&nbsp;time.&nbsp;An&nbsp;empty&nbsp;table&nbsp;will&nbsp;be<br>
+returned&nbsp;if&nbsp;no&nbsp;information&nbsp;could&nbsp;be&nbsp;retrieved.</span></dd></dl>
  <dl><dt><a name="-channel_to_mev"><strong>channel_to_mev</strong></a>(energy_array, channels, energies)</dt><dd><span class="code">Uses&nbsp;compton&nbsp;edges/photo&nbsp;peaks&nbsp;obtained&nbsp;from&nbsp;scintillator&nbsp;calibration&nbsp;to&nbsp;convert&nbsp;energy&nbsp;channels&nbsp;into&nbsp;MeV.<br>
 &nbsp;<br>
 Parameters<br>
@@ -84,19 +89,6 @@ tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;scintillator&nbsp;names.&nbsp;Each&nbsp;entry&nbsp;corresponds&nbsp;to&nbsp;the&nbsp;scintillator<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;its&nbsp;corresponding&nbsp;count&nbsp;originated&nbsp;from.</span></dd></dl>
  <dl><dt><a name="-convert_clock_hour"><strong>convert_clock_hour</strong></a>(clock_hour)</dt><dd><span class="code">Converts&nbsp;a&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;form&nbsp;hh:mm&nbsp;AM/PM&nbsp;into&nbsp;seconds&nbsp;since&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;day.</span></dd></dl>
- <dl><dt><a name="-convert_to_local"><strong>convert_to_local</strong></a>(detector, event_time)</dt><dd><span class="code">Converts&nbsp;the&nbsp;Detector&nbsp;date&nbsp;and&nbsp;event&nbsp;time&nbsp;to&nbsp;what&nbsp;they&nbsp;would&nbsp;actually&nbsp;be&nbsp;in&nbsp;local&nbsp;time.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;where&nbsp;the&nbsp;date&nbsp;is&nbsp;stored.<br>
-event_time&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;of&nbsp;the&nbsp;day&nbsp;when&nbsp;the&nbsp;event&nbsp;occurred&nbsp;in&nbsp;seconds&nbsp;since&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;day.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-tuple[str,&nbsp;float]<br>
-&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;updated&nbsp;date&nbsp;in&nbsp;local&nbsp;time&nbsp;and&nbsp;an&nbsp;updated&nbsp;event&nbsp;time&nbsp;in&nbsp;local&nbsp;time.</span></dd></dl>
  <dl><dt><a name="-days_per_month"><strong>days_per_month</strong></a>(month, year)</dt><dd><span class="code">Returns&nbsp;the&nbsp;number&nbsp;of&nbsp;days&nbsp;in&nbsp;the&nbsp;requested&nbsp;month&nbsp;based&nbsp;on&nbsp;the&nbsp;year.<br>
 &nbsp;<br>
 Parameters<br>
@@ -110,33 +102,6 @@ Returns<br>
 -------<br>
 int<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;number&nbsp;of&nbsp;days&nbsp;in&nbsp;the&nbsp;specified&nbsp;month&nbsp;for&nbsp;the&nbsp;specified&nbsp;year.</span></dd></dl>
- <dl><dt><a name="-dst_conversion"><strong>dst_conversion</strong></a>(date_str, event_time, timezone_conversion)</dt><dd><span class="code">Returns&nbsp;an&nbsp;updated&nbsp;UTC&nbsp;to&nbsp;local&nbsp;conversion&nbsp;number&nbsp;depending&nbsp;on&nbsp;the&nbsp;given&nbsp;date&nbsp;and&nbsp;time.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;be&nbsp;converted&nbsp;in&nbsp;yymmdd&nbsp;format.<br>
-event_time&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;event&nbsp;occurred&nbsp;in&nbsp;units&nbsp;of&nbsp;seconds&nbsp;since&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;day.<br>
-timezone_conversion&nbsp;:&nbsp;int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;number&nbsp;giving&nbsp;the&nbsp;hour&nbsp;difference&nbsp;between&nbsp;local&nbsp;time&nbsp;and&nbsp;UTC.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;updated&nbsp;timezone&nbsp;conversion&nbsp;that&nbsp;accounts&nbsp;for&nbsp;dst.</span></dd></dl>
- <dl><dt><a name="-dst_status"><strong>dst_status</strong></a>(date_str)</dt><dd><span class="code">Returns&nbsp;string&nbsp;statuses&nbsp;depending&nbsp;on&nbsp;whether&nbsp;a&nbsp;day&nbsp;falls&nbsp;inside/outside/on&nbsp;the&nbsp;edge&nbsp;of&nbsp;dst.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;be&nbsp;checked&nbsp;in&nbsp;yymmdd&nbsp;format.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;status&nbsp;for&nbsp;the&nbsp;date:&nbsp;'inside'&nbsp;if&nbsp;the&nbsp;date&nbsp;is&nbsp;inside&nbsp;dst,&nbsp;'outside'&nbsp;if&nbsp;out,&nbsp;or&nbsp;'beginning'/'end'&nbsp;for<br>
-&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;boundaries.</span></dd></dl>
  <dl><dt><a name="-file_size"><strong>file_size</strong></a>(file, uncompressed=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;size&nbsp;of&nbsp;the&nbsp;given&nbsp;file&nbsp;in&nbsp;bytes.<br>
 &nbsp;<br>
 Parameters<br>
@@ -168,24 +133,36 @@ list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;requested&nbsp;scintillator.</span></dd></dl>
  <dl><dt><a name="-full_date_to_short"><strong>full_date_to_short</strong></a>(full_date_str)</dt><dd><span class="code">Converts&nbsp;a&nbsp;date&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;yyyy-mm-dd&nbsp;to&nbsp;the&nbsp;form&nbsp;yymmdd.</span></dd></dl>
  <dl><dt><a name="-get_first_sec"><strong>get_first_sec</strong></a>(date_str)</dt><dd><span class="code">Converts&nbsp;the&nbsp;given&nbsp;date&nbsp;string&nbsp;(in&nbsp;yymmdd&nbsp;format)&nbsp;to&nbsp;its&nbsp;first&nbsp;second&nbsp;in&nbsp;EPOCH&nbsp;time.</span></dd></dl>
- <dl><dt><a name="-get_weather_conditions"><strong>get_weather_conditions</strong></a>(detector, full_date_str, event_time, weather_cache=None)</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;underground&nbsp;and&nbsp;returns&nbsp;the&nbsp;weather&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;an&nbsp;event.<br>
+ <dl><dt><a name="-get_weather_conditions"><strong>get_weather_conditions</strong></a>(detector, event_time, weather_cache=None)</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;underground&nbsp;and&nbsp;returns&nbsp;the&nbsp;weather&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;an&nbsp;event.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
 detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;that&nbsp;contains&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;nearest&nbsp;weather&nbsp;station.<br>
-full_date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;that&nbsp;the&nbsp;event&nbsp;occurred&nbsp;on&nbsp;(in&nbsp;local&nbsp;time)&nbsp;in&nbsp;yyyy-mm-dd&nbsp;format.<br>
 event_time&nbsp;:&nbsp;float<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;event&nbsp;occurred&nbsp;at&nbsp;during&nbsp;the&nbsp;day&nbsp;(in&nbsp;local&nbsp;time)&nbsp;in&nbsp;units&nbsp;of&nbsp;seconds&nbsp;since&nbsp;beginning&nbsp;of&nbsp;day.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;time&nbsp;that&nbsp;the&nbsp;event&nbsp;occurred&nbsp;at&nbsp;during&nbsp;the&nbsp;day&nbsp;in&nbsp;units&nbsp;of&nbsp;seconds&nbsp;since&nbsp;beginning&nbsp;of&nbsp;day.<br>
 weather_cache&nbsp;:&nbsp;dict<br>
-&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;cache&nbsp;containing&nbsp;weather&nbsp;tables&nbsp;that&nbsp;have&nbsp;already&nbsp;been&nbsp;retrieved.&nbsp;The&nbsp;keys&nbsp;are&nbsp;dates&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;cache&nbsp;containing&nbsp;weather&nbsp;tables&nbsp;that&nbsp;have&nbsp;already&nbsp;been&nbsp;retrieved.&nbsp;The&nbsp;keys&nbsp;are&nbsp;local&nbsp;dates&nbsp;in<br>
 &nbsp;&nbsp;&nbsp;yyyy-mm-dd&nbsp;format.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;weather&nbsp;conditions&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;the&nbsp;event&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
+ <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(local_date, deployment_info)</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;data&nbsp;from&nbsp;the&nbsp;internet&nbsp;and&nbsp;returns&nbsp;the&nbsp;results&nbsp;as&nbsp;a&nbsp;pandas&nbsp;data&nbsp;frame.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+local_date&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;local&nbsp;date&nbsp;that&nbsp;weather&nbsp;data&nbsp;is&nbsp;being&nbsp;requested&nbsp;for&nbsp;in&nbsp;yyyy-mm-dd&nbsp;format.<br>
+deployment_info&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;deployment&nbsp;information,&nbsp;including&nbsp;the&nbsp;timezone&nbsp;identifier&nbsp;and&nbsp;weather&nbsp;station&nbsp;callsign.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+pandas.core.frame.DataFrame<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;with&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;given&nbsp;day.&nbsp;Time&nbsp;entries&nbsp;are&nbsp;epoch&nbsp;timestamps.&nbsp;An&nbsp;empty<br>
+&nbsp;&nbsp;&nbsp;&nbsp;table&nbsp;is&nbsp;returned&nbsp;if&nbsp;the&nbsp;scraping&nbsp;fails.</span></dd></dl>
  <dl><dt><a name="-is_good_trace"><strong>is_good_trace</strong></a>(trace)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;and&nbsp;False&nbsp;otherwise.<br>
 &nbsp;<br>
 Parameters<br>
@@ -228,7 +205,7 @@ file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;pickle&nbsp;file.<br>
 path&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;directory&nbsp;where&nbsp;the&nbsp;pickle&nbsp;file&nbsp;will&nbsp;be&nbsp;saved.&nbsp;If&nbsp;not&nbsp;provided,&nbsp;the&nbsp;file&nbsp;will&nbsp;be&nbsp;saved<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;the&nbsp;Detector's&nbsp;daily&nbsp;results&nbsp;directory.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;the&nbsp;Detector's&nbsp;export&nbsp;directory.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
@@ -264,19 +241,6 @@ Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;calendar&nbsp;date&nbsp;after&nbsp;the&nbsp;one&nbsp;supplied&nbsp;(in&nbsp;yymmdd&nbsp;format).</span></dd></dl>
- <dl><dt><a name="-scrape_weather"><strong>scrape_weather</strong></a>(full_date_str, station)</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;from&nbsp;weather&nbsp;underground&nbsp;and&nbsp;returns&nbsp;the&nbsp;results&nbsp;as&nbsp;a&nbsp;pandas&nbsp;data&nbsp;frame.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-full_date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;that&nbsp;weather&nbsp;data&nbsp;is&nbsp;being&nbsp;requested&nbsp;for&nbsp;in&nbsp;yyyy-mm-dd&nbsp;format.<br>
-station&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;four-letter&nbsp;name&nbsp;of&nbsp;the&nbsp;weather&nbsp;station&nbsp;that&nbsp;data&nbsp;is&nbsp;being&nbsp;requested&nbsp;for.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-pandas.core.frame.DataFrame<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;with&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;specified&nbsp;day.</span></dd></dl>
  <dl><dt><a name="-separate_data"><strong>separate_data</strong></a>(data, count_scints, start=None, stop=None)</dt><dd><span class="code">Separates&nbsp;combined&nbsp;data&nbsp;from&nbsp;multiple&nbsp;scintillators&nbsp;into&nbsp;separate&nbsp;data&nbsp;for&nbsp;each&nbsp;scintillator.<br>
 &nbsp;<br>
 Parameters<br>
