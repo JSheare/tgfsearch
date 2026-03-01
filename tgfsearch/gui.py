@@ -15,7 +15,7 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import tgfsearch.tools as tl
-from tgfsearch.search import is_valid_search, program
+from tgfsearch.search import search_check, program
 
 
 # Redirects stdout and stderr from the search program. Meant to be run in a subprocess
@@ -27,6 +27,7 @@ def search_program_wrapper(write, first_date, second_date, unit, mode_info):
     if sys.stderr is None:
         sys.stderr = open(os.devnull, 'w')
 
+    # Redirecting stdout into the pipe
     old_stdout_write = sys.stdout.write
     sys.stdout.write = write.send
     try:
@@ -67,35 +68,52 @@ class SearchArgs:
 
 # A class for managing the search and keeping track of all the enqueued search information
 class SearchManager:
-    def __init__(self):
-        self.mode_flags = {}
-        self.search_queue = Queue()  # Queue that holds all the enqueued searches
-        self.search_set = set()  # Set that keeps track of already-enqueued searches so that no duplicates are added
-        self.lock = threading.Lock()  # Mutex to prevent race conditions with a search in progress
-        self.event = threading.Event()  # Event for communicating with the search thread
+    def __init__(self, window, output_queue):
+        self._window = window  # The gui window that the manager belongs to
+        self._output_queue = output_queue  # Queue where output strings will be placed
+
+        self._mode_flags = {}
+        self._search_queue = Queue()  # Queue that holds all the enqueued searches
+        self._search_set = set()  # Set that keeps track of already-enqueued searches so that no duplicates are added
+
+        self._lock = threading.Lock()  # Mutex to prevent race conditions with a search in progress
+        self._running = threading.Event()  # Event that marks an active search
+        self._stop_event = threading.Event()  # Event for stopping the search
 
     # Enables the given mode
     def add_mode(self, mode):
-        with self.lock:
-            self.mode_flags[mode] = True
+        with self._lock:
+            self._mode_flags[mode] = True
 
     # Disables the given mode
     def remove_mode(self, mode):
-        with self.lock:
-            if mode in self.mode_flags:
-                self.mode_flags[mode] = False
+        with self._lock:
+            if mode in self._mode_flags:
+                self._mode_flags[mode] = False
+
+    # Returns the number of searches in the queue
+    def size(self):
+        return self._search_queue.qsize()
+
+    # Puts the passed string onto the output queue and triggers the output event
+    def _output(self, string):
+        self._output_queue.put(string)
+        self._window.event_generate('<<output_event>>', when='tail')
 
     # Enqueues a new search with the given parameters
     def enqueue(self, first_date, second_date, detector, import_loc, export_loc):
-        with self.lock:
+        with self._lock:
             if second_date == 'yymmdd' or second_date == '':
                 second_date = first_date
 
             # If the search command is valid, sets up a SearchArgs object to store it
-            if is_valid_search(first_date, second_date, detector, print_feedback=True):
+            check = search_check(first_date, second_date, detector)
+            if not(check[0]):
+                self._output(check[1] + '\n')
+            else:
                 mode_info = []
-                for mode in self.mode_flags:
-                    if self.mode_flags[mode]:
+                for mode in self._mode_flags:
+                    if self._mode_flags[mode]:
                         mode_info.append(mode)
 
                 mode_info.append('-c')
@@ -109,33 +127,34 @@ class SearchManager:
                 mode_info.append(export_loc)
                 search_args = SearchArgs(first_date, second_date, detector.upper(), mode_info)
                 # Enqueues the search if it isn't a duplicate
-                if search_args not in self.search_set:
+                if search_args not in self._search_set:
                     # Reasoning behind 3: one for custom, the last two for custom import/export locations
                     modes_string = f' [{", ".join(mode_info[0:-3]).replace("-", "")}]' if len(mode_info) > 3 else ''
-                    print(f'Enqueueing {tl.short_to_full_date(first_date)}'
+                    self._output(f'Enqueueing {tl.short_to_full_date(first_date)}'
                           f'{" - " + tl.short_to_full_date(second_date) if first_date != second_date else ""}'
-                          f' on {detector.upper()}{modes_string}.')
-                    self.search_queue.put(search_args)
-                    self.search_set.add(search_args)
+                          f' on {detector.upper()}{modes_string}.\n')
+                    self._search_queue.put(search_args)
+                    self._search_set.add(search_args)
 
     # Runs all the enqueued searches
     def run(self):
-        with self.lock:
-            while not self.search_queue.empty():
-                search_args = self.search_queue.get()
-                self.search_set.remove(search_args)
+        with self._lock:
+            self._running.set()
+            while not self._search_queue.empty():
+                search_args = self._search_queue.get()
+                self._search_set.remove(search_args)
 
-                # Prints feedback about what date and modes were selected
+                # Outputs feedback about what date and modes were selected
                 feedback_string = f'\nRunning search for {tl.short_to_full_date(search_args.first_date)}'
                 if search_args.first_date != search_args.second_date:
                     feedback_string += f' - {tl.short_to_full_date(search_args.second_date)}'
 
-                feedback_string += f' on {search_args.detector}.'
-                print(feedback_string)
+                feedback_string += f' on {search_args.detector}.\n'
+                self._output(feedback_string)
                 # Reasoning behind 3: one for custom, the last two for custom import/export locations
                 if len(search_args.mode_info) > 3:
-                    print(f'This search will be run with the following modes: '
-                          f'{", ".join(search_args.mode_info[0:-3]).replace("-", "")}.')
+                    self._output(f'This search will be run with the following modes: '
+                                 f'{", ".join(search_args.mode_info[0:-3]).replace("-", "")}.\n')
 
                 # Runs the search program in a separate process and manages it
                 read, write = multiprocessing.Pipe()
@@ -143,10 +162,10 @@ class SearchManager:
                                                   args=(write, search_args.first_date, search_args.second_date,
                                                         search_args.detector, search_args.mode_info))
                 process.start()
-                while process.is_alive() and not self.event.is_set():
-                    # Prints the processes' piped stdout
+                while process.is_alive() and not self._stop_event.is_set():
+                    # Outputs the processes' piped stdout
                     while read.poll():
-                        print(read.recv(), end='')
+                        self._output(read.recv())
 
                     # Waiting a little while before checking for more
                     time.sleep(0.20)
@@ -158,221 +177,222 @@ class SearchManager:
 
                 # In case there's still some strings left in the pipe
                 while read.poll():
-                    print(read.recv(), end='')
+                    self._output(read.recv())
 
-            self.event.clear()
-            print('\nSearch Concluded.\n')
+            self._stop_event.clear()
+            self._running.clear()
+            self._output('\nSearch Concluded.\n\n')
 
     # Stops the search if it's running
     def stop(self):
-        if self.lock.locked():
-            self.event.set()
+        if self._running.is_set():
+            self._stop_event.set()
 
     # Clears the search queue and resets the selected modes
     def reset(self):
-        with self.lock:
-            while not self.search_queue.empty():
-                self.search_queue.get()
+        with self._lock:
+            while not self._search_queue.empty():
+                self._search_queue.get()
 
-            self.search_set.clear()
-            for mode in self.mode_flags:
-                self.mode_flags[mode] = False
+            self._search_set.clear()
+            for mode in self._mode_flags:
+                self._mode_flags[mode] = False
 
 
 # A class implementing the search GUI window, all its widgets, and their associated functionality
 class SearchWindow(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.master = master
-        self.checkbox_variables = []
-        self.toggleable_widgets = []
+        self._master = master
+        self._checkbox_variables = []
+        self._toggleable_widgets = []
 
         # Making and placing the text box display
-        self.text_box = tk.Text(self, height=30, width=100)
-        self.text_box['state'] = tk.DISABLED
-        self.text_box.grid(row=0, column=1, columnspan=3)
+        self._text_box = tk.Text(self, height=30, width=100)
+        self._text_box['state'] = tk.DISABLED
+        self._text_box.grid(row=0, column=1, columnspan=3)
 
-        self.text_box_label = tk.Label(self, text='Search Output')
-        self.text_box_label.grid(row=1, column=2, pady=(5, 0))
+        self._text_box_label = tk.Label(self, text='Search Output')
+        self._text_box_label.grid(row=1, column=2, pady=(5, 0))
 
         # Setting up the input frame
-        self.input_frame = tk.Frame(self)
-        self.input_frame.grid(row=2, column=1, rowspan=2)
+        self._input_frame = tk.Frame(self)
+        self._input_frame.grid(row=2, column=1, rowspan=2)
 
         # Adding and placing the date/detector labels and entry boxes to the frame
-        self.date_one_label = tk.Label(self.input_frame, text='Date One:')
-        self.date_one_label.grid(row=0, column=0, pady=(5, 0))
+        self._date_one_label = tk.Label(self._input_frame, text='Date One:')
+        self._date_one_label.grid(row=0, column=0, pady=(5, 0))
 
-        self.date_one_entry = tk.Entry(self.input_frame, width=15, borderwidth=5)
-        self.date_one_entry.insert(0, 'yymmdd')
-        self.date_one_entry.bind('<FocusIn>', lambda e: self._clear_ghost_text(self.date_one_entry, 'yymmdd'))
-        self.date_one_entry.grid(row=1, column=0, pady=(5, 0))
-        self.toggleable_widgets.append(self.date_one_entry)
+        self._date_one_entry = tk.Entry(self._input_frame, width=15, borderwidth=5)
+        self._date_one_entry.insert(0, 'yymmdd')
+        self._date_one_entry.bind('<FocusIn>', lambda e: self._clear_ghost_text(self._date_one_entry, 'yymmdd'))
+        self._date_one_entry.grid(row=1, column=0, pady=(5, 0))
+        self._toggleable_widgets.append(self._date_one_entry)
 
-        self.date_two_label = tk.Label(self.input_frame, text='Date Two:')
-        self.date_two_label.grid(row=2, column=0, pady=(5, 0))
+        self._date_two_label = tk.Label(self._input_frame, text='Date Two:')
+        self._date_two_label.grid(row=2, column=0, pady=(5, 0))
 
-        self.date_two_entry = tk.Entry(self.input_frame, width=15, borderwidth=5)
-        self.date_two_entry.insert(0, 'yymmdd')
-        self.date_two_entry.bind('<FocusIn>', lambda e: self._clear_ghost_text(self.date_two_entry, 'yymmdd'))
-        self.date_two_entry.grid(row=3, column=0, pady=(5, 0))
-        self.toggleable_widgets.append(self.date_two_entry)
+        self._date_two_entry = tk.Entry(self._input_frame, width=15, borderwidth=5)
+        self._date_two_entry.insert(0, 'yymmdd')
+        self._date_two_entry.bind('<FocusIn>', lambda e: self._clear_ghost_text(self._date_two_entry, 'yymmdd'))
+        self._date_two_entry.grid(row=3, column=0, pady=(5, 0))
+        self._toggleable_widgets.append(self._date_two_entry)
 
-        self.detector_label = tk.Label(self.input_frame, text='Detector:')
-        self.detector_label.grid(row=4, column=0, pady=(5, 0))
+        self._detector_label = tk.Label(self._input_frame, text='Detector:')
+        self._detector_label.grid(row=4, column=0, pady=(5, 0))
 
-        self.detector_entry = tk.Entry(self.input_frame, width=15, borderwidth=5)
-        self.detector_entry.grid(row=5, column=0, pady=(5, 0))
-        self.toggleable_widgets.append(self.detector_entry)
+        self._detector_entry = tk.Entry(self._input_frame, width=15, borderwidth=5)
+        self._detector_entry.grid(row=5, column=0, pady=(5, 0))
+        self._toggleable_widgets.append(self._detector_entry)
 
         # Setting up the search control frame
-        self.search_frame = tk.Frame(self)
-        self.search_frame.grid(row=2, column=2, rowspan=2)
+        self._search_frame = tk.Frame(self)
+        self._search_frame.grid(row=2, column=2, rowspan=2)
 
         # Adding and placing the start, enqueue, and stop buttons, and the enqueue counter
-        self.start_button = tk.Button(self.search_frame, height=3, width=20, text='Start', bg='white',
-                                      command=self.start)
-        self.start_button.grid(row=0, column=0, columnspan=2, pady=(5, 0))
-        self.toggleable_widgets.append(self.start_button)
+        self._start_button = tk.Button(self._search_frame, height=3, width=20, text='Start', bg='white',
+                                       command=self.start)
+        self._start_button.grid(row=0, column=0, columnspan=2, pady=(5, 0))
+        self._toggleable_widgets.append(self._start_button)
 
-        self.enqueue_button = tk.Button(self.search_frame, height=3, width=8, text='Enqueue', bg='white',
-                                        command=self.enqueue)
-        self.enqueue_button.grid(row=1, column=0, pady=(5, 0))
-        self.toggleable_widgets.append(self.enqueue_button)
+        self._enqueue_button = tk.Button(self._search_frame, height=3, width=8, text='Enqueue', bg='white',
+                                         command=self._enqueue)
+        self._enqueue_button.grid(row=1, column=0, pady=(5, 0))
+        self._toggleable_widgets.append(self._enqueue_button)
 
-        self.stop_button = tk.Button(self.search_frame, height=3, width=8, text='Stop', bg='white',
-                                     command=self.stop)
-        self.stop_button.grid(row=1, column=1, pady=(5, 0))
+        self._stop_button = tk.Button(self._search_frame, height=3, width=8, text='Stop', bg='white',
+                                      command=self._stop)
+        self._stop_button.grid(row=1, column=1, pady=(5, 0))
 
-        self.enqueue_label = tk.Label(self.search_frame, text='')
-        self.enqueue_label.grid(row=2, column=0, columnspan=2, pady=(5, 0))
+        self._enqueue_label = tk.Label(self._search_frame, text='')
+        self._enqueue_label.grid(row=2, column=0, columnspan=2, pady=(5, 0))
 
         # Setting up the display frame
-        self.display_frame = tk.Frame(self)
-        self.display_frame.grid(row=2, column=3)
+        self._display_frame = tk.Frame(self)
+        self._display_frame.grid(row=2, column=3)
 
         # Adding and placing the clear text and reset/ clear queue buttons
-        self.clear_button = tk.Button(self.display_frame, height=3, width=8, text='Clear\nText', bg='white',
-                                      command=self.clear)
-        self.clear_button.grid(row=0, column=0, padx=(0, 4), pady=(5, 0))
+        self._clear_button = tk.Button(self._display_frame, height=3, width=8, text='Clear\nText', bg='white',
+                                       command=self._clear)
+        self._clear_button.grid(row=0, column=0, padx=(0, 4), pady=(5, 0))
 
-        self.reset_button = tk.Button(self.display_frame, height=3, width=8, text='Reset/\nClear\nQueue', bg='white',
-                                      command=self.reset)
-        self.reset_button.grid(row=0, column=1, padx=(4, 0), pady=(5, 0))
+        self._reset_button = tk.Button(self._display_frame, height=3, width=8, text='Reset/\nClear\nQueue', bg='white',
+                                       command=self._reset)
+        self._reset_button.grid(row=0, column=1, padx=(4, 0), pady=(5, 0))
 
         # Setting up the modes frame
-        self.modes_frame = tk.Frame(self)
-        self.modes_frame.grid(row=3, column=3, pady=(5, 0))
+        self._modes_frame = tk.Frame(self)
+        self._modes_frame.grid(row=3, column=3, pady=(5, 0))
 
         # Adding and placing the mode label and checkboxes
-        self.cb_label = tk.Label(self.modes_frame, text='Modes:')
-        self.cb_label.grid(row=0, column=0, columnspan=2, pady=(5, 0))
+        self._cb_label = tk.Label(self._modes_frame, text='Modes:')
+        self._cb_label.grid(row=0, column=0, columnspan=2, pady=(5, 0))
 
         oscb = tk.IntVar()
-        self.onescint_cb = tk.Checkbutton(self.modes_frame, text='onescint', variable=oscb, onvalue=1, offvalue=0,
-                                          command=lambda: self._check_uncheck(oscb, '--onescint'))
-        self.onescint_cb.grid(row=1, column=0, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(oscb)
-        self.toggleable_widgets.append(self.onescint_cb)
+        self._onescint_cb = tk.Checkbutton(self._modes_frame, text='onescint', variable=oscb, onvalue=1, offvalue=0,
+                                           command=lambda: self._check_uncheck(oscb, '--onescint'))
+        self._onescint_cb.grid(row=1, column=0, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(oscb)
+        self._toggleable_widgets.append(self._onescint_cb)
 
         ascb = tk.IntVar()
-        self.allscints_cb = tk.Checkbutton(self.modes_frame, text='allscints', variable=ascb, onvalue=1, offvalue=0,
-                                           command=lambda: self._check_uncheck(ascb, '--allscints'))
-        self.allscints_cb.grid(row=2, column=0, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(ascb)
-        self.toggleable_widgets.append(self.allscints_cb)
+        self._allscints_cb = tk.Checkbutton(self._modes_frame, text='allscints', variable=ascb, onvalue=1, offvalue=0,
+                                            command=lambda: self._check_uncheck(ascb, '--allscints'))
+        self._allscints_cb.grid(row=2, column=0, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(ascb)
+        self._toggleable_widgets.append(self._allscints_cb)
 
         acb = tk.IntVar()
-        self.aircraft_cb = tk.Checkbutton(self.modes_frame, text='aircraft', variable=acb, onvalue=1, offvalue=0,
-                                          command=lambda: self._check_uncheck(acb, '--aircraft'))
-        self.aircraft_cb.grid(row=3, column=0, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(acb)
-        self.toggleable_widgets.append(self.aircraft_cb)
+        self._aircraft_cb = tk.Checkbutton(self._modes_frame, text='aircraft', variable=acb, onvalue=1, offvalue=0,
+                                           command=lambda: self._check_uncheck(acb, '--aircraft'))
+        self._aircraft_cb.grid(row=3, column=0, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(acb)
+        self._toggleable_widgets.append(self._aircraft_cb)
 
         cecb = tk.IntVar()
-        self.clnenrg_cb = tk.Checkbutton(self.modes_frame, text='clnenrg', variable=cecb, onvalue=1, offvalue=0,
-                                         command=lambda: self._check_uncheck(cecb, '--clnenrg'))
-        self.clnenrg_cb.grid(row=4, column=0, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(cecb)
-        self.toggleable_widgets.append(self.clnenrg_cb)
+        self._clnenrg_cb = tk.Checkbutton(self._modes_frame, text='clnenrg', variable=cecb, onvalue=1, offvalue=0,
+                                          command=lambda: self._check_uncheck(cecb, '--clnenrg'))
+        self._clnenrg_cb.grid(row=4, column=0, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(cecb)
+        self._toggleable_widgets.append(self._clnenrg_cb)
 
         stcb = tk.IntVar()
-        self.sktrace_cb = tk.Checkbutton(self.modes_frame, text='sktrace', variable=stcb, onvalue=1, offvalue=0,
-                                         command=lambda: self._check_uncheck(stcb, '--sktrace'))
-        self.sktrace_cb.grid(row=1, column=1, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(stcb)
-        self.toggleable_widgets.append(self.sktrace_cb)
+        self._sktrace_cb = tk.Checkbutton(self._modes_frame, text='sktrace', variable=stcb, onvalue=1, offvalue=0,
+                                          command=lambda: self._check_uncheck(stcb, '--sktrace'))
+        self._sktrace_cb.grid(row=1, column=1, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(stcb)
+        self._toggleable_widgets.append(self._sktrace_cb)
 
         sscb = tk.IntVar()
-        self.skshort_cb = tk.Checkbutton(self.modes_frame, text='skshort', variable=sscb, onvalue=1, offvalue=0,
-                                         command=lambda: self._check_uncheck(sscb, '--skshort'))
-        self.skshort_cb.grid(row=2, column=1, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(sscb)
-        self.toggleable_widgets.append(self.skshort_cb)
+        self._skshort_cb = tk.Checkbutton(self._modes_frame, text='skshort', variable=sscb, onvalue=1, offvalue=0,
+                                          command=lambda: self._check_uncheck(sscb, '--skshort'))
+        self._skshort_cb.grid(row=2, column=1, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(sscb)
+        self._toggleable_widgets.append(self._skshort_cb)
 
         sgcb = tk.IntVar()
-        self.skglow_cb = tk.Checkbutton(self.modes_frame, text='skglow', variable=sgcb, onvalue=1, offvalue=0,
-                                        command=lambda: self._check_uncheck(sgcb, '--skglow'))
-        self.skglow_cb.grid(row=3, column=1, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(sgcb)
-        self.toggleable_widgets.append(self.skglow_cb)
+        self._skglow_cb = tk.Checkbutton(self._modes_frame, text='skglow', variable=sgcb, onvalue=1, offvalue=0,
+                                         command=lambda: self._check_uncheck(sgcb, '--skglow'))
+        self._skglow_cb.grid(row=3, column=1, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(sgcb)
+        self._toggleable_widgets.append(self._skglow_cb)
 
         pcb = tk.IntVar()
-        self.pickle_cb = tk.Checkbutton(self.modes_frame, text='pickle', variable=pcb, onvalue=1, offvalue=0,
-                                        command=lambda: self._check_uncheck(pcb, '--pickle'))
-        self.pickle_cb.grid(row=4, column=1, sticky=tk.W, pady=(3, 0))
-        self.checkbox_variables.append(pcb)
-        self.toggleable_widgets.append(self.pickle_cb)
+        self._pickle_cb = tk.Checkbutton(self._modes_frame, text='pickle', variable=pcb, onvalue=1, offvalue=0,
+                                         command=lambda: self._check_uncheck(pcb, '--pickle'))
+        self._pickle_cb.grid(row=4, column=1, sticky=tk.W, pady=(3, 0))
+        self._checkbox_variables.append(pcb)
+        self._toggleable_widgets.append(self._pickle_cb)
 
         # Setting up the file import/export frame
-        self.file_frame = tk.Frame(self)
-        self.file_frame.grid(row=5, column=1, columnspan=3, pady=(10, 0))
-        self.file_frame.columnconfigure(3, {'minsize': 30})
+        self._file_frame = tk.Frame(self)
+        self._file_frame.grid(row=5, column=1, columnspan=3, pady=(10, 0))
+        self._file_frame.columnconfigure(3, {'minsize': 30})
 
         # Adding and placing the custom import label, entry box, and file dialogue button
-        self.import_label = tk.Label(self.file_frame, text='Import Location:')
-        self.import_label.grid(row=0, column=0, columnspan=2, pady=(5, 0))
+        self._import_label = tk.Label(self._file_frame, text='Import Location:')
+        self._import_label.grid(row=0, column=0, columnspan=2, pady=(5, 0))
 
-        self.import_entry = tk.Entry(self.file_frame, width=40, borderwidth=5)
-        self.import_entry.grid(row=1, column=0, columnspan=2, pady=(5, 0))
-        self.toggleable_widgets.append(self.import_entry)
+        self._import_entry = tk.Entry(self._file_frame, width=40, borderwidth=5)
+        self._import_entry.grid(row=1, column=0, columnspan=2, pady=(5, 0))
+        self._toggleable_widgets.append(self._import_entry)
 
-        self.import_button = tk.Button(self.file_frame, width=6, height=2, text='Browse',
-                                       command=lambda: self._select_dir(self.import_entry))
-        self.import_button.grid(row=1, column=2, pady=(5, 0))
-        self.toggleable_widgets.append(self.import_button)
+        self._import_button = tk.Button(self._file_frame, width=6, height=2, text='Browse',
+                                        command=lambda: self._select_dir(self._import_entry))
+        self._import_button.grid(row=1, column=2, pady=(5, 0))
+        self._toggleable_widgets.append(self._import_button)
 
         # Adding and placing the custom export label, entry box, and file dialogue button
-        self.export_label = tk.Label(self.file_frame, text='Export Location:')
-        self.export_label.grid(row=0, column=4, columnspan=2, pady=(5, 0))
+        self._export_label = tk.Label(self._file_frame, text='Export Location:')
+        self._export_label.grid(row=0, column=4, columnspan=2, pady=(5, 0))
 
-        self.export_entry = tk.Entry(self.file_frame, width=40, borderwidth=5)
-        self.export_entry.grid(row=1, column=4, columnspan=2, pady=(5, 0))
-        self.toggleable_widgets.append(self.export_entry)
+        self._export_entry = tk.Entry(self._file_frame, width=40, borderwidth=5)
+        self._export_entry.grid(row=1, column=4, columnspan=2, pady=(5, 0))
+        self._toggleable_widgets.append(self._export_entry)
 
-        self.export_button = tk.Button(self.file_frame, width=6, height=2, text='Browse',
-                                       command=lambda: self._select_dir(self.export_entry))
-        self.export_button.grid(row=1, column=6, pady=(5, 0))
-        self.toggleable_widgets.append(self.export_button)
+        self._export_button = tk.Button(self._file_frame, width=6, height=2, text='Browse',
+                                        command=lambda: self._select_dir(self._export_entry))
+        self._export_button.grid(row=1, column=6, pady=(5, 0))
+        self._toggleable_widgets.append(self._export_button)
 
         # Modes separator line
-        ttk.Separator(self, orient='horizontal').place(in_=self.modes_frame, bordermode='outside', y=3, relwidth=1.0)
+        ttk.Separator(self, orient='horizontal').place(in_=self._modes_frame, bordermode='outside', y=3, relwidth=1.0)
         # Import/export separator line
-        ttk.Separator(self, orient='horizontal').place(in_=self.file_frame, bordermode='outside', relwidth=1.0)
+        ttk.Separator(self, orient='horizontal').place(in_=self._file_frame, bordermode='outside', relwidth=1.0)
 
-        # Redirecting stdout to the GUI text box
-        self.old_stdout_write = sys.stdout.write
-        sys.stdout.write = self.write
+        # Setting up events that modify the state of the window
+        self.bind('<<enable_widgets>>', self._enable_widget_handler)
+        self.bind('<<disable_widgets>>', self._disable_widget_handler)
+        self.bind('<<output_event>>', self._output_handler)
 
-        self.search_manager = SearchManager()
-        self.search_thread = None
+        # Setting up the search manager
+        self._output_queue = Queue()
+        self._search_manager = SearchManager(self, self._output_queue)
+        self._search_thread = None
 
         # Starting the enqueue counter updater
-        self.enqueued_counter_interval = 20  # interval at which search queue size is checked in milliseconds
+        self._enqueued_counter_interval = 20  # interval at which search queue size is checked in milliseconds
         self._update_enqueued_counter()
-
-    def __del__(self):
-        sys.stdout.write = self.old_stdout_write  # Restoring stdout.write to what it was before
 
     # Creates a file dialogue and then puts the selected directory into the specified text entry box
     @staticmethod
@@ -390,84 +410,85 @@ class SearchWindow(tk.Frame):
 
     # Updates the enqueued searches counter periodically
     def _update_enqueued_counter(self):
-        self.enqueue_label['text'] = f'Searches\nEnqueued:\n{self.search_manager.search_queue.qsize()}'
-        self.after(self.enqueued_counter_interval, self._update_enqueued_counter)
+        self._enqueue_label['text'] = f'Searches\nEnqueued:\n{self._search_manager.size()}'
+        self.after(self._enqueued_counter_interval, self._update_enqueued_counter)
 
     # Adds/removes the given mode from the search arguments when the corresponding checkbox is checked/unchecked
     def _check_uncheck(self, var, mode):
         if var.get() == 1:
-            self.search_manager.add_mode(mode)
+            self._search_manager.add_mode(mode)
         else:
-            self.search_manager.remove_mode(mode)
-
-    # Substitute function for sys.stdout.write that appends the given string to the GUI's big text box
-    def write(self, input_str):
-        self.text_box['state'] = tk.NORMAL
-        self.text_box.insert('end', input_str, 'last_insert')
-        self.text_box.yview(tk.END)
-        self.text_box['state'] = tk.DISABLED
+            self._search_manager.remove_mode(mode)
 
     # Enables/disables GUI widgets depending on the action parameter
     def _change_widgets(self, action):
-        for widget in self.toggleable_widgets:
+        for widget in self._toggleable_widgets:
             widget['state'] = action
 
-    # Enables all checkboxes/buttons
-    def enable_widgets(self):
+    # Enables widgets when the enable widget event is received
+    def _enable_widget_handler(self, event):
         self._change_widgets(tk.NORMAL)
 
-    # Disables all checkboxes/buttons
-    def disable_widgets(self):
+    # Disables widgets when the enable widget event is received
+    def _disable_widget_handler(self, event):
         self._change_widgets(tk.DISABLED)
 
+    # Writes text from the output queue to the big text box when the output event happens
+    def _output_handler(self, event):
+        self._text_box['state'] = tk.NORMAL
+        while not self._output_queue.empty():
+            self._text_box.insert('end', self._output_queue.get(), 'last_insert')
+            self._text_box.yview(tk.END)
+
+        self._text_box['state'] = tk.DISABLED
+
     # Enqueues a new search based on the current contents of all the text entry boxes
-    def enqueue(self):
-        if self.search_thread is None:
-            self.search_manager.enqueue(self.date_one_entry.get(), self.date_two_entry.get(), self.detector_entry.get(),
-                                        self.import_entry.get(), self.export_entry.get())
+    def _enqueue(self):
+        if self._search_thread is None or not self._search_thread.is_alive():
+            self._search_manager.enqueue(self._date_one_entry.get(), self._date_two_entry.get(),
+                                         self._detector_entry.get(), self._import_entry.get(), self._export_entry.get())
 
     # Starts running the enqueued searches
     def start(self):
-        self.enqueue()  # In case the current info hasn't been enqueued yet
-        if self.search_thread is None and not self.search_manager.search_queue.empty():
-            self.search_thread = threading.Thread(target=self._run, args=())
-            self.search_thread.start()  # Running the search in another thread to prevent the GUI from locking up
+        self._enqueue()  # In case the current info hasn't been enqueued yet
+        if (self._search_thread is None or not self._search_thread.is_alive()) and self._search_manager.size() > 0:
+            self._search_thread = threading.Thread(target=self._run, args=())
+            self._search_thread.start()  # Running the search in another thread to prevent the GUI from locking up
 
     # Target function for search thread. Disables/Enables the GUI elements while the searches are running
     def _run(self):
-        self.disable_widgets()
-        self.search_manager.run()
-        self.enable_widgets()
-        self.search_thread = None
+        self.event_generate('<<disable_widgets>>', when='tail')
+        self._search_manager.run()
+        self.event_generate('<<enable_widgets>>', when='tail')
 
     # Stops the search if there is one
-    def stop(self):
-        if self.search_thread is not None:
-            self.search_manager.stop()
+    def _stop(self):
+        if self._search_thread is not None and self._search_thread.is_alive():
+            self._search_manager.stop()
 
     # Clears the big text box
-    def clear(self):
-        self.text_box['state'] = tk.NORMAL
-        self.text_box.delete('1.0', 'end')
-        self.text_box['state'] = tk.DISABLED
+    def _clear(self):
+        self._text_box['state'] = tk.NORMAL
+        self._text_box.delete('1.0', 'end')
+        self._text_box['state'] = tk.DISABLED
 
     # Stops the search and resets the GUI widgets back to their default states
-    def reset(self):
-        self.stop()
-        self.search_manager.reset()  # Clearing the search queue and mode flags
-        self.clear()
+    def _reset(self):
+        self._stop()
+        self._search_manager.reset()  # Clearing the search queue and mode flags
+        self._clear()
 
-        self.date_one_entry.delete(0, 'end')
-        self.date_one_entry.insert(0, 'yymmdd')
-        self.date_two_entry.delete(0, 'end')
-        self.date_two_entry.insert(0, 'yymmdd')
-        self.detector_entry.delete(0, 'end')
+        self._date_one_entry.delete(0, 'end')
+        self._date_one_entry.insert(0, 'yymmdd')
+        self._date_two_entry.delete(0, 'end')
+        self._date_two_entry.insert(0, 'yymmdd')
+        self._detector_entry.delete(0, 'end')
 
-        self.import_entry.delete(0, 'end')
-        self.export_entry.delete(0, 'end')
+        self._import_entry.delete(0, 'end')
+        self._export_entry.delete(0, 'end')
 
         # Unchecking the checkboxes
-        for variable in self.checkbox_variables:
+        for variable in self._checkbox_variables:
             variable.set(0)
 
 

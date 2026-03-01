@@ -294,8 +294,9 @@ def _ssv_nrl_lm_parser(passtime, lines):
         - When the computer asked for the frame to be sent.
         - When the frame finished arriving.
     - The frame data line is just a collection of space-separated words representing the frame's data.
-    - The first nine words (of which only five are actually used) are (something), the detector's serial number,
-        (something), the number of events in the frame, and the buffer number.
+    - The first nine words (of which only five are actually used) are a full buffer flag, the detector's serial number,
+        the number of words in the frame (not counting the first three), the number of events in the frame, and the
+        buffer number.
     - The remaining words are actual data.
     - Each event is six words long:
         - The event's PSD.

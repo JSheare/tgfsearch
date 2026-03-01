@@ -11,6 +11,7 @@ def make_doc(name, parent_dir, docs_path):
     pydoc.writedoc(name)
     os.chdir(os.path.dirname(os.getcwd()))
 
+
 def make_index(docs_path):
     html = (
         '<!DOCTYPE html>\n'

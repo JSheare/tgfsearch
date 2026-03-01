@@ -43,36 +43,24 @@ def is_valid_detector(unit):
             raise SyntaxError('invalid syntax in detector config file.')
 
 
-# Checks whether a search with the given dates and detector is a valid one
-def is_valid_search(first_date, second_date, unit, print_feedback=False):
+# Returns a tuple containing 1) a bool for the validity of the search, and 2) a string containing the reason
+def search_check(first_date, second_date, unit):
     # Checks that both dates are digits in the proper format
     if not first_date.isdigit() or not second_date.isdigit() \
             or len(first_date) != 6 or len(second_date) != 6:
-        if print_feedback:
-            print('Error: not a valid date. BOTH dates must be in yymmdd format.')
-
-        return False
+        return False, 'Error: not a valid date. BOTH dates must be in yymmdd format.'
 
     # Checks that both dates are sequential
     if int(first_date) > int(second_date):
-        if print_feedback:
-            print('Error: second date must be AFTER first date.')
-
-        return False
+        return False, 'Error: second date must be AFTER first date.'
 
     # Checks that a valid detector has been entered
     if unit == '':
-        if print_feedback:
-            print('Error: no detector specified.')
-
-        return False
+        return False, 'Error: no detector specified.'
     elif not is_valid_detector(unit):
-        if print_feedback:
-            print('Error: not a valid detector.')
+        return False, 'Error: not a valid detector.'
 
-        return False
-
-    return True
+    return True, ''
 
 
 # Returns the correct detector object based on the parameters provided
@@ -1318,7 +1306,9 @@ def main():
         exit()
 
     # Makes sure that inputs are valid
-    if not is_valid_search(first_date, second_date, unit, print_feedback=True):
+    check = search_check(first_date, second_date, unit)
+    if not check[0]:
+        print(check[1])
         exit()
 
     if len(sys.argv) > 4:
