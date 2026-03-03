@@ -18,6 +18,39 @@ from tgfsearch.detectors.scintillator import Scintillator
 from tgfsearch.helpers.reader import Reader
 
 
+def worker_init():
+    """Data importer worker process initialization function. Mutes worker stdout and stderr output."""
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
+
+def read_data_file(reader, filelist, clean_energy, connection):
+    """Reading the given data files and sending them to the given pipe. Meant to be run in a subprocess, which
+    means that the passed arguments and piped values are serialized/deserialized on each end."""
+    warning_strings = []
+    with warnings.catch_warnings():
+        # Redirecting warning strings to the warning_strings list
+        warnings.showwarning = (lambda message, category, filename, lineno,
+                                       file_handle=None, line=None: warning_strings.append(
+            warnings.formatwarning(message, category, filename, lineno, line)))
+        for file in filelist:
+            try:
+                data = reader.read(file, clean_energy=clean_energy)
+                connection.send(data)
+                # Sending the warning strings, if they exist
+                if len(warning_strings) > 0:
+                    connection.recv()
+                    connection.send(warning_strings)
+                    warning_strings.clear()
+
+            except Exception as ex:
+                connection.send(ex)
+
+            connection.recv()
+
+    connection.send(reader)  # Sending the updated reader back to the main process
+
+
 class Detector:
     """A class used to store all relevant information about an instrument and its data for a day.
 
@@ -638,35 +671,7 @@ class Detector:
         trace_filelist.sort()
         return lm_filelist, trace_filelist
 
-
-    @staticmethod
-    def _read_data_file(reader, filelist, clean_energy, connection):
-        """Reading the given data files and sending them to the given pipe. Meant to be run in a subprocess, which 
-        means that the passed arguments and piped values are serialized/deserialized on each end."""
-        warning_strings = []
-        with warnings.catch_warnings():
-            # Redirecting warning strings to the warning_strings list
-            warnings.showwarning = (lambda message, category, filename, lineno,
-                                    file_handle=None, line=None: warning_strings.append(
-                                        warnings.formatwarning(message, category, filename, lineno, line)))
-            for file in filelist:
-                try:
-                    data = reader.read(file, clean_energy=clean_energy)
-                    connection.send(data)
-                    # Sending the warning strings, if they exist
-                    if len(warning_strings) > 0:
-                        connection.recv()
-                        connection.send(warning_strings)
-                        warning_strings.clear()
-
-                except Exception as ex:
-                    connection.send(ex)
-
-                connection.recv()
-
-        connection.send(reader)  # Sending the updated reader back to the main process
-
-    def _import_lm(self, process_pool, scintillator, options):
+    def __import_lm(self, process_pool, scintillator, options):
         """Imports list mode data for the given scintillator."""
         lm_filelist = self._scintillators[scintillator].lm_filelist
         file_frames = []
@@ -681,8 +686,8 @@ class Detector:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(self._read_data_file, args=(self._scintillators[scintillator].reader, lm_filelist,
-                                                             options['clean_energy'], end2))
+        process_pool.apply_async(read_data_file, args=(self._scintillators[scintillator].reader, lm_filelist,
+                                                       options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
             end1.send(1)  # Notifying the other process that the data has been received
@@ -693,7 +698,7 @@ class Detector:
                 log_strings.append('\t' + '\t'.join(data))
                 continue
             elif isinstance(data, Reader):
-                # Storing the updated reader object from the other process, which also serves as sentinel value
+                # Storing the updated reader object from the other process, which also serves as a sentinel value
                 self._scintillators[scintillator].reader = data
                 break
             else:
@@ -751,7 +756,7 @@ class Detector:
 
         return len(file_frames), ''.join(log_strings)
 
-    def _import_traces(self, process_pool, scintillator, options):
+    def __import_traces(self, process_pool, scintillator, options):
         """Imports trace data for the given scintillator."""
         trace_filelist = self._scintillators[scintillator].trace_filelist
         traces = {}
@@ -762,8 +767,8 @@ class Detector:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(self._read_data_file, args=(self._scintillators[scintillator].reader, trace_filelist,
-                                                             options['clean_energy'], end2))
+        process_pool.apply_async(read_data_file, args=(self._scintillators[scintillator].reader, trace_filelist,
+                                                       options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
             end1.send(1)  # Notifying the other process that the data has been received
@@ -774,7 +779,7 @@ class Detector:
                 log_strings.append('\t' + '\t'.join(data))
                 continue
             elif isinstance(data, Reader):
-                # Storing the updated reader object from the other process, which also serves as sentinel value
+                # Storing the updated reader object from the other process, which also serves as a sentinel value
                 self._scintillators[scintillator].reader = data
                 break
             else:
@@ -798,7 +803,7 @@ class Detector:
 
         return len(traces), ''.join(log_strings)
 
-    def _import_scintillator(self, process_pool, output_lock, scintillator, options):
+    def __import_scintillator(self, process_pool, output_lock, scintillator, options):
         """Manages data importing for a single scintillator. Meant to be run on a separate thread."""
         eRC = self._scintillators[scintillator].eRC
         lm_filelist_len = len(self._scintillators[scintillator].lm_filelist)
@@ -821,12 +826,12 @@ class Detector:
                         print('No trace data')
 
         if options['import_lm'] and lm_filelist_len > 0:
-            lm_results = self._import_lm(process_pool, scintillator, options)
+            lm_results = self.__import_lm(process_pool, scintillator, options)
         else:
             lm_results = None
 
         if options['import_traces'] and trace_filelist_len > 0:
-            trace_results = self._import_traces(process_pool, scintillator, options)
+            trace_results = self.__import_traces(process_pool, scintillator, options)
         else:
             trace_results = None
 
@@ -854,12 +859,6 @@ class Detector:
 
                     if options['import_traces'] and trace_results is not None:
                         self.log.write(trace_results[1])
-
-    @staticmethod
-    def _worker_init():
-        """Data importer worker process initialization function. Mutes worker stdout and stderr output."""
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = open(os.devnull, 'w')
 
     def import_data(self, existing_filelists=False, import_traces=True, import_lm=True, import_scints=None,
                     clean_energy=False, feedback=False, mem_frac=1.):
@@ -921,10 +920,10 @@ class Detector:
                    'feedback': feedback}
 
         # Creating the process pool for data reading tasks
-        with multiprocessing.Pool(processes=len(scintillators), initializer=self._worker_init) as process_pool:
+        with multiprocessing.Pool(processes=len(scintillators), initializer=worker_init) as process_pool:
             # Creating threads for each scintillator's import manager
             output_lock = threading.Lock()  # Mutex lock for log and stdout output
-            threads = [threading.Thread(target=self._import_scintillator,
+            threads = [threading.Thread(target=self.__import_scintillator,
                                         args=(process_pool, output_lock, scintillator, options),
                                         daemon=True)
                        for scintillator in scintillators]

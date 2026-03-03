@@ -68,9 +68,8 @@ class SearchArgs:
 
 # A class for managing the search and keeping track of all the enqueued search information
 class SearchManager:
-    def __init__(self, window, output_queue):
-        self._window = window  # The gui window that the manager belongs to
-        self._output_queue = output_queue  # Queue where output strings will be placed
+    def __init__(self, write_func=print):
+        self._write = write_func  # The function for writing output
 
         self._mode_flags = {}
         self._search_queue = Queue()  # Queue that holds all the enqueued searches
@@ -95,11 +94,6 @@ class SearchManager:
     def size(self):
         return self._search_queue.qsize()
 
-    # Puts the passed string onto the output queue and triggers the output event
-    def _output(self, string):
-        self._output_queue.put(string)
-        self._window.event_generate('<<output_event>>', when='tail')
-
     # Enqueues a new search with the given parameters
     def enqueue(self, first_date, second_date, detector, import_loc, export_loc):
         with self._lock:
@@ -109,7 +103,7 @@ class SearchManager:
             # If the search command is valid, sets up a SearchArgs object to store it
             check = search_check(first_date, second_date, detector)
             if not(check[0]):
-                self._output(check[1] + '\n')
+                self._write(check[1])
             else:
                 mode_info = []
                 for mode in self._mode_flags:
@@ -130,9 +124,9 @@ class SearchManager:
                 if search_args not in self._search_set:
                     # Reasoning behind 3: one for custom, the last two for custom import/export locations
                     modes_string = f' [{", ".join(mode_info[0:-3]).replace("-", "")}]' if len(mode_info) > 3 else ''
-                    self._output(f'Enqueueing {tl.short_to_full_date(first_date)}'
+                    self._write(f'Enqueueing {tl.short_to_full_date(first_date)}'
                           f'{" - " + tl.short_to_full_date(second_date) if first_date != second_date else ""}'
-                          f' on {detector.upper()}{modes_string}.\n')
+                          f' on {detector.upper()}{modes_string}.')
                     self._search_queue.put(search_args)
                     self._search_set.add(search_args)
 
@@ -149,12 +143,12 @@ class SearchManager:
                 if search_args.first_date != search_args.second_date:
                     feedback_string += f' - {tl.short_to_full_date(search_args.second_date)}'
 
-                feedback_string += f' on {search_args.detector}.\n'
-                self._output(feedback_string)
+                feedback_string += f' on {search_args.detector}.'
+                self._write(feedback_string)
                 # Reasoning behind 3: one for custom, the last two for custom import/export locations
                 if len(search_args.mode_info) > 3:
-                    self._output(f'This search will be run with the following modes: '
-                                 f'{", ".join(search_args.mode_info[0:-3]).replace("-", "")}.\n')
+                    self._write(f'This search will be run with the following modes: '
+                                 f'{", ".join(search_args.mode_info[0:-3]).replace("-", "")}.')
 
                 # Runs the search program in a separate process and manages it
                 read, write = multiprocessing.Pipe()
@@ -163,9 +157,9 @@ class SearchManager:
                                                         search_args.detector, search_args.mode_info))
                 process.start()
                 while process.is_alive() and not self._stop_event.is_set():
-                    # Outputs the processes' piped stdout
+                    # Writes the processes' piped stdout
                     while read.poll():
-                        self._output(read.recv())
+                        self._write(read.recv(), end='')
 
                     # Waiting a little while before checking for more
                     time.sleep(0.20)
@@ -177,11 +171,11 @@ class SearchManager:
 
                 # In case there's still some strings left in the pipe
                 while read.poll():
-                    self._output(read.recv())
+                    self._write(read.recv(), end='')
 
+            self._write('\nSearch Concluded.\n')
             self._stop_event.clear()
             self._running.clear()
-            self._output('\nSearch Concluded.\n\n')
 
     # Stops the search if it's running
     def stop(self):
@@ -251,7 +245,7 @@ class SearchWindow(tk.Frame):
 
         # Adding and placing the start, enqueue, and stop buttons, and the enqueue counter
         self._start_button = tk.Button(self._search_frame, height=3, width=20, text='Start', bg='white',
-                                       command=self.start)
+                                       command=self._start)
         self._start_button.grid(row=0, column=0, columnspan=2, pady=(5, 0))
         self._toggleable_widgets.append(self._start_button)
 
@@ -380,19 +374,38 @@ class SearchWindow(tk.Frame):
         # Import/export separator line
         ttk.Separator(self, orient='horizontal').place(in_=self._file_frame, bordermode='outside', relwidth=1.0)
 
+        # Setting up the search manager
+        self._write_queue = Queue()
+        self._search_manager = SearchManager(self.write)
+        self._search_thread = None
+
         # Setting up events that modify the state of the window
         self.bind('<<enable_widgets>>', self._enable_widget_handler)
         self.bind('<<disable_widgets>>', self._disable_widget_handler)
-        self.bind('<<output_event>>', self._output_handler)
-
-        # Setting up the search manager
-        self._output_queue = Queue()
-        self._search_manager = SearchManager(self, self._output_queue)
-        self._search_thread = None
+        self.bind('<<write>>', self._write_handler)
 
         # Starting the enqueue counter updater
         self._enqueued_counter_interval = 20  # interval at which search queue size is checked in milliseconds
         self._update_enqueued_counter()
+
+    # Enqueues strings for writing to the big text box and notifies the handler
+    def write(self, *args, sep=' ', end='\n', **kwargs):
+        if len(args) > 0:
+            output = sep.join(args) + end
+        else:
+            output = args[0] + end
+
+        self._write_queue.put(output)
+        self.event_generate('<<write>>', when='tail')
+
+    # Writes text from the output queue to the big text box when the write event happens
+    def _write_handler(self, event):
+        self._text_box['state'] = tk.NORMAL
+        while not self._write_queue.empty():
+            self._text_box.insert('end', self._write_queue.get(), 'last_insert')
+            self._text_box.yview(tk.END)
+
+        self._text_box['state'] = tk.DISABLED
 
     # Creates a file dialogue and then puts the selected directory into the specified text entry box
     @staticmethod
@@ -433,15 +446,6 @@ class SearchWindow(tk.Frame):
     def _disable_widget_handler(self, event):
         self._change_widgets(tk.DISABLED)
 
-    # Writes text from the output queue to the big text box when the output event happens
-    def _output_handler(self, event):
-        self._text_box['state'] = tk.NORMAL
-        while not self._output_queue.empty():
-            self._text_box.insert('end', self._output_queue.get(), 'last_insert')
-            self._text_box.yview(tk.END)
-
-        self._text_box['state'] = tk.DISABLED
-
     # Enqueues a new search based on the current contents of all the text entry boxes
     def _enqueue(self):
         if self._search_thread is None or not self._search_thread.is_alive():
@@ -449,7 +453,7 @@ class SearchWindow(tk.Frame):
                                          self._detector_entry.get(), self._import_entry.get(), self._export_entry.get())
 
     # Starts running the enqueued searches
-    def start(self):
+    def _start(self):
         self._enqueue()  # In case the current info hasn't been enqueued yet
         if (self._search_thread is None or not self._search_thread.is_alive()) and self._search_manager.size() > 0:
             self._search_thread = threading.Thread(target=self._run, args=())
