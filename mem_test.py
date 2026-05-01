@@ -9,7 +9,8 @@ import sys as sys
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-import tgfsearch.tools as tl
+import tgfsearch.helpers.helper_funcs as helper_funcs
+import tgfsearch.tools.tools as tl
 from tgfsearch.search import search_check, get_detector
 
 def get_obj_size(obj, visited=None):
@@ -93,7 +94,7 @@ def main():
     lm_growth_factors = []
     trace_growth_factors = []
     try:
-        for date_str in tl.make_date_list(first_date, second_date):
+        for date_str in helper_funcs.make_date_list(first_date, second_date):
             print(f'Importing data for {date_str}...')
             detector = get_detector(unit, date_str)
             if import_loc != '':
@@ -118,7 +119,7 @@ def main():
             for scintillator in detector:
                 lm_filelist = detector.get_attribute(scintillator, 'lm_filelist', deepcopy=False)
                 for file in lm_filelist:
-                    fileset_size += tl.file_size(file)
+                    fileset_size += helper_funcs.file_size(file)
 
             if fileset_size > 0:
                 lm_growth_factors.append(get_obj_size(detector) / fileset_size)
@@ -132,7 +133,7 @@ def main():
             for scintillator in detector:
                 trace_filelist = detector.get_attribute(scintillator, 'trace_filelist', deepcopy=False)
                 for file in trace_filelist:
-                    fileset_size += tl.file_size(file)
+                    fileset_size += helper_funcs.file_size(file)
 
             if fileset_size > 0:
                 trace_growth_factors.append(get_obj_size(detector) / fileset_size)

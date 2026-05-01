@@ -4,7 +4,7 @@ import gc as gc
 import pandas as pd
 
 import tgfsearch.config.parameters as params
-from tgfsearch.helpers.reader import Reader
+from tgfsearch.tools.reader import Reader
 
 
 class Scintillator:

@@ -2,7 +2,6 @@
 import json as json
 import os as os
 
-
 from tgfsearch.detectors.detector import Detector
 from tgfsearch.detectors.scintillator import Scintillator
 
@@ -43,10 +42,6 @@ class AdaptiveDetector(Detector):
         except json.decoder.JSONDecodeError:
             raise SyntaxError('invalid syntax in detector config file.')
 
-        # Getting the default growth factors (using Thor format because it's the most likely)
-        default_lm_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
-        default_trace_growth = entries['growth_factors']['thor_lm']['lm_growth_factor']
-
         # Getting all supported scintillators and their priorities (greatest to least)
         scintillator_priority = entries['scintillator_priority']
 
@@ -75,9 +70,8 @@ class AdaptiveDetector(Detector):
 
         # Making the scintillator objects
         for scintillator in self.scint_list:
-            self._scintillators[scintillator] = Scintillator(scintillator, scintillator_numbers[scintillator])
-            self.lm_growth_factors[scintillator] = default_lm_growth
-            self.trace_growth_factors[scintillator] = default_trace_growth
+            self._scintillators[scintillator] = Scintillator(scintillator, scintillator_numbers[scintillator],
+                                                             'thor_lm')
 
         self._has_identity = True
 

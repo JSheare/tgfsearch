@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
-import tgfsearch.tools as tl
+import tgfsearch.tools.tools as tl
 from tgfsearch.detectors.adaptive_detector import AdaptiveDetector
 from tgfsearch.detectors.detector import Detector
 

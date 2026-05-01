@@ -2,7 +2,7 @@
 import os
 import struct
 
-import tgfsearch.parameters as params
+import tgfsearch.config.parameters as params
 
 
 def make_path(path):

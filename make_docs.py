@@ -29,9 +29,7 @@ def make_index(docs_path):
         '\t<br>\n'
         '\t<a href="detector.html"> &#x2022; Detector Documentation</a>\n'
         '\t<br>\n'
-        '\t<a href="reader.html"> &#x2022; Reader Helper Documentation</a>\n'
-        '\t<br>\n'
-        '\t<a href="scintillator.html"> &#x2022; Scintillator Documentation</a>\n'
+        '\t<a href="reader.html"> &#x2022; Reader Wrapper Documentation</a>\n'
         '\t<br>\n'
         '\t<a href="tools.html"> &#x2022; Tools Documentation</a>\n'
         '</body>'
@@ -48,16 +46,13 @@ def main():
     os.mkdir(docs_path)
 
     # Docs for tools
-    make_doc('tools', os.getcwd() + '/tgfsearch', docs_path)
+    make_doc('tools', os.getcwd() + '/tgfsearch/tools', docs_path)
 
     # Docs for detector
     make_doc('detector', os.getcwd() + '/tgfsearch/detectors', docs_path)
 
-    # Docs for scintillator
-    make_doc('scintillator', os.getcwd() + '/tgfsearch/detectors', docs_path)
-
     # Docs for reader helper
-    make_doc('reader', os.getcwd() + '/tgfsearch/helpers', docs_path)
+    make_doc('reader', os.getcwd() + '/tgfsearch/tools', docs_path)
 
     # Docs for data reader
     make_doc('data_reader', os.getcwd() + '/tgfsearch', docs_path)

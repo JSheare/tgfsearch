@@ -8,7 +8,7 @@
 <table class="heading">
 <tr class="heading-text decor">
 <td class="title">&nbsp;<br><strong class="title">tools</strong></td>
-<td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Cdata%20processing%20stuff%5Csearch%20package%5Ctgfsearch%5Ctools.py">d:\documents\tgf research\data processing stuff\search package\tgfsearch\tools.py</a></td></tr></table>
+<td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Cdata%20processing%20stuff%5Csearch%20package%5Ctgfsearch%5Ctools%5Ctools.py">d:\documents\tgf research\data processing stuff\search package\tgfsearch\tools\tools.py</a></td></tr></table>
     <p><span class="code">Tools&nbsp;for&nbsp;use&nbsp;by&nbsp;the&nbsp;TGF&nbsp;search&nbsp;program&nbsp;and&nbsp;its&nbsp;modules.</span></p>
 <p>
 <table class="section">
@@ -18,13 +18,10 @@
 <tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><table><tr><td class="multicolumn"><a href="datetime.html">datetime</a><br>
 <a href="selenium.webdriver.support.expected_conditions.html">selenium.webdriver.support.expected_conditions</a><br>
-<a href="io.html">io</a><br>
-</td><td class="multicolumn"><a href="numpy.html">numpy</a><br>
-<a href="os.html">os</a><br>
-<a href="tgfsearch.parameters.html">tgfsearch.parameters</a><br>
-</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
-<a href="pickle.html">pickle</a><br>
-<a href="struct.html">struct</a><br>
+</td><td class="multicolumn"><a href="io.html">io</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
+<a href="pandas.html">pandas</a><br>
 </td><td class="multicolumn"><a href="selenium.webdriver.html">selenium.webdriver</a><br>
 <a href="zoneinfo.html">zoneinfo</a><br>
 </td></tr></table></td></tr></table><p>
@@ -89,35 +86,7 @@ tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;scintillator&nbsp;names.&nbsp;Each&nbsp;entry&nbsp;corresponds&nbsp;to&nbsp;the&nbsp;scintillator<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;its&nbsp;corresponding&nbsp;count&nbsp;originated&nbsp;from.</span></dd></dl>
  <dl><dt><a name="-convert_clock_hour"><strong>convert_clock_hour</strong></a>(clock_hour)</dt><dd><span class="code">Converts&nbsp;a&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;form&nbsp;hh:mm&nbsp;AM/PM&nbsp;into&nbsp;seconds&nbsp;since&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;day.</span></dd></dl>
- <dl><dt><a name="-days_per_month"><strong>days_per_month</strong></a>(month, year)</dt><dd><span class="code">Returns&nbsp;the&nbsp;number&nbsp;of&nbsp;days&nbsp;in&nbsp;the&nbsp;requested&nbsp;month&nbsp;based&nbsp;on&nbsp;the&nbsp;year.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-month&nbsp;:&nbsp;int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;month&nbsp;of&nbsp;the&nbsp;year&nbsp;(1-12).<br>
-year&nbsp;:&nbsp;int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;desired&nbsp;year&nbsp;to&nbsp;check.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;number&nbsp;of&nbsp;days&nbsp;in&nbsp;the&nbsp;specified&nbsp;month&nbsp;for&nbsp;the&nbsp;specified&nbsp;year.</span></dd></dl>
- <dl><dt><a name="-file_size"><strong>file_size</strong></a>(file, uncompressed=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;size&nbsp;of&nbsp;the&nbsp;given&nbsp;file&nbsp;in&nbsp;bytes.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-file&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file.<br>
-uncompressed&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;function&nbsp;will&nbsp;return&nbsp;the&nbsp;uncompressed&nbsp;file&nbsp;size&nbsp;(if&nbsp;the&nbsp;file&nbsp;is&nbsp;compressed).&nbsp;True<br>
-&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;default.&nbsp;Note:&nbsp;this&nbsp;will&nbsp;not&nbsp;be&nbsp;accurate&nbsp;for&nbsp;files&nbsp;that&nbsp;are&nbsp;over&nbsp;4GB&nbsp;uncompressed&nbsp;due&nbsp;to&nbsp;the&nbsp;way<br>
-&nbsp;&nbsp;&nbsp;&nbsp;uncompressed&nbsp;size&nbsp;is&nbsp;stored&nbsp;according&nbsp;to&nbsp;the&nbsp;gzip&nbsp;standard.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;size&nbsp;of&nbsp;the&nbsp;file&nbsp;in&nbsp;bytes.</span></dd></dl>
- <dl><dt><a name="-file_timestamp"><strong>file_timestamp</strong></a>(file)</dt><dd><span class="code">Returns&nbsp;the&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;given&nbsp;file&nbsp;as&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;hhmmss.</span></dd></dl>
+ <dl><dt><a name="-file_timestamp"><strong>file_timestamp</strong></a>(file)</dt><dd><span class="code">Returns&nbsp;the&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;given&nbsp;data&nbsp;file&nbsp;as&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;hhmmss.</span></dd></dl>
  <dl><dt><a name="-filter_traces"><strong>filter_traces</strong></a>(detector, scintillator)</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator.<br>
 &nbsp;<br>
 Parameters<br>
@@ -174,73 +143,6 @@ Returns<br>
 -------<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting,&nbsp;False&nbsp;otherwise.</span></dd></dl>
- <dl><dt><a name="-make_date_list"><strong>make_date_list</strong></a>(first_date, second_date)</dt><dd><span class="code">Makes&nbsp;a&nbsp;list&nbsp;of&nbsp;dates&nbsp;from&nbsp;first_date&nbsp;to&nbsp;second_date&nbsp;(inclusive).<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-first_date&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;first&nbsp;date&nbsp;in&nbsp;the&nbsp;range.<br>
-second_date&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;second&nbsp;date&nbsp;in&nbsp;the&nbsp;range.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-list<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dates&nbsp;on&nbsp;the&nbsp;specified&nbsp;range.</span></dd></dl>
- <dl><dt><a name="-make_path"><strong>make_path</strong></a>(path)</dt><dd><span class="code">Checks&nbsp;to&nbsp;see&nbsp;if&nbsp;a&nbsp;directory&nbsp;path&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;given&nbsp;string&nbsp;exists&nbsp;and,&nbsp;if&nbsp;not,&nbsp;creates&nbsp;it.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-path&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;to&nbsp;be&nbsp;created.</span></dd></dl>
- <dl><dt><a name="-o1_poly"><strong>o1_poly</strong></a>(x, a=0.0, b=0.0)</dt><dd><span class="code">Returns&nbsp;the&nbsp;y&nbsp;value&nbsp;at&nbsp;the&nbsp;given&nbsp;x&nbsp;for&nbsp;a&nbsp;first-order&nbsp;polynomial&nbsp;with&nbsp;terms&nbsp;a&nbsp;and&nbsp;b.</span></dd></dl>
- <dl><dt><a name="-o2_poly"><strong>o2_poly</strong></a>(x, a=0.0, b=0.0, c=0.0)</dt><dd><span class="code">Returns&nbsp;the&nbsp;y&nbsp;value&nbsp;at&nbsp;the&nbsp;given&nbsp;x&nbsp;for&nbsp;a&nbsp;second-order&nbsp;polynomial&nbsp;with&nbsp;terms&nbsp;a,&nbsp;b,&nbsp;and&nbsp;c.</span></dd></dl>
- <dl><dt><a name="-pickle_detector"><strong>pickle_detector</strong></a>(detector, file_name, path=None)</dt><dd><span class="code">Pickles&nbsp;Detectors.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;to&nbsp;be&nbsp;pickled.<br>
-file_name&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;pickle&nbsp;file.<br>
-path&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;directory&nbsp;where&nbsp;the&nbsp;pickle&nbsp;file&nbsp;will&nbsp;be&nbsp;saved.&nbsp;If&nbsp;not&nbsp;provided,&nbsp;the&nbsp;file&nbsp;will&nbsp;be&nbsp;saved<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;the&nbsp;Detector's&nbsp;export&nbsp;directory.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;pickle&nbsp;file&nbsp;(including&nbsp;its&nbsp;name).</span></dd></dl>
- <dl><dt><a name="-print_logger"><strong>print_logger</strong></a>(string, logfile)</dt><dd><span class="code">Prints&nbsp;the&nbsp;specified&nbsp;string&nbsp;to&nbsp;both&nbsp;stdout&nbsp;and&nbsp;the&nbsp;specified&nbsp;file.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-string&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;string&nbsp;to&nbsp;be&nbsp;printed/logged.<br>
-logfile&nbsp;:&nbsp;_io.TextIO<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;file&nbsp;where&nbsp;the&nbsp;string&nbsp;should&nbsp;be&nbsp;written.</span></dd></dl>
- <dl><dt><a name="-roll_date_backward"><strong>roll_date_backward</strong></a>(date_str)</dt><dd><span class="code">Returns&nbsp;the&nbsp;calendar&nbsp;date&nbsp;before&nbsp;the&nbsp;one&nbsp;given&nbsp;as&nbsp;an&nbsp;argument.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;be&nbsp;rolled&nbsp;backward&nbsp;from&nbsp;(in&nbsp;yymmdd&nbsp;format).<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;calendar&nbsp;date&nbsp;before&nbsp;the&nbsp;one&nbsp;supplied&nbsp;(in&nbsp;yymmdd&nbsp;format).</span></dd></dl>
- <dl><dt><a name="-roll_date_forward"><strong>roll_date_forward</strong></a>(date_str)</dt><dd><span class="code">Returns&nbsp;the&nbsp;calendar&nbsp;date&nbsp;after&nbsp;the&nbsp;one&nbsp;given&nbsp;as&nbsp;an&nbsp;argument.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;be&nbsp;rolled&nbsp;forward&nbsp;from&nbsp;(in&nbsp;yymmdd&nbsp;format).<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;calendar&nbsp;date&nbsp;after&nbsp;the&nbsp;one&nbsp;supplied&nbsp;(in&nbsp;yymmdd&nbsp;format).</span></dd></dl>
  <dl><dt><a name="-separate_data"><strong>separate_data</strong></a>(data, count_scints, start=None, stop=None)</dt><dd><span class="code">Separates&nbsp;combined&nbsp;data&nbsp;from&nbsp;multiple&nbsp;scintillators&nbsp;into&nbsp;separate&nbsp;data&nbsp;for&nbsp;each&nbsp;scintillator.<br>
 &nbsp;<br>
 Parameters<br>
@@ -263,16 +165,5 @@ dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;with&nbsp;separated&nbsp;data&nbsp;for&nbsp;each&nbsp;scintillator&nbsp;in&nbsp;count_scints.</span></dd></dl>
  <dl><dt><a name="-short_to_full_date"><strong>short_to_full_date</strong></a>(date_str)</dt><dd><span class="code">Converts&nbsp;a&nbsp;date&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;yymmdd&nbsp;to&nbsp;the&nbsp;form&nbsp;yyyy-mm-dd.</span></dd></dl>
  <dl><dt><a name="-trace_to_counts"><strong>trace_to_counts</strong></a>(trace_energies)</dt><dd><span class="code">Simulates&nbsp;the&nbsp;eMorpho&nbsp;response&nbsp;to&nbsp;trace&nbsp;data&nbsp;and&nbsp;returns&nbsp;the&nbsp;results.</span></dd></dl>
- <dl><dt><a name="-unpickle_detector"><strong>unpickle_detector</strong></a>(pickle_path)</dt><dd><span class="code">Unpickles&nbsp;Detectors.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-pickle_path&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;(including&nbsp;file&nbsp;name)&nbsp;to&nbsp;the&nbsp;pickle&nbsp;file&nbsp;that&nbsp;the&nbsp;Detector&nbsp;is&nbsp;stored&nbsp;in.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-tgfsearch.detectors.detector.Detector<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;Detector.</span></dd></dl>
 </td></tr></table>
 </body></html>

@@ -19,16 +19,18 @@
 <td class="singlecolumn"><table><tr><td class="multicolumn"><a href="datetime.html">datetime</a><br>
 <a href="gc.html">gc</a><br>
 <a href="glob.html">glob</a><br>
-<a href="json.html">json</a><br>
-</td><td class="multicolumn"><a href="multiprocessing.html">multiprocessing</a><br>
+<a href="tgfsearch.helpers.helper_funcs.html">tgfsearch.helpers.helper_funcs</a><br>
+</td><td class="multicolumn"><a href="json.html">json</a><br>
+<a href="multiprocessing.html">multiprocessing</a><br>
 <a href="numpy.html">numpy</a><br>
 <a href="os.html">os</a><br>
-<a href="tgfsearch.parameters.html">tgfsearch.parameters</a><br>
-</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
+<a href="pandas.html">pandas</a><br>
+<a href="pickle.html">pickle</a><br>
 <a href="psutil.html">psutil</a><br>
-<a href="sys.html">sys</a><br>
+</td><td class="multicolumn"><a href="sys.html">sys</a><br>
 <a href="threading.html">threading</a><br>
-</td><td class="multicolumn"><a href="tgfsearch.tools.html">tgfsearch.tools</a><br>
+<a href="tgfsearch.tools.tools.html">tgfsearch.tools.tools</a><br>
 <a href="warnings.html">warnings</a><br>
 </td></tr></table></td></tr></table><p>
 <table class="section">
@@ -335,6 +337,21 @@ Returns<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;scintillator&nbsp;is&nbsp;in&nbsp;<a href="#Detector">Detector</a>,&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
+<dl><dt><a name="Detector-pickle"><strong>pickle</strong></a>(self, file_name, path=None)</dt><dd><span class="code">Pickles&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;instance&nbsp;to&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;the&nbsp;path.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+file_name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;pickle&nbsp;file.<br>
+path&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;directory&nbsp;where&nbsp;the&nbsp;pickle&nbsp;file&nbsp;will&nbsp;be&nbsp;saved.&nbsp;If&nbsp;not&nbsp;provided,&nbsp;the&nbsp;file&nbsp;will&nbsp;be&nbsp;saved<br>
+&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;the&nbsp;<a href="#Detector">Detector</a>'s&nbsp;export&nbsp;directory.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;pickle&nbsp;file&nbsp;(including&nbsp;its&nbsp;name).</span></dd></dl>
+
 <dl><dt><a name="Detector-set_attribute"><strong>set_attribute</strong></a>(self, scintillator, attribute, new_info, deepcopy=True)</dt><dd><span class="code">Updates&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
 Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&nbsp;as&nbsp;the&nbsp;old,&nbsp;and&nbsp;if&nbsp;either&nbsp;a&nbsp;list&nbsp;mode&nbsp;or&nbsp;trace&nbsp;file&nbsp;list&nbsp;is&nbsp;supplied<br>
 it&nbsp;is&nbsp;assumed&nbsp;that&nbsp;the&nbsp;list&nbsp;is&nbsp;in&nbsp;order&nbsp;and&nbsp;contains&nbsp;no&nbsp;duplicates.<br>
@@ -400,6 +417,20 @@ tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;All&nbsp;time-related&nbsp;data&nbsp;will&nbsp;be&nbsp;adjusted&nbsp;to&nbsp;reflect&nbsp;the&nbsp;difference&nbsp;in&nbsp;date&nbsp;between&nbsp;the&nbsp;operand&nbsp;Detectors<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Using&nbsp;the&nbsp;method&nbsp;import()&nbsp;with&nbsp;this&nbsp;<a href="#Detector">Detector</a>&nbsp;won't&nbsp;work.&nbsp;Trying&nbsp;this&nbsp;will&nbsp;result&nbsp;in&nbsp;a&nbsp;RuntimeError</span></dd></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="Detector-unpickle"><strong>unpickle</strong></a>(pickle_path)</dt><dd><span class="code">Unpickles&nbsp;a&nbsp;<a href="#Detector">Detector</a>&nbsp;from&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;it.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+pickle_path&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;(including&nbsp;file&nbsp;name)&nbsp;to&nbsp;the&nbsp;pickle&nbsp;file&nbsp;that&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;is&nbsp;stored&nbsp;in.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;<a href="#Detector">Detector</a>.</span></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

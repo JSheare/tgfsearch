@@ -13,10 +13,11 @@ import sys as sys
 import threading as threading
 import warnings as warnings
 
-import tgfsearch.parameters as params
-import tgfsearch.tools as tl
+import tgfsearch.config.parameters as params
+import tgfsearch.helpers.helper_funcs as helper_funcs
+import tgfsearch.tools.tools as tl
 from tgfsearch.detectors.scintillator import Scintillator
-from tgfsearch.helpers.reader import Reader
+from tgfsearch.tools.reader import Reader
 
 
 def worker_init():
@@ -239,7 +240,7 @@ class Detector:
         if path is None:
             path = f'{self.get_export_loc()}'
 
-        make_path(path)
+        helper_funcs.make_path(path)
 
         log = self.log
         self.log = None  # serializing open file objects results in errors
@@ -661,10 +662,10 @@ class Detector:
         for scintillator in self._scintillators:
             lm_format = self._scintillators[scintillator].lm_format
             for file in self.get_attribute(scintillator, 'lm_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * lm_growth_factors[lm_format]
+                total_file_size += helper_funcs.file_size(file) * lm_growth_factors[lm_format]
 
             for file in self.get_attribute(scintillator, 'trace_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * trace_growth_factors[lm_format]
+                total_file_size += helper_funcs.file_size(file) * trace_growth_factors[lm_format]
 
         return total_file_size
 
@@ -1031,7 +1032,7 @@ class Detector:
             day_difference = 0
             rolled_date = earlier.date_str
             while rolled_date != later.date_str:
-                rolled_date = tl.roll_date_forward(rolled_date)
+                rolled_date = helper_funcs.roll_date_forward(rolled_date)
                 day_difference += 1
 
             for scintillator in self._scintillators:

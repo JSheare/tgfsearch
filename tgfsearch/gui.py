@@ -14,7 +14,7 @@ from tkinter import ttk
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-import tgfsearch.tools as tl
+import tgfsearch.tools.tools as tl
 from tgfsearch.search import search_check, program
 
 
