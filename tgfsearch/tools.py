@@ -2,10 +2,7 @@
 import datetime as dt
 import io as io
 import numpy as np
-import os as os
 import pandas as pd
-import pickle as pickle
-import struct as struct
 import zoneinfo as zi
 from selenium import webdriver as webdriver
 from selenium.webdriver.support import expected_conditions as ec
@@ -13,226 +10,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 
-import tgfsearch.parameters as params
-
-
-def o1_poly(x, a=0., b=0.):
-    """Returns the y value at the given x for a first-order polynomial with terms a and b."""
-    return x * a + b
-
-
-def o2_poly(x, a=0., b=0., c=0.):
-    """Returns the y value at the given x for a second-order polynomial with terms a, b, and c."""
-    return a * x ** 2 + b * x + c
-
-
-def print_logger(string, logfile):
-    """Prints the specified string to both stdout and the specified file.
-
-    Parameters
-    ----------
-    string : str
-        The string to be printed/logged.
-    logfile : _io.TextIO
-        The file where the string should be written.
-
-    """
-
-    print(string)
-    if logfile is not None:
-        print(string, file=logfile)
-
-
-def make_path(path):
-    """Checks to see if a directory path corresponding to the given string exists and, if not, creates it.
-
-    Parameters
-    ----------
-    path : str
-        The path to be created.
-
-    """
-
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-
-def file_size(file, uncompressed=True):
-    """Returns the size of the given file in bytes.
-
-    Parameters
-    ----------
-    file : str
-        The name of the file.
-    uncompressed : bool
-        Optional. If True, the function will return the uncompressed file size (if the file is compressed). True
-        by default. Note: this will not be accurate for files that are over 4GB uncompressed due to the way
-        uncompressed size is stored according to the gzip standard.
-
-    Returns
-    -------
-    int
-        The size of the file in bytes.
-
-    """
-
-    if uncompressed and len(file) > 3 and file[-3:] == '.gz':
-        with open(file, 'rb') as f:
-            f.seek(-4, 2)
-            size = struct.unpack('I', f.read(4))[0]
-
-    else:
-        size = os.path.getsize(file)
-
-    return size
+import tgfsearch.config.parameters as params
 
 
 def file_timestamp(file):
-    """Returns the timestamp of the given file as a string of the form hhmmss."""
+    """Returns the timestamp of the given data file as a string of the form hhmmss."""
 
     labels = file.split('.')[0].split('_')
     if len(labels) > 4:
         return labels[-2]
 
     return labels[-1]
-
-
-def days_per_month(month, year):
-    """Returns the number of days in the requested month based on the year.
-
-    Parameters
-    ----------
-    month : int
-        The month of the year (1-12).
-    year : int
-        The desired year to check.
-
-    Returns
-    -------
-    int
-        The number of days in the specified month for the specified year.
-
-    """
-
-    match month:
-        case 1:  # January
-            return 31
-        case 2:  # February
-            return 29 if year % 4 == 0 or (year % 100 != 0 and year % 400 == 0) else 28
-        case 3:  # March
-            return 31
-        case 4:  # April
-            return 30
-        case 5:  # May
-            return 31
-        case 6:  # June
-            return 30
-        case 7:  # July
-            return 31
-        case 8:  # August
-            return 31
-        case 9:  # September
-            return 30
-        case 10:  # October
-            return 31
-        case 11:  # November
-            return 30
-        case 12:  # December
-            return 31
-        case _:
-            return 0
-
-
-def roll_date_forward(date_str):
-    """Returns the calendar date after the one given as an argument.
-
-    Parameters
-    ----------
-    date_str : str
-        The date to be rolled forward from (in yymmdd format).
-
-    Returns
-    -------
-    str
-        The calendar date after the one supplied (in yymmdd format).
-
-    """
-
-    date_int = int(date_str)
-    date_int += 1
-    date_str = str(date_int)
-    # Month rollover
-    if int(date_str[4:]) > days_per_month(int(date_str[2:4]), int(params.CENTURY + date_str[0:2])):
-        date_int = date_int + 100 - (int(date_str[4:]) - 1)
-        date_str = str(date_int)
-
-    # Year rollover
-    if int(date_str[2:4]) > 12:
-        date_int = (date_int // 10000 + 1) * 10000 + 101
-        date_str = str(date_int)
-
-    return date_str
-
-
-def roll_date_backward(date_str):
-    """Returns the calendar date before the one given as an argument.
-
-    Parameters
-    ----------
-    date_str : str
-        The date to be rolled backward from (in yymmdd format).
-
-    Returns
-    -------
-    str
-        The calendar date before the one supplied (in yymmdd format).
-
-    """
-
-    date_int = int(date_str)
-    date_int -= 1
-    date_str = str(date_int)
-    # Year rollback
-    if int(date_str[2:]) == 100:  # This would be January 0th because int(0100) = 100
-        date_int = (date_int // 10000 - 1) * 10000 + 1231  # December 31st of the previous year
-        date_str = str(date_int)
-
-    # Month rollback
-    if int(date_str[4:]) == 0:
-        date_int -= 100
-        date_int += days_per_month(int(str(date_int)[2:4]), int(params.CENTURY + date_str[0:2]))
-        date_str = str(date_int)
-
-    return date_str
-
-
-def make_date_list(first_date, second_date):
-    """Makes a list of dates from first_date to second_date (inclusive).
-
-    Parameters
-    ----------
-    first_date : str
-        The first date in the range.
-    second_date : str
-        The second date in the range.
-
-    Returns
-    -------
-    list
-        A list of dates on the specified range.
-
-    """
-
-    requested_dates = [first_date]
-    if first_date != second_date:
-        date_str = first_date
-        while True:
-            date_str = roll_date_forward(date_str)
-            requested_dates.append(date_str)
-            if date_str == second_date:
-                break
-
-    return requested_dates
 
 
 def full_date_to_short(full_date_str):
@@ -251,62 +39,6 @@ def get_first_sec(date_str):
     month = int(date_str[2:4])
     year = int(params.CENTURY + date_str[0:2])
     return (dt.datetime(year, month, day, 0, 0) - dt.datetime(1970, 1, 1)).total_seconds()
-
-
-def pickle_detector(detector, file_name, path=None):
-    """Pickles Detectors.
-
-    Parameters
-    ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector to be pickled.
-    file_name : str
-        The name of the pickle file.
-    path : str
-        Optional. The directory where the pickle file will be saved. If not provided, the file will be saved
-            to the Detector's export directory.
-
-    Returns
-    -------
-    str
-        The path to the pickle file (including its name).
-
-    """
-
-    if path is None:
-        path = f'{detector.get_export_loc()}'
-
-    make_path(path)
-
-    log = detector.log
-    detector.log = None  # serializing open file objects results in errors
-    export_path = f'{path}/{file_name}.pickle'
-    with open(export_path, 'wb') as file:
-        pickle.dump(detector, file)
-
-    detector.log = log
-    return export_path
-
-
-def unpickle_detector(pickle_path):
-    """Unpickles Detectors.
-
-    Parameters
-    ----------
-    pickle_path : str
-        The path (including file name) to the pickle file that the Detector is stored in.
-
-    Returns
-    -------
-    tgfsearch.detectors.detector.Detector
-        A Detector.
-
-    """
-
-    with open(pickle_path, 'rb') as file:
-        detector = pickle.load(file)
-
-    return detector
 
 
 def convert_clock_hour(clock_hour):
@@ -504,15 +236,15 @@ def combine_data(detector):
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-            Four numpy arrays:
+        Four numpy arrays:
 
-            times
-                An array containing the combined second-of-day times for multiple scintillators.
-            energies
-                An array containing the combined energies for multiple scintillators.
-            count_scints
-                An array containing scintillator names. Each entry corresponds to the scintillator
-                that its corresponding count originated from.
+        times
+            An array containing the combined second-of-day times for multiple scintillators.
+        energies
+            An array containing the combined energies for multiple scintillators.
+        count_scints
+            An array containing scintillator names. Each entry corresponds to the scintillator
+            that its corresponding count originated from.
 
     """
 

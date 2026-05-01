@@ -7,6 +7,7 @@ import multiprocessing as multiprocessing
 import numpy as np
 import os as os
 import pandas as pd
+import pickle
 import psutil as psutil
 import sys as sys
 import threading as threading
@@ -76,10 +77,6 @@ class Detector:
         A list of dates currently being stored in the Detector.
     _has_identity : bool
         A flag for whether the Detector has an identity (established name, scintillator configuration, etc.).
-    lm_growth_factors : dict
-        For each scintillator, the average bytes of Detector memory added per byte of list mode data file imported.
-    trace_growth_factors : dict
-        For each scintillator, the average bytes of Detector memory added per byte of trace mode data file imported.
     _import_loc : str
         The directory where data files for the day are located.
     _export_loc : str
@@ -105,8 +102,6 @@ class Detector:
         # Identity-related information
         self._has_identity = False
         self.unit = unit.upper()
-        self.lm_growth_factors = {}
-        self.trace_growth_factors = {}
         self._import_loc = ''
         self._export_loc = ''
         self._scintillators = {}
@@ -179,9 +174,8 @@ class Detector:
                     return json.load(deployment)
 
         return {'location': 'no location listed', 'instrument': self.unit, 'start_date': '000000', 'end_date': '000000',
-                'utc_to_local': 0.0, 'dst_in_region': False, 'weather_station': '', 'sounding_station': '',
-                'latitude': 0., 'longitude': 0., 'altitude': 0.,
-                'notes': ''}
+                'tz_identifier': '', 'weather_station': '', 'sounding_station': '', 'latitude': 0., 'longitude': 0.,
+                'altitude': 0., 'notes': ''}
 
     def _read_identity(self):
         """Gets and fills in the identity of the Detector from the config file based on the name and date."""
@@ -195,7 +189,7 @@ class Detector:
         if self.unit in entries['identities']:
             identity = entries['identities'][self.unit]
             try:
-                self._import_loc = f'{entries["default_data_root"]}/{identity["subtree"]}/{self.date_str}'
+                self._import_loc = f'{entries["default_data_root"]}/{identity["subdir"]}/{self.date_str}'
 
                 # Getting the right scintillator configuration based on the date
                 correct_date_str = ''
@@ -214,18 +208,68 @@ class Detector:
                 # Creating the scintillator objects
                 for scintillator in self.scint_list:
                     scint_entry = identity['scintillators'][correct_date_str][scintillator]
-                    self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['eRC'])
-                    self.lm_growth_factors[scintillator] = (
-                        entries['growth_factors'][scint_entry['file_format']]['lm_growth_factor'])
-                    self.trace_growth_factors[scintillator] = (
-                        entries['growth_factors'][scint_entry['file_format']]['trace_growth_factor'])
+                    self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['eRC'],
+                                                                     scint_entry['file_format'])
 
                 self._has_identity = True
             except KeyError:
-                raise SyntaxError(f'missing or incomplete information in detector config file for {self.unit}.')
+                raise SyntaxError(f"missing or incomplete information in detector config file for '{self.unit}'.")
 
         else:
-            raise ValueError(f"'no entry for {self.unit}' in detector config file.")
+            raise ValueError(f"'no entry for '{self.unit}' in detector config file.")
+
+    def pickle(self, file_name, path=None):
+        """Pickles the Detector instance to a file and returns the path.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the pickle file.
+        path : str
+            Optional. The directory where the pickle file will be saved. If not provided, the file will be saved
+            to the Detector's export directory.
+
+        Returns
+        -------
+        str
+            The path to the pickle file (including its name).
+
+        """
+
+        if path is None:
+            path = f'{self.get_export_loc()}'
+
+        make_path(path)
+
+        log = self.log
+        self.log = None  # serializing open file objects results in errors
+        export_path = f'{path}/{file_name}.pickle'
+        with open(export_path, 'wb') as file:
+            pickle.dump(self, file)
+
+        self.log = log
+        return export_path
+
+    @staticmethod
+    def unpickle(pickle_path):
+        """Unpickles a Detector from a file and returns it.
+
+        Parameters
+        ----------
+        pickle_path : str
+            The path (including file name) to the pickle file that the Detector is stored in.
+
+        Returns
+        -------
+        tgfsearch.detectors.detector.Detector
+            A Detector.
+
+        """
+
+        with open(pickle_path, 'rb') as file:
+            detector = pickle.load(file)
+
+        return detector
 
     def has_identity(self):
         """Returns True if the Detector has an established identity (established name, scintillator configuration,
@@ -591,18 +635,6 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def _projected_memory(self):
-        """Returns the projected size (in bytes) of the object after all currently listed files have been imported."""
-        total_file_size = 0
-        for scintillator in self._scintillators:
-            for file in self.get_attribute(scintillator, 'lm_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * self.lm_growth_factors[scintillator]
-
-            for file in self.get_attribute(scintillator, 'trace_filelist', deepcopy=False):
-                total_file_size += tl.file_size(file) * self.trace_growth_factors[scintillator]
-
-        return total_file_size
-
     def clear(self, clear_filelists=True):
         """Clears all data currently stored in the Detector.
 
@@ -618,6 +650,23 @@ class Detector:
 
         if clear_filelists:
             self.dates_stored = [self.date_str]
+
+    def _projected_memory(self):
+        """Returns the projected size (in bytes) of the object after all currently listed files have been imported."""
+        lm_growth_factors = {'godot_lm': 1.2606058060274177, 'ssv_nrl_lm': 0.8465044061959315,
+                             'thor_lm': 0.7123617288020386, 'json_nrl_lm': 0.6251838546767902}
+        trace_growth_factors = {'godot_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0, 'json_nrl_lm': 1.0}
+
+        total_file_size = 0
+        for scintillator in self._scintillators:
+            lm_format = self._scintillators[scintillator].lm_format
+            for file in self.get_attribute(scintillator, 'lm_filelist', deepcopy=False):
+                total_file_size += tl.file_size(file) * lm_growth_factors[lm_format]
+
+            for file in self.get_attribute(scintillator, 'trace_filelist', deepcopy=False):
+                total_file_size += tl.file_size(file) * trace_growth_factors[lm_format]
+
+        return total_file_size
 
     def _file_form(self, eRC):
         """Returns the pattern for a scintillator's files given the scintillator's eRC serial number."""
@@ -636,19 +685,10 @@ class Detector:
 
     def _get_scint_filelists(self, scintillator):
         """Returns the list mode and trace filelists for the given scintillator."""
+        lm_extensions = ['.csv', '.txt']
+        trace_extensions = ['.xtr']
+
         complete_filelist = self._get_serial_num_filelist(self._scintillators[scintillator].eRC)
-        try:
-            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
-                      'r') as file:
-                entries = json.load(file)
-
-        except json.decoder.JSONDecodeError:
-            raise SyntaxError('invalid syntax in detector config file.')
-        except KeyError:
-            raise KeyError('missing valid file extension information in detector config file.')
-
-        lm_extensions = entries['lm_extensions']
-        trace_extensions = entries['trace_extensions']
         unique_files = set()
         lm_filelist = []
         trace_filelist = []
@@ -861,7 +901,7 @@ class Detector:
                         self.log.write(trace_results[1])
 
     def import_data(self, existing_filelists=False, import_traces=True, import_lm=True, import_scints=None,
-                    clean_energy=False, feedback=False, mem_frac=1.):
+                    clean_energy=False, mem_frac=1., **kwargs):
         """Imports and stores data from the daily data files.
 
         Parameters
@@ -876,8 +916,6 @@ class Detector:
             Optional. If provided, only data from the scintillators with the listed names will be imported.
         clean_energy : bool
             Optional. If True, the data reader will strip out maximum and low energy counts. False by default.
-        feedback : bool
-            Optional. If True, feedback about the progress of the importing will be printed.
         mem_frac : float
             Optional: The maximum fraction of currently available system memory that the Detector is allowed to use for
             data. If the dataset is projected to be larger than this limit, a MemoryError will be raised.
@@ -917,7 +955,7 @@ class Detector:
             print('', file=self.log)
 
         options = {'import_traces': import_traces, 'import_lm': import_lm, 'clean_energy': clean_energy,
-                   'feedback': feedback}
+                   'feedback': kwargs['feedback'] if 'feedback' in kwargs else False}
 
         # Creating the process pool for data reading tasks
         with multiprocessing.Pool(processes=len(scintillators), initializer=worker_init) as process_pool:

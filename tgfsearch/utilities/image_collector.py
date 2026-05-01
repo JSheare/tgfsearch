@@ -8,9 +8,9 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-import tgfsearch.parameters as params
-import tgfsearch.tools as tl
-from tgfsearch.search import is_valid_search
+import tgfsearch.config.parameters as params
+import tgfsearch.helpers.helper_funcs as helper_funcs
+from tgfsearch.search import search_check
 
 
 def is_valid_dir_path(path):
@@ -39,7 +39,9 @@ def main():
         exit()
 
     # Makes sure inputs are valid
-    if not is_valid_search(first_date, second_date, unit, print_feedback=True):
+    valid_search, feedback = search_check(first_date, second_date, unit)
+    if not valid_search:
+        print(feedback)
         exit()
 
     if len(sys.argv) > 4:
@@ -115,14 +117,14 @@ def main():
     short_hist_path = f'{export_path}/{unit}/histograms/{params.SHORT_BIN_SIZE}_sec_bins'
     long_hist_path = f'{export_path}/{unit}/histograms/{params.LONG_BIN_SIZE}_sec_bins'
 
-    requested_dates = tl.make_date_list(first_date, second_date)
+    requested_dates = helper_funcs.make_date_list(first_date, second_date)
     for date_str in requested_dates:
         path = f'{detector_path}/{date_str}'
 
         # Traces
         trace_list = glob.glob(f'{path}/traces/*xtr*.png')
         if len(trace_list) > 0:
-            tl.make_path(trace_path)
+            helper_funcs.make_path(trace_path)
 
         for trace in trace_list:
             t_filename = trace.split('/')[-1].split('\\')[-1]
@@ -152,7 +154,7 @@ def main():
             scatter_plot_list = top_plot_list
 
         if len(scatter_plot_list) > 0:
-            tl.make_path(short_event_path)
+            helper_funcs.make_path(short_event_path)
 
         for plot in scatter_plot_list:
             s_filename = plot.split('/')[-1].split('\\')[-1]
@@ -165,7 +167,7 @@ def main():
             hist_filename = hist.split('/')[-1].split('\\')[-1]
             if int(hist_filename.split('_')[5]) > 0:
                 if not short_path_made:
-                    tl.make_path(short_hist_path)
+                    helper_funcs.make_path(short_hist_path)
                     short_path_made = True
 
                 shutil.copyfile(hist, f'{short_hist_path}/{hist_filename}')
@@ -176,7 +178,7 @@ def main():
             hist_filename = hist.split('/')[-1].split('\\')[-1]
             if int(hist_filename.split('_')[5]) > 0:
                 if not long_path_made:
-                    tl.make_path(long_hist_path)
+                    helper_funcs.make_path(long_hist_path)
                     long_path_made = True
 
                 shutil.copyfile(hist, f'{long_hist_path}/{hist_filename}')

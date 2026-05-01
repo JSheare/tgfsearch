@@ -3,7 +3,7 @@ import copy as copy
 import gc as gc
 import pandas as pd
 
-import tgfsearch.parameters as params
+import tgfsearch.config.parameters as params
 from tgfsearch.helpers.reader import Reader
 
 
@@ -16,6 +16,8 @@ class Scintillator:
         The scintillator's name (abbreviated).
     eRC : str
         The scintillator's serial number.
+    lm_format : str
+        The format of the scintillator's list mode files.
 
     Attributes
     ----------
@@ -38,9 +40,10 @@ class Scintillator:
 
     """
 
-    def __init__(self, name, eRC):
+    def __init__(self, name, eRC, lm_format):
         self.name = name
         self.eRC = eRC
+        self.lm_format = lm_format
         self.lm_frame = pd.DataFrame()
         self.lm_filelist = []
         self.lm_file_ranges = []
@@ -105,7 +108,7 @@ class Scintillator:
         else:
             frame = self.get_lm_file(file_name, deepcopy=False)
 
-        if column in frame:
+        if column in frame.columns:
             return frame[column].to_numpy()
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")
@@ -120,7 +123,7 @@ class Scintillator:
         if len(frame) != len(new_data):
             raise ValueError(f"length of data ({len(new_data)}) doesn't match size of frame ({len(frame)}).")
 
-        if column in frame:
+        if column in frame.columns:
             frame[column] = new_data
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")

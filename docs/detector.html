@@ -76,10 +76,6 @@ dates_stored&nbsp;:&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dates&nbsp;currently&nbsp;being&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
 _has_identity&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;flag&nbsp;for&nbsp;whether&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,&nbsp;etc.).<br>
-lm_growth_factors&nbsp;:&nbsp;dict<br>
-&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;each&nbsp;scintillator,&nbsp;the&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
-trace_growth_factors&nbsp;:&nbsp;dict<br>
-&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;each&nbsp;scintillator,&nbsp;the&nbsp;average&nbsp;bytes&nbsp;of&nbsp;<a href="#Detector">Detector</a>&nbsp;memory&nbsp;added&nbsp;per&nbsp;byte&nbsp;of&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;imported.<br>
 _import_loc&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;directory&nbsp;where&nbsp;data&nbsp;files&nbsp;for&nbsp;the&nbsp;day&nbsp;are&nbsp;located.<br>
 _export_loc&nbsp;:&nbsp;str<br>
@@ -294,8 +290,8 @@ etc.),&nbsp;False&nbsp;otherwise.</span></dd></dl>
     import_lm=True,
     import_scints=None,
     clean_energy=False,
-    feedback=False,
-    mem_frac=1.0
+    mem_frac=1.0,
+    **kwargs
 )</dt><dd><span class="code">Imports&nbsp;and&nbsp;stores&nbsp;data&nbsp;from&nbsp;the&nbsp;daily&nbsp;data&nbsp;files.<br>
 &nbsp;<br>
 Parameters<br>
@@ -310,8 +306,6 @@ import_scints&nbsp;:&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;provided,&nbsp;only&nbsp;data&nbsp;from&nbsp;the&nbsp;scintillators&nbsp;with&nbsp;the&nbsp;listed&nbsp;names&nbsp;will&nbsp;be&nbsp;imported.<br>
 clean_energy&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;data&nbsp;reader&nbsp;will&nbsp;strip&nbsp;out&nbsp;maximum&nbsp;and&nbsp;low&nbsp;energy&nbsp;counts.&nbsp;False&nbsp;by&nbsp;default.<br>
-feedback&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;feedback&nbsp;about&nbsp;the&nbsp;progress&nbsp;of&nbsp;the&nbsp;importing&nbsp;will&nbsp;be&nbsp;printed.<br>
 mem_frac&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional:&nbsp;The&nbsp;maximum&nbsp;fraction&nbsp;of&nbsp;currently&nbsp;available&nbsp;system&nbsp;memory&nbsp;that&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;is&nbsp;allowed&nbsp;to&nbsp;use&nbsp;for<br>
 &nbsp;&nbsp;&nbsp;&nbsp;data.&nbsp;If&nbsp;the&nbsp;dataset&nbsp;is&nbsp;projected&nbsp;to&nbsp;be&nbsp;larger&nbsp;than&nbsp;this&nbsp;limit,&nbsp;a&nbsp;MemoryError&nbsp;will&nbsp;be&nbsp;raised.<br>
@@ -415,5 +409,14 @@ Data descriptors defined here:<br>
 <dl><dt><strong>__weakref__</strong></dt>
 <dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
 </dl>
-</td></tr></table></td></tr></table>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-read_data_file"><strong>read_data_file</strong></a>(reader, filelist, clean_energy, connection)</dt><dd><span class="code">Reading&nbsp;the&nbsp;given&nbsp;data&nbsp;files&nbsp;and&nbsp;sending&nbsp;them&nbsp;to&nbsp;the&nbsp;given&nbsp;pipe.&nbsp;Meant&nbsp;to&nbsp;be&nbsp;run&nbsp;in&nbsp;a&nbsp;subprocess,&nbsp;which<br>
+means&nbsp;that&nbsp;the&nbsp;passed&nbsp;arguments&nbsp;and&nbsp;piped&nbsp;values&nbsp;are&nbsp;serialized/deserialized&nbsp;on&nbsp;each&nbsp;end.</span></dd></dl>
+ <dl><dt><a name="-worker_init"><strong>worker_init</strong></a>()</dt><dd><span class="code">Data&nbsp;importer&nbsp;worker&nbsp;process&nbsp;initialization&nbsp;function.&nbsp;Mutes&nbsp;worker&nbsp;stdout&nbsp;and&nbsp;stderr&nbsp;output.</span></dd></dl>
+</td></tr></table>
 </body></html>

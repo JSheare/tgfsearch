@@ -3,7 +3,7 @@
 
   "identities" : {
     "FRANCE": {
-      "subtree": "FRANCE/Data",
+      "subdir": "FRANCE/Data",
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "5072", "file_format": "thor_lm"},
@@ -12,7 +12,7 @@
     },
 
     "GODOT": {
-      "subtree": "GODOT/Data",
+      "subdir": "GODOT/Data",
       "scintillators": {
         "000000": {
                   "spl": {"eRC": "1489", "file_format": "godot_lm"},
@@ -27,7 +27,7 @@
     },
 
     "ISRAEL": {
-      "subtree": "ISRAEL/Data",
+      "subdir": "ISRAEL/Data",
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "5069", "file_format": "thor_lm"}}
@@ -35,7 +35,7 @@
     },
 
     "MINITHOR1": {
-      "subtree": "MINITHOR1/Data",
+      "subdir": "MINITHOR1/Data",
       "scintillators": {
         "000000": {
                   "ipl": {"eRC": "4194", "file_format": "thor_lm"},
@@ -44,7 +44,7 @@
     },
 
     "SANTIS": {
-      "subtree": "SANTIS/Data",
+      "subdir": "SANTIS/Data",
       "scintillators": {
         "000000": {
                   "lpl": {"eRC": "2549", "file_format": "ssv_nrl_lm"}}
@@ -52,7 +52,7 @@
     },
 
     "SPLIT": {
-      "subtree": "SPLIT/Data",
+      "subdir": "SPLIT/Data",
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "4193", "file_format": "thor_lm"},
@@ -61,7 +61,7 @@
     },
 
     "THOR1": {
-      "subtree": "THOR/THOR1/Data",
+      "subdir": "THOR/THOR1/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4179", "file_format": "thor_lm"},
@@ -71,7 +71,7 @@
       }
     },
     "THOR2": {
-      "subtree": "THOR/THOR2/Data",
+      "subdir": "THOR/THOR2/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
@@ -87,7 +87,7 @@
     },
 
     "THOR3": {
-      "subtree": "THOR/THOR3/Data",
+      "subdir": "THOR/THOR3/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4169", "file_format": "thor_lm"},
@@ -98,7 +98,7 @@
     },
 
     "THOR4": {
-      "subtree": "THOR/THOR4/Data",
+      "subdir": "THOR/THOR4/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4177", "file_format": "thor_lm"},
@@ -109,7 +109,7 @@
     },
 
     "THOR5": {
-      "subtree": "THOR/THOR5/Data",
+      "subdir": "THOR/THOR5/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4188", "file_format": "thor_lm"},
@@ -125,7 +125,7 @@
     },
 
     "THOR6": {
-      "subtree": "THOR/THOR6/Data",
+      "subdir": "THOR/THOR6/Data",
       "scintillators": {
         "000000": {
                   "nai": {"eRC": "4186", "file_format": "thor_lm"},
@@ -136,7 +136,7 @@
     },
 
     "TRIGGER" : {
-      "subtree": "TRIGGER/Data",
+      "subdir": "TRIGGER/Data",
       "scintillators": {
         "000000": {
                   "mpl": {"eRC": "4168", "file_format": "thor_lm"}
@@ -145,28 +145,5 @@
     }
   },
 
-  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"],
-
-  "lm_extensions" : [".csv", ".txt"],
-
-  "trace_extensions" : [".xtr"],
-
-  "growth_factors" : {
-    "godot_lm" : {
-      "lm_growth_factor" : 1.2606058060274177,
-      "trace_growth_factor" : 1.0
-    },
-    "ssv_nrl_lm" : {
-      "lm_growth_factor" : 0.8465044061959315,
-      "trace_growth_factor" : 1.0
-    },
-    "thor_lm" : {
-      "lm_growth_factor" : 0.7123617288020386,
-      "trace_growth_factor" : 10.085717812927724
-    },
-    "json_nrl_lm" : {
-      "lm_growth_factor" : 0.6251838546767902,
-      "trace_growth_factor" : 1.0
-    }
-  }
+  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"]
 }
