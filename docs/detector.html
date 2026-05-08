@@ -136,7 +136,12 @@ data_type&nbsp;:&nbsp;str<br>
 Returns<br>
 -------<br>
 bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;in&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;in&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;data&nbsp;type&nbsp;aren't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-find_lm_file"><strong>find_lm_file</strong></a>(self, scintillator: 'str', count_time: 'float') -&gt; 'str'</dt><dd><span class="code">Returns&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
 &nbsp;<br>
@@ -151,7 +156,12 @@ Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.&nbsp;Returns&nbsp;an&nbsp;empty&nbsp;string&nbsp;if&nbsp;the&nbsp;count<br>
-&nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;isn't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-find_lm_file_index"><strong>find_lm_file_index</strong></a>(self, scintillator: 'str', count_time: 'float') -&gt; 'int'</dt><dd><span class="code">Helper&nbsp;function.&nbsp;Returns&nbsp;the&nbsp;index&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
 &nbsp;<br>
@@ -166,7 +176,12 @@ Returns<br>
 -------<br>
 int<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;index&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.&nbsp;Returns&nbsp;-1&nbsp;if&nbsp;the&nbsp;count<br>
-&nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;isn't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-find_matching_traces"><strong>find_matching_traces</strong></a>(
     self,
@@ -188,7 +203,12 @@ trace_list&nbsp;:&nbsp;list<br>
 Returns<br>
 -------<br>
 list<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;trace&nbsp;names&nbsp;that&nbsp;could&nbsp;be&nbsp;matches.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;trace&nbsp;names&nbsp;that&nbsp;could&nbsp;be&nbsp;matches.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;isn't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_attribute"><strong>get_attribute</strong></a>(
     self,
@@ -211,7 +231,12 @@ Returns<br>
 str&nbsp;||&nbsp;list&nbsp;||&nbsp;numpy.ndarray&nbsp;||&nbsp;dict&nbsp;||&nbsp;pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;String&nbsp;if&nbsp;'eRC'&nbsp;is&nbsp;requested;&nbsp;list&nbsp;if&nbsp;'lm_filelist',&nbsp;'trace_filelist',&nbsp;or&nbsp;'lm_file_ranges'&nbsp;is&nbsp;requested;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;&nbsp;if&nbsp;'time'&nbsp;or&nbsp;'energies'&nbsp;is&nbsp;requested;&nbsp;Reader&nbsp;if&nbsp;'reader'&nbsp;is&nbsp;requested;&nbsp;dataframe<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;'lm_frame'&nbsp;is&nbsp;requested,&nbsp;etc.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;'lm_frame'&nbsp;is&nbsp;requested,&nbsp;etc.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;attribute&nbsp;aren't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_clone"><strong>get_clone</strong></a>(self) -&gt; 'Detector'</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one&nbsp;(but&nbsp;no&nbsp;data).<br>
 &nbsp;<br>
@@ -255,7 +280,12 @@ file_name&nbsp;:&nbsp;str<br>
 Returns<br>
 -------<br>
 numpy.ndarray<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;requested&nbsp;data&nbsp;column.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;requested&nbsp;data&nbsp;column.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;column&nbsp;aren't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_lm_file"><strong>get_lm_file</strong></a>(
     self,
@@ -277,7 +307,12 @@ deepcopy&nbsp;:&nbsp;bool<br>
 Returns<br>
 -------<br>
 pandas.core.frame.DataFrame<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;with&nbsp;the&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;list&nbsp;mode&nbsp;file.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;with&nbsp;the&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;list&nbsp;mode&nbsp;file.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;file&nbsp;name&nbsp;aren't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_trace"><strong>get_trace</strong></a>(self, scintillator: 'str', trace_name: 'str', deepcopy: 'bool' = True) -&gt; 'pd.DataFrame'</dt><dd><span class="code">Returns&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator&nbsp;and&nbsp;trace&nbsp;name.<br>
 &nbsp;<br>
@@ -293,7 +328,12 @@ deepcopy&nbsp;:&nbsp;bool<br>
 Returns<br>
 -------<br>
 pandas.core.frame.DataFrame<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;name.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;name.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;file&nbsp;name&nbsp;aren't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-get_trace_names"><strong>get_trace_names</strong></a>(self, scintillator: 'str') -&gt; 'List[str]'</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.<br>
 &nbsp;<br>
@@ -305,7 +345,12 @@ scintillator&nbsp;:&nbsp;str<br>
 Returns<br>
 -------<br>
 list<br>
-&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;isn't&nbsp;valid.</span></dd></dl>
 
 <dl><dt><a name="Detector-has_identity"><strong>has_identity</strong></a>(self) -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;established&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,<br>
 etc.),&nbsp;False&nbsp;otherwise.</span></dd></dl>
@@ -336,7 +381,16 @@ clean_energy&nbsp;:&nbsp;bool<br>
 mem_frac&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional:&nbsp;The&nbsp;maximum&nbsp;fraction&nbsp;of&nbsp;currently&nbsp;available&nbsp;system&nbsp;memory&nbsp;that&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;is&nbsp;allowed&nbsp;to&nbsp;use&nbsp;for<br>
 &nbsp;&nbsp;&nbsp;&nbsp;data.&nbsp;If&nbsp;the&nbsp;dataset&nbsp;is&nbsp;projected&nbsp;to&nbsp;be&nbsp;larger&nbsp;than&nbsp;this&nbsp;limit,&nbsp;a&nbsp;MemoryError&nbsp;will&nbsp;be&nbsp;raised.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;1.0&nbsp;(100%&nbsp;of&nbsp;available&nbsp;system&nbsp;memory)&nbsp;by&nbsp;default.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;1.0&nbsp;(100%&nbsp;of&nbsp;available&nbsp;system&nbsp;memory)&nbsp;by&nbsp;default.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+TypeError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;instance&nbsp;doesn't&nbsp;have&nbsp;an&nbsp;identity.<br>
+RuntimeError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;describes/contains&nbsp;multiple&nbsp;days'&nbsp;info.<br>
+MemoryError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;projected&nbsp;memory&nbsp;usage&nbsp;after&nbsp;importing&nbsp;exceeds&nbsp;the&nbsp;given&nbsp;threshold.</span></dd></dl>
 
 <dl><dt><a name="Detector-is_named"><strong>is_named</strong></a>(self, name: 'str') -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;the&nbsp;same&nbsp;name&nbsp;as&nbsp;the&nbsp;passed&nbsp;string.<br>
 &nbsp;<br>
@@ -396,7 +450,14 @@ attribute&nbsp;:&nbsp;str<br>
 new_info&nbsp;:&nbsp;any<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;new&nbsp;information&nbsp;for&nbsp;the&nbsp;requested&nbsp;attribute.<br>
 deepcopy&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;a&nbsp;deepcopy&nbsp;of&nbsp;new_info.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;a&nbsp;deepcopy&nbsp;of&nbsp;new_info.&nbsp;True&nbsp;by&nbsp;default.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;attribute&nbsp;aren't&nbsp;valid.<br>
+TypeError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;new&nbsp;info&nbsp;doesn't&nbsp;match&nbsp;the&nbsp;type&nbsp;of&nbsp;the&nbsp;old&nbsp;info.</span></dd></dl>
 
 <dl><dt><a name="Detector-set_export_loc"><strong>set_export_loc</strong></a>(self, loc: 'str', subdir: 'bool' = True) -&gt; 'None'</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
 &nbsp;<br>
@@ -434,7 +495,13 @@ new_data&nbsp;:&nbsp;numpy.ndarray<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;new&nbsp;data.<br>
 file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file&nbsp;to&nbsp;set&nbsp;data&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;will&nbsp;be&nbsp;set&nbsp;for&nbsp;the&nbsp;whole&nbsp;day.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;will&nbsp;be&nbsp;set&nbsp;for&nbsp;the&nbsp;whole&nbsp;day.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;passed&nbsp;scintillator&nbsp;or&nbsp;the&nbsp;passed&nbsp;column&nbsp;aren't&nbsp;valid,&nbsp;or&nbsp;if&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;new&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;doesn't&nbsp;match&nbsp;(the&nbsp;length&nbsp;of&nbsp;the&nbsp;file&nbsp;or&nbsp;whole&nbsp;dataset&nbsp;depending&nbsp;on&nbsp;whether&nbsp;a&nbsp;file&nbsp;name&nbsp;was&nbsp;given).</span></dd></dl>
 
 <dl><dt><a name="Detector-splice"><strong>splice</strong></a>(self, operand_detector: 'Detector') -&gt; 'Detector'</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;combined&nbsp;data&nbsp;of&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a>&nbsp;and&nbsp;the&nbsp;one&nbsp;provided.<br>
 &nbsp;<br>
@@ -453,7 +520,14 @@ tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;All&nbsp;time-related&nbsp;data&nbsp;will&nbsp;be&nbsp;adjusted&nbsp;to&nbsp;reflect&nbsp;the&nbsp;difference&nbsp;in&nbsp;date&nbsp;between&nbsp;the&nbsp;operand&nbsp;Detectors<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Using&nbsp;the&nbsp;method&nbsp;import()&nbsp;with&nbsp;this&nbsp;<a href="#Detector">Detector</a>&nbsp;won't&nbsp;work.&nbsp;Trying&nbsp;this&nbsp;will&nbsp;result&nbsp;in&nbsp;a&nbsp;RuntimeError</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Using&nbsp;the&nbsp;method&nbsp;import()&nbsp;with&nbsp;this&nbsp;<a href="#Detector">Detector</a>&nbsp;won't&nbsp;work.&nbsp;Trying&nbsp;this&nbsp;will&nbsp;result&nbsp;in&nbsp;a&nbsp;RuntimeError<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+TypeError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;Detectors'&nbsp;names&nbsp;and&nbsp;configurations&nbsp;don't&nbsp;match.<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;Detectors&nbsp;both&nbsp;describe&nbsp;the&nbsp;same&nbsp;day.</span></dd></dl>
 
 <hr>
 Static methods defined here:<br>

@@ -1,6 +1,8 @@
 {
   "default_data_root" : "/media/david/AllDetectorData/Detectors",
 
+  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"],
+
   "identities" : {
     "FRANCE": {
       "subdir": "FRANCE/Data",
@@ -143,7 +145,5 @@
         }
       }
     }
-  },
-
-  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"]
+  }
 }

@@ -1,7 +1,7 @@
 """A script that turns the package's various docstrings into HTML documents."""
+import glob
 import os
 import pydoc
-import shutil
 import sys
 
 
@@ -41,9 +41,12 @@ def make_index(docs_path: str) -> None:
 def main() -> None:
     docs_path = os.getcwd() + '/docs'
     if os.path.exists(docs_path):
-        shutil.rmtree(docs_path)
+        old_files = glob.glob(f'{docs_path}/*.html')
+        for file in old_files:
+            os.remove(file)
 
-    os.mkdir(docs_path)
+    else:
+        os.mkdir(docs_path)
 
     # Docs for tools
     make_doc('tools', os.getcwd() + '/tgfsearch/tools', docs_path)

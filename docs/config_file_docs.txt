@@ -1,0 +1,48 @@
+detector_config:
+JSON-formatted. The detector config details all the configuration information pertaining to instrument support for the package. It contains the following entries:
+
+- default_data_root: the default main data directory.
+
+- scintillator_priority: an array detailing the supported scintillators in their descending order of priority.
+
+- identities: a collection of supported instruments and their configurations. Each subentry details one instrument:
+	- Each instrument entry contains the following subentries:
+    		- subdir: the location of the instrument's data within the main data directory specified by the default_data_root parameter. The default data location for the 
+			instrument will be default_data_root + '/' + subdir.
+		- scintillators: the instrument's scintillator configurations after various dates (inclusive). Each date subentry contains:
+			- One entry for each scintillator in the configuration, with subentries for the scintillator's eRC number and data file format.
+
+- Here's an example of an instrument entry:
+	"THOR2": {
+		"subdir": "THOR/THOR2/Data",
+		"scintillators": {
+			"000000": {
+				"nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
+				"spl": {"eRC": "4176", "file_format": "ssv_nrl_lm"},
+				"mpl": {"eRC": "4167", "file_format": "ssv_nrl_lm"},
+				"lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"}},
+			"230316": {
+				"nai": {"eRC": "4182", "file_format": "thor_lm"},
+				"spl": {"eRC": "4172", "file_format": "thor_lm"},
+				"mpl": {"eRC": "4167", "file_format": "thor_lm"},
+				"lpl": {"eRC": "4187", "file_format": "thor_lm"}}
+		}
+	},
+	This details support for THOR2. Its data is, by default, located in the directory named "default_data_root/THOR/THOR2/Data", and it has two scintillator configurations:
+	- The first configuration is valid past 000000 (beginning of time) and has four scintillators: a sodium iodide (nai, eRC 3182), a small plastic (spl, eRC 4176), a 
+		medium plastic (mpl, eRC 4167), and a large plastic (lpl, eRC 4187). All scintillators make data with the ssv_nrl_lm format.
+	- The second configuration is valid past March 16th, 2023 and has four scintillators: a sodium iodide (nai, eRC 4182), a small plastic (spl, eRC 4172), a medium 
+		plastic (mpl, eRC 4167), and a large plastic (lpl, eRC 4187). All scintillators make data with the thor_lm format.
+
+
+search_config:
+JSON-formatted. The search config file details all the configuration information pertaining to the search program itself. It contains the following entries:
+
+- short_event_search_colors: an array detailing the colors to be used on the short event scatter plots for each scintillator.
+
+- long_event_search_scints: a collection of arrays detailing the scintillators that should be used in the long event search for each supported instrument. 
+	- Here's an example of the subentry for GODOT:
+
+		"GODOT":["nai", "lpl"]
+
+		This indicates that, when performing the long event search on Godot, data from the sodium iodide and large plastic scintillators will be combined.

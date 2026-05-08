@@ -102,6 +102,10 @@ class Detector:
 
     """
 
+    # These need to be updated whenever a new file format is added. To do so, use the utility found in mem_test.py,
+    # located at the top level of the package repo. It accepts commands of the usual form: yymmdd yymmdd detector.
+    # Also, if you want to disinclude certain scintillators, you can do so with the "-i" flag:
+    # yymmdd yymmdd detector -i scint1 scint2 ...
     lm_growth_factors = {'godot_lm': 1.2606058060274177, 'ssv_nrl_lm': 0.8465044061959315,
                          'thor_lm': 0.7123617288020386, 'json_nrl_lm': 0.6251838546767902}
     trace_growth_factors = {'godot_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0, 'json_nrl_lm': 1.0}
@@ -406,6 +410,11 @@ class Detector:
         bool
             True if data is present in the specified scintillator, False otherwise.
 
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed data type aren't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -432,6 +441,11 @@ class Detector:
             numpy array  if 'time' or 'energies' is requested; Reader if 'reader' is requested; dataframe
             if 'lm_frame' is requested, etc.
 
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed attribute aren't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -455,6 +469,13 @@ class Detector:
             The new information for the requested attribute.
         deepcopy : bool
             Optional. If True, the requested attribute will be set to a deepcopy of new_info. True by default.
+
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed attribute aren't valid.
+        TypeError
+            If the passed new info doesn't match the type of the old info.
 
         """
 
@@ -481,6 +502,11 @@ class Detector:
         numpy.ndarray
             A numpy array containing the requested data column.
 
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed column aren't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -503,6 +529,12 @@ class Detector:
         file_name : str
             Optional. The name of the file to set data for. If not specified,
             data will be set for the whole day.
+
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed column aren't valid, or if the length of the new data
+            doesn't match (the length of the file or whole dataset depending on whether a file name was given).
 
         """
 
@@ -527,6 +559,11 @@ class Detector:
             The index of the list mode file that the given count occurred in. Returns -1 if the count
             isn't in any of the files.
 
+        Raises
+        ------
+        ValueError
+            If the passed scintillator isn't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -549,6 +586,11 @@ class Detector:
         str
             The name of the list mode file that the given count occurred in. Returns an empty string if the count
             isn't in any of the files.
+
+        Raises
+        ------
+        ValueError
+            If the passed scintillator isn't valid.
 
         """
 
@@ -575,6 +617,11 @@ class Detector:
         pandas.core.frame.DataFrame
             A dataframe with the data for the requested list mode file.
 
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed file name aren't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -599,6 +646,11 @@ class Detector:
         pandas.core.frame.DataFrame
             A dataframe containing the trace data for the given name.
 
+        Raises
+        ------
+        ValueError
+            If either the passed scintillator or the passed file name aren't valid.
+
         """
 
         if scintillator in self._scintillators:
@@ -618,6 +670,11 @@ class Detector:
         -------
         list
             A list of names of the traces that are currently being stored.
+
+        Raises
+        ------
+        ValueError
+            If the passed scintillator isn't valid.
 
         """
 
@@ -644,6 +701,11 @@ class Detector:
         -------
         list
             A list of trace names that could be matches.
+
+        Raises
+        ------
+        ValueError
+            If the passed scintillator isn't valid.
 
         """
 
@@ -936,6 +998,15 @@ class Detector:
             data. If the dataset is projected to be larger than this limit, a MemoryError will be raised.
             1.0 (100% of available system memory) by default.
 
+        Raises
+        ------
+        TypeError
+            If the Detector instance doesn't have an identity.
+        RuntimeError
+            If the Detector describes/contains multiple days' info.
+        MemoryError
+            If the projected memory usage after importing exceeds the given threshold.
+
         """
 
         if not self._has_identity:
@@ -1025,6 +1096,13 @@ class Detector:
                 - All time-related data will be adjusted to reflect the difference in date between the operand Detectors
 
                 - Using the method import() with this Detector won't work. Trying this will result in a RuntimeError
+
+        Raises
+        ------
+        TypeError
+            If the Detectors' names and configurations don't match.
+        ValueError
+            If the Detectors both describe the same day.
 
         """
 

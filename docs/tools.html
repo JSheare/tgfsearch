@@ -53,7 +53,13 @@ Returns<br>
 -------<br>
 tuple[numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;numpy&nbsp;arrays.&nbsp;The&nbsp;first&nbsp;contains&nbsp;the&nbsp;aligned&nbsp;trace&nbsp;times&nbsp;in&nbsp;seconds&nbsp;of&nbsp;day,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;second&nbsp;contains&nbsp;the&nbsp;bit-corrected&nbsp;trace&nbsp;pulse&nbsp;magnitude.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;second&nbsp;contains&nbsp;the&nbsp;bit-corrected&nbsp;trace&nbsp;pulse&nbsp;magnitude.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;there&nbsp;isn't&nbsp;enough&nbsp;data&nbsp;for&nbsp;the&nbsp;alignment&nbsp;to&nbsp;proceed,&nbsp;or&nbsp;if&nbsp;the&nbsp;provided&nbsp;list&nbsp;mode&nbsp;data&nbsp;doesn't&nbsp;match&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;trace&nbsp;data.</span></dd></dl>
  <dl><dt><a name="-assemble_weather_info"><strong>assemble_weather_info</strong></a>(
     detector: tgfsearch.detectors.detector.Detector,
     event_time: float,
@@ -139,7 +145,7 @@ Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;weather&nbsp;conditions&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;the&nbsp;event&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
- <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(local_date: str, deployment_info: Dict[str, Any])</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;data&nbsp;from&nbsp;the&nbsp;internet&nbsp;and&nbsp;returns&nbsp;the&nbsp;results&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
+ <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(local_date: str, deployment_info: Dict[str, Any]) -&gt; pandas.core.frame.DataFrame</dt><dd><span class="code">Scrapes&nbsp;weather&nbsp;data&nbsp;from&nbsp;the&nbsp;internet&nbsp;and&nbsp;returns&nbsp;the&nbsp;results&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>

@@ -61,7 +61,7 @@ def convert_clock_hour(clock_hour: str) -> float:
     return float((hour * params.SEC_PER_HOUR) + (minute * 60))
 
 
-def get_weather_table(local_date: str, deployment_info: Dict[str, Any]):
+def get_weather_table(local_date: str, deployment_info: Dict[str, Any]) -> pd.DataFrame:
     """Scrapes weather data from the internet and returns the results as a pandas dataframe.
 
     Parameters
@@ -492,6 +492,12 @@ def align_trace(trace: pd.DataFrame, lm_frame: pd.DataFrame, buff_no: int = 0,
     tuple[numpy.ndarray, numpy.ndarray]
         Two numpy arrays. The first contains the aligned trace times in seconds of day,
         the second contains the bit-corrected trace pulse magnitude.
+
+    Raises
+    ------
+    ValueError
+        If there isn't enough data for the alignment to proceed, or if the provided list mode data doesn't match the
+        trace data.
 
     """
 
