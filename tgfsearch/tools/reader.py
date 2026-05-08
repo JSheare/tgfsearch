@@ -1,6 +1,8 @@
-"""A class that wraps and serves as an easy interface for the data reader."""
+"""A module containing a class that wraps and serves as an easy interface for the data reader."""
+import pandas as pd
+from typing import Any
 
-import tgfsearch.data_reader as dr
+import tgfsearch.tools.data_reader as dr
 
 
 class Reader:
@@ -12,18 +14,18 @@ class Reader:
         A dictionary containing information needed to import the subsequent list mode files properly (if applicable).
 
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.passtime = dr.get_passtime()
 
-    def __call__(self, file_name, reset_after=False):
+    def __call__(self, file_name, reset_after=False) -> Any:
         """Defines the behavior for calling a class instance like a function."""
         return self.read(file_name, reset_after)
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the reader instance back to its default state."""
         self.passtime = dr.get_passtime()
 
-    def read(self, file_name, reset_after=False, clean_energy=False):
+    def read(self, file_name: str, reset_after: bool = False, clean_energy: bool = False) -> pd.DataFrame:
         """Reads the data file with the given name and returns the data as a pandas dataframe.
 
         Parameters

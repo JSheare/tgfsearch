@@ -1,7 +1,8 @@
-"""Tools for use by the TGF search program and its modules."""
+"""A module containing tools for working with UCSC TGF group data."""
 import datetime as dt
 import io as io
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import zoneinfo as zi
 from selenium import webdriver as webdriver
@@ -9,13 +10,14 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+from typing import Any, Dict, List, Tuple
 
 import tgfsearch.config.parameters as params
+from tgfsearch.detectors.detector import Detector
 
 
-def file_timestamp(file):
+def file_timestamp(file: str) -> str:
     """Returns the timestamp of the given data file as a string of the form hhmmss."""
-
     labels = file.split('.')[0].split('_')
     if len(labels) > 4:
         return labels[-2]
@@ -23,17 +25,17 @@ def file_timestamp(file):
     return labels[-1]
 
 
-def full_date_to_short(full_date_str):
+def full_date_to_short(full_date_str: str) -> str:
     """Converts a date string of the form yyyy-mm-dd to the form yymmdd."""
     return full_date_str[2:].replace('-', '')
 
 
-def short_to_full_date(date_str):
+def short_to_full_date(date_str: str) -> str:
     """Converts a date string of the form yymmdd to the form yyyy-mm-dd."""
     return f'{params.CENTURY}{date_str[0:2]}-{date_str[2:4]}-{date_str[4:]}'
 
 
-def get_first_sec(date_str):
+def get_first_sec(date_str: str) -> float:
     """Converts the given date string (in yymmdd format) to its first second in EPOCH time."""
     day = int(date_str[4:])
     month = int(date_str[2:4])
@@ -41,7 +43,7 @@ def get_first_sec(date_str):
     return (dt.datetime(year, month, day, 0, 0) - dt.datetime(1970, 1, 1)).total_seconds()
 
 
-def convert_clock_hour(clock_hour):
+def convert_clock_hour(clock_hour: str) -> float:
     """Converts a timestamp of the form hh:mm AM/PM into seconds since the beginning of the day."""
 
     meridiem = clock_hour.split()[1]
@@ -59,8 +61,8 @@ def convert_clock_hour(clock_hour):
     return float((hour * params.SEC_PER_HOUR) + (minute * 60))
 
 
-def get_weather_table(local_date, deployment_info):
-    """Scrapes weather data from the internet and returns the results as a pandas data frame.
+def get_weather_table(local_date: str, deployment_info: Dict[str, Any]):
+    """Scrapes weather data from the internet and returns the results as a pandas dataframe.
 
     Parameters
     ----------
@@ -105,7 +107,8 @@ def get_weather_table(local_date, deployment_info):
     return table
 
 
-def assemble_weather_info(detector, event_time, weather_cache):
+def assemble_weather_info(detector: Detector, event_time: float,
+                          weather_cache: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Returns a table of weather information from around the vicinity of the given event time. The function will
     attempt to make a table with at least +/- params.WEATHER_PADDING hours around the given time. An empty table will be
     returned if no information could be retrieved."""
@@ -162,7 +165,8 @@ def assemble_weather_info(detector, event_time, weather_cache):
     return table
 
 
-def get_weather_conditions(detector, event_time, weather_cache=None):
+def get_weather_conditions(detector: Detector, event_time: float,
+                           weather_cache: Dict[str, pd.DataFrame] | None = None) -> str:
     """Scrapes weather underground and returns the weather around the time of an event.
 
     Parameters
@@ -225,7 +229,7 @@ def get_weather_conditions(detector, event_time, weather_cache=None):
         return 'error getting weather data'
 
 
-def combine_data(detector):
+def combine_data(detector: Detector) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.str_]]:
     """Combines data from all scintillators into one set of arrays.
 
     Parameters
@@ -236,7 +240,7 @@ def combine_data(detector):
     Returns
     -------
     tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-        Four numpy arrays:
+        Three numpy arrays:
 
         times
             An array containing the combined second-of-day times for multiple scintillators.
@@ -269,7 +273,8 @@ def combine_data(detector):
     return times, energies, count_scints
 
 
-def separate_data(data, count_scints, start=None, stop=None):
+def separate_data(data: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_], start: int | None = None,
+                  stop: int | None = None) -> Dict[str, npt.NDArray[np.float64]]:
     """Separates combined data from multiple scintillators into separate data for each scintillator.
 
     Parameters
@@ -313,7 +318,7 @@ def separate_data(data, count_scints, start=None, stop=None):
     return data_dict
 
 
-def is_good_trace(trace):
+def is_good_trace(trace: pd.DataFrame) -> bool:
     """Returns True if the given trace is likely to be interesting and False otherwise.
 
     Parameters
@@ -394,7 +399,7 @@ def is_good_trace(trace):
     return False
 
 
-def filter_traces(detector, scintillator):
+def filter_traces(detector: Detector, scintillator: str) -> List[str]:
     """Returns a list of traces that are likely to be interesting for the given scintillator.
 
     Parameters
@@ -420,7 +425,8 @@ def filter_traces(detector, scintillator):
     return good_traces
 
 
-def trace_to_counts(trace_energies):
+def trace_to_counts(trace_energies: npt.NDArray[np.float64]) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray,
+                                                                      npt.NDArray]:
     """Simulates the eMorpho response to trace data and returns the results."""
 
     # Adapted from esim_tools
@@ -466,7 +472,8 @@ def trace_to_counts(trace_energies):
     return np.array(times), np.array(energies), np.array(peak), np.array(tbnt), np.array(psd)
 
 
-def align_trace(trace, lm_frame, buff_no=0, trigspot=None):
+def align_trace(trace: pd.DataFrame, lm_frame: pd.DataFrame, buff_no: int = 0,
+                trigspot: int | None = None) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Aligns the given trace with the given list mode data.
 
     Parameters
@@ -568,7 +575,7 @@ def align_trace(trace, lm_frame, buff_no=0, trigspot=None):
     return trace_times, trace_energies
 
 
-def channel_to_mev(energy_array, channels, energies):
+def channel_to_mev(energy_array: npt.NDArray[np.float64], channels: List[int], energies: List[float]):
     """Uses compton edges/photo peaks obtained from scintillator calibration to convert energy channels into MeV.
 
     Parameters

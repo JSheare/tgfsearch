@@ -9,7 +9,7 @@
 <tr class="heading-text decor">
 <td class="title">&nbsp;<br><strong class="title">detector</strong></td>
 <td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Cdata%20processing%20stuff%5Csearch%20package%5Ctgfsearch%5Cdetectors%5Cdetector.py">d:\documents\tgf research\data processing stuff\search package\tgfsearch\detectors\detector.py</a></td></tr></table>
-    <p><span class="code">A&nbsp;base&nbsp;class&nbsp;for&nbsp;keeping&nbsp;track&nbsp;of&nbsp;lightning&nbsp;data&nbsp;and&nbsp;associated&nbsp;information.</span></p>
+    <p><span class="code">A&nbsp;module&nbsp;containing&nbsp;a&nbsp;base&nbsp;class&nbsp;for&nbsp;keeping&nbsp;track&nbsp;of&nbsp;instrument&nbsp;data&nbsp;and&nbsp;associated&nbsp;information.</span></p>
 <p>
 <table class="section">
 <tr class="decor pkg-content-decor heading-text">
@@ -20,17 +20,18 @@
 <a href="gc.html">gc</a><br>
 <a href="glob.html">glob</a><br>
 <a href="tgfsearch.helpers.helper_funcs.html">tgfsearch.helpers.helper_funcs</a><br>
-</td><td class="multicolumn"><a href="json.html">json</a><br>
-<a href="multiprocessing.html">multiprocessing</a><br>
+<a href="json.html">json</a><br>
+</td><td class="multicolumn"><a href="multiprocessing.html">multiprocessing</a><br>
 <a href="numpy.html">numpy</a><br>
+<a href="numpy.typing.html">numpy.typing</a><br>
 <a href="os.html">os</a><br>
-</td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
-<a href="pandas.html">pandas</a><br>
+<a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
 <a href="pickle.html">pickle</a><br>
 <a href="psutil.html">psutil</a><br>
-</td><td class="multicolumn"><a href="sys.html">sys</a><br>
+<a href="sys.html">sys</a><br>
 <a href="threading.html">threading</a><br>
-<a href="tgfsearch.tools.tools.html">tgfsearch.tools.tools</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.tools.tools.html">tgfsearch.tools.tools</a><br>
 <a href="warnings.html">warnings</a><br>
 </td></tr></table></td></tr></table><p>
 <table class="section">
@@ -52,7 +53,7 @@
 <td class="section-title" colspan=3>&nbsp;<br><a name="Detector">class <strong>Detector</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
     
 <tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
-<td class="decor title-decor" colspan=2><span class="code"><a href="#Detector">Detector</a>(unit,&nbsp;date_str,&nbsp;**kwargs)<br>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Detector">Detector</a>(unit:&nbsp;'str',&nbsp;date_str:&nbsp;'str',&nbsp;**kwargs)&nbsp;-&amp;gt;&nbsp;'None'<br>
 &nbsp;<br>
 A&nbsp;class&nbsp;used&nbsp;to&nbsp;store&nbsp;all&nbsp;relevant&nbsp;information&nbsp;about&nbsp;an&nbsp;instrument&nbsp;and&nbsp;its&nbsp;data&nbsp;for&nbsp;a&nbsp;day.<br>
 &nbsp;<br>
@@ -68,7 +69,11 @@ date_str&nbsp;:&nbsp;str<br>
 &nbsp;<br>
 Attributes<br>
 ----------<br>
-log&nbsp;:&nbsp;_io.TextIO<br>
+lm_growth_factors&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;mapping&nbsp;of&nbsp;bytes&nbsp;of&nbsp;memory&nbsp;to&nbsp;bytes&nbsp;of&nbsp;file&nbsp;growth&nbsp;factors&nbsp;for&nbsp;each&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;type.<br>
+trace_growth_factors&nbsp;:&nbsp;dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;mapping&nbsp;of&nbsp;bytes&nbsp;of&nbsp;memory&nbsp;to&nbsp;bytes&nbsp;of&nbsp;file&nbsp;growth&nbsp;factors&nbsp;for&nbsp;each&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;type.<br>
+log&nbsp;:&nbsp;_io.TextIOWrapper<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;file&nbsp;where&nbsp;actions&nbsp;and&nbsp;findings&nbsp;are&nbsp;logged.<br>
 first_sec&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;first&nbsp;second&nbsp;of&nbsp;the&nbsp;day&nbsp;in&nbsp;EPOCH&nbsp;time.<br>
@@ -91,34 +96,34 @@ deployment&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Deployment&nbsp;information&nbsp;for&nbsp;the&nbsp;instrument&nbsp;on&nbsp;the&nbsp;requested&nbsp;day&nbsp;(if&nbsp;available).<br>&nbsp;</span></td></tr>
 <tr><td>&nbsp;</td>
 <td class="singlecolumn">Methods defined here:<br>
-<dl><dt><a name="Detector-__add__"><strong>__add__</strong></a>(self, operand_detector)</dt><dd><span class="code">Addition&nbsp;operator&nbsp;overload.&nbsp;Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;containing&nbsp;data&nbsp;from&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a><br>
+<dl><dt><a name="Detector-__add__"><strong>__add__</strong></a>(self, operand_detector) -&gt; 'Detector'</dt><dd><span class="code">Addition&nbsp;operator&nbsp;overload.&nbsp;Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;containing&nbsp;data&nbsp;from&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a><br>
 and&nbsp;the&nbsp;provided&nbsp;one.&nbsp;See&nbsp;<a href="#Detector-splice">splice</a>()&nbsp;method&nbsp;documentation&nbsp;for&nbsp;more&nbsp;information.</span></dd></dl>
 
-<dl><dt><a name="Detector-__bool__"><strong>__bool__</strong></a>(self)</dt><dd><span class="code">Bool&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;for&nbsp;any&nbsp;scintillator&nbsp;is&nbsp;present.</span></dd></dl>
+<dl><dt><a name="Detector-__bool__"><strong>__bool__</strong></a>(self) -&gt; 'bool'</dt><dd><span class="code">Bool&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;for&nbsp;any&nbsp;scintillator&nbsp;is&nbsp;present.</span></dd></dl>
 
-<dl><dt><a name="Detector-__contains__"><strong>__contains__</strong></a>(self, scintillator)</dt><dd><span class="code">Contains&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;string&nbsp;corresponds&nbsp;to&nbsp;a&nbsp;scintillator&nbsp;in&nbsp;<a href="#Detector">Detector</a>,<br>
+<dl><dt><a name="Detector-__contains__"><strong>__contains__</strong></a>(self, scintillator) -&gt; 'bool'</dt><dd><span class="code">Contains&nbsp;overload.&nbsp;Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;string&nbsp;corresponds&nbsp;to&nbsp;a&nbsp;scintillator&nbsp;in&nbsp;<a href="#Detector">Detector</a>,<br>
 False&nbsp;otherwise.</span></dd></dl>
 
-<dl><dt><a name="Detector-__del__"><strong>__del__</strong></a>(self)</dt></dl>
+<dl><dt><a name="Detector-__del__"><strong>__del__</strong></a>(self) -&gt; 'None'</dt></dl>
 
-<dl><dt><a name="Detector-__init__"><strong>__init__</strong></a>(self, unit, date_str, **kwargs)</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+<dl><dt><a name="Detector-__init__"><strong>__init__</strong></a>(self, unit: 'str', date_str: 'str', **kwargs) -&gt; 'None'</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
 
-<dl><dt><a name="Detector-__iter__"><strong>__iter__</strong></a>(self)</dt><dd><span class="code">Iterator&nbsp;dunder.&nbsp;Returns&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;<a href="#Detector">Detector</a>'s&nbsp;scintillator&nbsp;names&nbsp;according&nbsp;to&nbsp;the&nbsp;order<br>
+<dl><dt><a name="Detector-__iter__"><strong>__iter__</strong></a>(self) -&gt; 'Generator[str, None, None]'</dt><dd><span class="code">Iterator&nbsp;dunder.&nbsp;Returns&nbsp;a&nbsp;generator&nbsp;that&nbsp;yields&nbsp;the&nbsp;<a href="#Detector">Detector</a>'s&nbsp;scintillator&nbsp;names&nbsp;according&nbsp;to&nbsp;the&nbsp;order<br>
 of&nbsp;priority&nbsp;specified&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;config&nbsp;file.</span></dd></dl>
 
-<dl><dt><a name="Detector-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><span class="code">Debugging&nbsp;string&nbsp;dunder&nbsp;method.&nbsp;Returns&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;'<a href="#Detector">Detector</a>(unit,&nbsp;date_str)'&nbsp;along<br>
+<dl><dt><a name="Detector-__repr__"><strong>__repr__</strong></a>(self) -&gt; 'str'</dt><dd><span class="code">Debugging&nbsp;string&nbsp;dunder&nbsp;method.&nbsp;Returns&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;'<a href="#Detector">Detector</a>(unit,&nbsp;date_str)'&nbsp;along<br>
 with&nbsp;some&nbsp;info&nbsp;about&nbsp;which&nbsp;Scintillators&nbsp;have&nbsp;data.</span></dd></dl>
 
-<dl><dt><a name="Detector-__str__"><strong>__str__</strong></a>(self)</dt><dd><span class="code">String&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;'<a href="#Detector">Detector</a>(unit,&nbsp;date_str)'.</span></dd></dl>
+<dl><dt><a name="Detector-__str__"><strong>__str__</strong></a>(self) -&gt; 'str'</dt><dd><span class="code">String&nbsp;casting&nbsp;overload.&nbsp;Returns&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;'<a href="#Detector">Detector</a>(unit,&nbsp;date_str)'.</span></dd></dl>
 
-<dl><dt><a name="Detector-clear"><strong>clear</strong></a>(self, clear_filelists=True)</dt><dd><span class="code">Clears&nbsp;all&nbsp;data&nbsp;currently&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
+<dl><dt><a name="Detector-clear"><strong>clear</strong></a>(self, clear_filelists: 'bool' = True) -&gt; 'None'</dt><dd><span class="code">Clears&nbsp;all&nbsp;data&nbsp;currently&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
 clear_filelists&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;lists&nbsp;of&nbsp;files&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;will&nbsp;be&nbsp;also&nbsp;be&nbsp;cleared.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
-<dl><dt><a name="Detector-data_present_in"><strong>data_present_in</strong></a>(self, scintillator, data_type='lm')</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;for&nbsp;the&nbsp;specified&nbsp;scintillator&nbsp;and&nbsp;False&nbsp;otherwise.<br>
+<dl><dt><a name="Detector-data_present_in"><strong>data_present_in</strong></a>(self, scintillator: 'str', data_type: 'str' = 'lm') -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;for&nbsp;the&nbsp;specified&nbsp;scintillator&nbsp;and&nbsp;False&nbsp;otherwise.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -133,7 +138,7 @@ Returns<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;data&nbsp;is&nbsp;present&nbsp;in&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
-<dl><dt><a name="Detector-find_lm_file"><strong>find_lm_file</strong></a>(self, scintillator, count_time)</dt><dd><span class="code">Returns&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
+<dl><dt><a name="Detector-find_lm_file"><strong>find_lm_file</strong></a>(self, scintillator: 'str', count_time: 'float') -&gt; 'str'</dt><dd><span class="code">Returns&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -148,7 +153,7 @@ str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.&nbsp;Returns&nbsp;an&nbsp;empty&nbsp;string&nbsp;if&nbsp;the&nbsp;count<br>
 &nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.</span></dd></dl>
 
-<dl><dt><a name="Detector-find_lm_file_index"><strong>find_lm_file_index</strong></a>(self, scintillator, count_time)</dt><dd><span class="code">Helper&nbsp;function.&nbsp;Returns&nbsp;the&nbsp;index&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
+<dl><dt><a name="Detector-find_lm_file_index"><strong>find_lm_file_index</strong></a>(self, scintillator: 'str', count_time: 'float') -&gt; 'int'</dt><dd><span class="code">Helper&nbsp;function.&nbsp;Returns&nbsp;the&nbsp;index&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -163,7 +168,12 @@ int<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;index&nbsp;of&nbsp;the&nbsp;list&nbsp;mode&nbsp;file&nbsp;that&nbsp;the&nbsp;given&nbsp;count&nbsp;occurred&nbsp;in.&nbsp;Returns&nbsp;-1&nbsp;if&nbsp;the&nbsp;count<br>
 &nbsp;&nbsp;&nbsp;&nbsp;isn't&nbsp;in&nbsp;any&nbsp;of&nbsp;the&nbsp;files.</span></dd></dl>
 
-<dl><dt><a name="Detector-find_matching_traces"><strong>find_matching_traces</strong></a>(self, scintillator, count_time, trace_list=None)</dt><dd><span class="code">Finds&nbsp;the&nbsp;traces&nbsp;that&nbsp;could&nbsp;be&nbsp;a&nbsp;match&nbsp;for&nbsp;the&nbsp;given&nbsp;count&nbsp;(if&nbsp;they&nbsp;exist).<br>
+<dl><dt><a name="Detector-find_matching_traces"><strong>find_matching_traces</strong></a>(
+    self,
+    scintillator: 'str',
+    count_time: 'float',
+    trace_list: 'List[str] | None' = None
+) -&gt; 'List[str]'</dt><dd><span class="code">Finds&nbsp;the&nbsp;traces&nbsp;that&nbsp;could&nbsp;be&nbsp;a&nbsp;match&nbsp;for&nbsp;the&nbsp;given&nbsp;count&nbsp;(if&nbsp;they&nbsp;exist).<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -180,7 +190,12 @@ Returns<br>
 list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;trace&nbsp;names&nbsp;that&nbsp;could&nbsp;be&nbsp;matches.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_attribute"><strong>get_attribute</strong></a>(self, scintillator, attribute, deepcopy=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
+<dl><dt><a name="Detector-get_attribute"><strong>get_attribute</strong></a>(
+    self,
+    scintillator: 'str',
+    attribute: 'str',
+    deepcopy: 'bool' = True
+) -&gt; 'Any'</dt><dd><span class="code">Returns&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -198,7 +213,7 @@ str&nbsp;||&nbsp;list&nbsp;||&nbsp;numpy.ndarray&nbsp;||&nbsp;dict&nbsp;||&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;numpy&nbsp;array&nbsp;&nbsp;if&nbsp;'time'&nbsp;or&nbsp;'energies'&nbsp;is&nbsp;requested;&nbsp;Reader&nbsp;if&nbsp;'reader'&nbsp;is&nbsp;requested;&nbsp;dataframe<br>
 &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;'lm_frame'&nbsp;is&nbsp;requested,&nbsp;etc.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_clone"><strong>get_clone</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one&nbsp;(but&nbsp;no&nbsp;data).<br>
+<dl><dt><a name="Detector-get_clone"><strong>get_clone</strong></a>(self) -&gt; 'Detector'</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one&nbsp;(but&nbsp;no&nbsp;data).<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
@@ -206,21 +221,26 @@ tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;same&nbsp;identity&nbsp;as&nbsp;the&nbsp;current&nbsp;one.&nbsp;Identity&nbsp;includes:&nbsp;unit&nbsp;name,&nbsp;date,&nbsp;print<br>
 &nbsp;&nbsp;&nbsp;&nbsp;feedback&nbsp;setting,&nbsp;deployment&nbsp;info,&nbsp;import&nbsp;directory,&nbsp;export&nbsp;directory,&nbsp;and&nbsp;scintillator&nbsp;configuration.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_export_loc"><strong>get_export_loc</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;exported.<br>
+<dl><dt><a name="Detector-get_export_loc"><strong>get_export_loc</strong></a>(self) -&gt; 'str'</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;exported.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;export&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_import_loc"><strong>get_import_loc</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
+<dl><dt><a name="Detector-get_import_loc"><strong>get_import_loc</strong></a>(self) -&gt; 'str'</dt><dd><span class="code">Returns&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;import&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_lm_data"><strong>get_lm_data</strong></a>(self, scintillator, column, file_name=None)</dt><dd><span class="code">Returns&nbsp;a&nbsp;single&nbsp;column&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;as&nbsp;a&nbsp;numpy&nbsp;array.<br>
+<dl><dt><a name="Detector-get_lm_data"><strong>get_lm_data</strong></a>(
+    self,
+    scintillator: 'str',
+    column: 'str',
+    file_name: 'str | None' = None
+) -&gt; 'npt.NDArray[np.float64]'</dt><dd><span class="code">Returns&nbsp;a&nbsp;single&nbsp;column&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;as&nbsp;a&nbsp;numpy&nbsp;array.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -237,7 +257,12 @@ Returns<br>
 numpy.ndarray<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;numpy&nbsp;array&nbsp;containing&nbsp;the&nbsp;requested&nbsp;data&nbsp;column.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_lm_file"><strong>get_lm_file</strong></a>(self, scintillator, file_name, deepcopy=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;list&nbsp;mode&nbsp;data&nbsp;for&nbsp;the&nbsp;specified&nbsp;list&nbsp;mode&nbsp;file.<br>
+<dl><dt><a name="Detector-get_lm_file"><strong>get_lm_file</strong></a>(
+    self,
+    scintillator: 'str',
+    file_name: 'str',
+    deepcopy: 'bool' = True
+) -&gt; 'pd.DataFrame'</dt><dd><span class="code">Returns&nbsp;the&nbsp;list&nbsp;mode&nbsp;data&nbsp;for&nbsp;the&nbsp;specified&nbsp;list&nbsp;mode&nbsp;file.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -254,7 +279,7 @@ Returns<br>
 pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;with&nbsp;the&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;list&nbsp;mode&nbsp;file.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_trace"><strong>get_trace</strong></a>(self, scintillator, trace_name, deepcopy=True)</dt><dd><span class="code">Returns&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator&nbsp;and&nbsp;trace&nbsp;name.<br>
+<dl><dt><a name="Detector-get_trace"><strong>get_trace</strong></a>(self, scintillator: 'str', trace_name: 'str', deepcopy: 'bool' = True) -&gt; 'pd.DataFrame'</dt><dd><span class="code">Returns&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator&nbsp;and&nbsp;trace&nbsp;name.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -270,7 +295,7 @@ Returns<br>
 pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;trace&nbsp;data&nbsp;for&nbsp;the&nbsp;given&nbsp;name.</span></dd></dl>
 
-<dl><dt><a name="Detector-get_trace_names"><strong>get_trace_names</strong></a>(self, scintillator)</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.<br>
+<dl><dt><a name="Detector-get_trace_names"><strong>get_trace_names</strong></a>(self, scintillator: 'str') -&gt; 'List[str]'</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -282,19 +307,19 @@ Returns<br>
 list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;names&nbsp;of&nbsp;the&nbsp;traces&nbsp;that&nbsp;are&nbsp;currently&nbsp;being&nbsp;stored.</span></dd></dl>
 
-<dl><dt><a name="Detector-has_identity"><strong>has_identity</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;established&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,<br>
+<dl><dt><a name="Detector-has_identity"><strong>has_identity</strong></a>(self) -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;established&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,<br>
 etc.),&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
 <dl><dt><a name="Detector-import_data"><strong>import_data</strong></a>(
     self,
-    existing_filelists=False,
-    import_traces=True,
-    import_lm=True,
-    import_scints=None,
-    clean_energy=False,
-    mem_frac=1.0,
+    existing_filelists: 'bool' = False,
+    import_traces: 'bool' = True,
+    import_lm: 'bool' = True,
+    import_scints: 'List[str] | None' = None,
+    clean_energy: 'bool' = False,
+    mem_frac: 'float' = 1.0,
     **kwargs
-)</dt><dd><span class="code">Imports&nbsp;and&nbsp;stores&nbsp;data&nbsp;from&nbsp;the&nbsp;daily&nbsp;data&nbsp;files.<br>
+) -&gt; 'None'</dt><dd><span class="code">Imports&nbsp;and&nbsp;stores&nbsp;data&nbsp;from&nbsp;the&nbsp;daily&nbsp;data&nbsp;files.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -313,7 +338,7 @@ mem_frac&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;data.&nbsp;If&nbsp;the&nbsp;dataset&nbsp;is&nbsp;projected&nbsp;to&nbsp;be&nbsp;larger&nbsp;than&nbsp;this&nbsp;limit,&nbsp;a&nbsp;MemoryError&nbsp;will&nbsp;be&nbsp;raised.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;1.0&nbsp;(100%&nbsp;of&nbsp;available&nbsp;system&nbsp;memory)&nbsp;by&nbsp;default.</span></dd></dl>
 
-<dl><dt><a name="Detector-is_named"><strong>is_named</strong></a>(self, name)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;the&nbsp;same&nbsp;name&nbsp;as&nbsp;the&nbsp;passed&nbsp;string.<br>
+<dl><dt><a name="Detector-is_named"><strong>is_named</strong></a>(self, name: 'str') -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;the&nbsp;same&nbsp;name&nbsp;as&nbsp;the&nbsp;passed&nbsp;string.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -325,7 +350,7 @@ Returns<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;name&nbsp;matches&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;<a href="#Detector">Detector</a>,&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
-<dl><dt><a name="Detector-is_valid_scintillator"><strong>is_valid_scintillator</strong></a>(self, scintillator)</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;contains&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise<br>
+<dl><dt><a name="Detector-is_valid_scintillator"><strong>is_valid_scintillator</strong></a>(self, scintillator: 'str') -&gt; 'bool'</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;contains&nbsp;the&nbsp;specified&nbsp;scintillator,&nbsp;False&nbsp;otherwise<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -337,7 +362,7 @@ Returns<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;scintillator&nbsp;is&nbsp;in&nbsp;<a href="#Detector">Detector</a>,&nbsp;False&nbsp;otherwise.</span></dd></dl>
 
-<dl><dt><a name="Detector-pickle"><strong>pickle</strong></a>(self, file_name, path=None)</dt><dd><span class="code">Pickles&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;instance&nbsp;to&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;the&nbsp;path.<br>
+<dl><dt><a name="Detector-pickle"><strong>pickle</strong></a>(self, file_name: 'str', path: 'str | None' = None) -&gt; 'str'</dt><dd><span class="code">Pickles&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;instance&nbsp;to&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;the&nbsp;path.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -352,7 +377,13 @@ Returns<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;path&nbsp;to&nbsp;the&nbsp;pickle&nbsp;file&nbsp;(including&nbsp;its&nbsp;name).</span></dd></dl>
 
-<dl><dt><a name="Detector-set_attribute"><strong>set_attribute</strong></a>(self, scintillator, attribute, new_info, deepcopy=True)</dt><dd><span class="code">Updates&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
+<dl><dt><a name="Detector-set_attribute"><strong>set_attribute</strong></a>(
+    self,
+    scintillator: 'str',
+    attribute: 'str',
+    new_info: 'Any',
+    deepcopy: 'bool' = True
+) -&gt; 'None'</dt><dd><span class="code">Updates&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;for&nbsp;a&nbsp;particular&nbsp;scintillator.<br>
 Note:&nbsp;new&nbsp;info&nbsp;must&nbsp;be&nbsp;of&nbsp;the&nbsp;same&nbsp;type&nbsp;as&nbsp;the&nbsp;old,&nbsp;and&nbsp;if&nbsp;either&nbsp;a&nbsp;list&nbsp;mode&nbsp;or&nbsp;trace&nbsp;file&nbsp;list&nbsp;is&nbsp;supplied<br>
 it&nbsp;is&nbsp;assumed&nbsp;that&nbsp;the&nbsp;list&nbsp;is&nbsp;in&nbsp;order&nbsp;and&nbsp;contains&nbsp;no&nbsp;duplicates.<br>
 &nbsp;<br>
@@ -367,7 +398,7 @@ new_info&nbsp;:&nbsp;any<br>
 deepcopy&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;the&nbsp;requested&nbsp;attribute&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;a&nbsp;deepcopy&nbsp;of&nbsp;new_info.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
-<dl><dt><a name="Detector-set_export_loc"><strong>set_export_loc</strong></a>(self, loc, subdir=True)</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
+<dl><dt><a name="Detector-set_export_loc"><strong>set_export_loc</strong></a>(self, loc: 'str', subdir: 'bool' = True) -&gt; 'None'</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;all&nbsp;data&nbsp;and&nbsp;results&nbsp;will&nbsp;be&nbsp;stored.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -378,14 +409,20 @@ subdir&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;If&nbsp;True,&nbsp;results&nbsp;will&nbsp;be&nbsp;exported&nbsp;to&nbsp;a&nbsp;subdirectory&nbsp;of&nbsp;the&nbsp;form&nbsp;'Results/unit/yymmdd'&nbsp;inside<br>
 &nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;specified&nbsp;location&nbsp;rather&nbsp;than&nbsp;straight&nbsp;to&nbsp;the&nbsp;location&nbsp;itself.&nbsp;True&nbsp;by&nbsp;default.</span></dd></dl>
 
-<dl><dt><a name="Detector-set_import_loc"><strong>set_import_loc</strong></a>(self, loc)</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
+<dl><dt><a name="Detector-set_import_loc"><strong>set_import_loc</strong></a>(self, loc: 'str') -&gt; 'None'</dt><dd><span class="code">Sets&nbsp;the&nbsp;directory&nbsp;where&nbsp;data&nbsp;will&nbsp;be&nbsp;imported&nbsp;from.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
 loc&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;import&nbsp;directory&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
 
-<dl><dt><a name="Detector-set_lm_data"><strong>set_lm_data</strong></a>(self, scintillator, column, new_data, file_name=None)</dt><dd><span class="code">Sets&nbsp;a&nbsp;single&nbsp;column&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;to&nbsp;the&nbsp;new&nbsp;data&nbsp;specified.<br>
+<dl><dt><a name="Detector-set_lm_data"><strong>set_lm_data</strong></a>(
+    self,
+    scintillator: 'str',
+    column: 'str',
+    new_data: 'npt.NDArray[np.float64]',
+    file_name: 'str | None' = None
+) -&gt; 'None'</dt><dd><span class="code">Sets&nbsp;a&nbsp;single&nbsp;column&nbsp;of&nbsp;list&nbsp;mode&nbsp;data&nbsp;to&nbsp;the&nbsp;new&nbsp;data&nbsp;specified.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -399,7 +436,7 @@ file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;file&nbsp;to&nbsp;set&nbsp;data&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;will&nbsp;be&nbsp;set&nbsp;for&nbsp;the&nbsp;whole&nbsp;day.</span></dd></dl>
 
-<dl><dt><a name="Detector-splice"><strong>splice</strong></a>(self, operand_detector)</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;combined&nbsp;data&nbsp;of&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a>&nbsp;and&nbsp;the&nbsp;one&nbsp;provided.<br>
+<dl><dt><a name="Detector-splice"><strong>splice</strong></a>(self, operand_detector: 'Detector') -&gt; 'Detector'</dt><dd><span class="code">Returns&nbsp;a&nbsp;new&nbsp;<a href="#Detector">Detector</a>&nbsp;with&nbsp;the&nbsp;combined&nbsp;data&nbsp;of&nbsp;the&nbsp;current&nbsp;<a href="#Detector">Detector</a>&nbsp;and&nbsp;the&nbsp;one&nbsp;provided.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -420,7 +457,7 @@ tgfsearch.detectors.detector.<a href="#Detector">Detector</a><br>
 
 <hr>
 Static methods defined here:<br>
-<dl><dt><a name="Detector-unpickle"><strong>unpickle</strong></a>(pickle_path)</dt><dd><span class="code">Unpickles&nbsp;a&nbsp;<a href="#Detector">Detector</a>&nbsp;from&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;it.<br>
+<dl><dt><a name="Detector-unpickle"><strong>unpickle</strong></a>(pickle_path: 'str') -&gt; 'Detector'</dt><dd><span class="code">Unpickles&nbsp;a&nbsp;<a href="#Detector">Detector</a>&nbsp;from&nbsp;a&nbsp;file&nbsp;and&nbsp;returns&nbsp;it.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -440,14 +477,34 @@ Data descriptors defined here:<br>
 <dl><dt><strong>__weakref__</strong></dt>
 <dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
 </dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>lm_growth_factors</strong> = {'godot_lm': 1.2606058060274177, 'json_nrl_lm': 0.6251838546767902, 'ssv_nrl_lm': 0.8465044061959315, 'thor_lm': 0.7123617288020386}</dl>
+
+<dl><dt><strong>trace_growth_factors</strong> = {'godot_lm': 1.0, 'json_nrl_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0}</dl>
+
 </td></tr></table></td></tr></table><p>
 <table class="section">
 <tr class="decor functions-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
     
 <tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
-<td class="singlecolumn"><dl><dt><a name="-read_data_file"><strong>read_data_file</strong></a>(reader, filelist, clean_energy, connection)</dt><dd><span class="code">Reading&nbsp;the&nbsp;given&nbsp;data&nbsp;files&nbsp;and&nbsp;sending&nbsp;them&nbsp;to&nbsp;the&nbsp;given&nbsp;pipe.&nbsp;Meant&nbsp;to&nbsp;be&nbsp;run&nbsp;in&nbsp;a&nbsp;subprocess,&nbsp;which<br>
+<td class="singlecolumn"><dl><dt><a name="-read_data_files"><strong>read_data_files</strong></a>(
+    reader: 'Reader',
+    filelist: 'List[str]',
+    clean_energy: 'bool',
+    connection: 'Connection'
+) -&gt; 'None'</dt><dd><span class="code">Reading&nbsp;the&nbsp;given&nbsp;data&nbsp;files&nbsp;and&nbsp;sending&nbsp;them&nbsp;to&nbsp;the&nbsp;given&nbsp;pipe.&nbsp;Meant&nbsp;to&nbsp;be&nbsp;run&nbsp;in&nbsp;a&nbsp;subprocess,&nbsp;which<br>
 means&nbsp;that&nbsp;the&nbsp;passed&nbsp;arguments&nbsp;and&nbsp;piped&nbsp;values&nbsp;are&nbsp;serialized/deserialized&nbsp;on&nbsp;each&nbsp;end.</span></dd></dl>
- <dl><dt><a name="-worker_init"><strong>worker_init</strong></a>()</dt><dd><span class="code">Data&nbsp;importer&nbsp;worker&nbsp;process&nbsp;initialization&nbsp;function.&nbsp;Mutes&nbsp;worker&nbsp;stdout&nbsp;and&nbsp;stderr&nbsp;output.</span></dd></dl>
-</td></tr></table>
+ <dl><dt><a name="-worker_init"><strong>worker_init</strong></a>() -&gt; 'None'</dt><dd><span class="code">Data&nbsp;importer&nbsp;worker&nbsp;process&nbsp;initialization&nbsp;function.&nbsp;Mutes&nbsp;worker&nbsp;stdout&nbsp;and&nbsp;stderr&nbsp;output.</span></dd></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>Dict</strong> = typing.Dict<br>
+<strong>Generator</strong> = typing.Generator<br>
+<strong>List</strong> = typing.List<br>
+<strong>Tuple</strong> = typing.Tuple</td></tr></table>
 </body></html>

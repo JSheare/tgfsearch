@@ -5,14 +5,14 @@ import shutil
 import sys
 
 
-def make_doc(name, parent_dir, docs_path):
+def make_doc(name: str, parent_dir: str, docs_path: str) -> None:
     sys.path.append(parent_dir)
     os.chdir(docs_path)
     pydoc.writedoc(name)
     os.chdir(os.path.dirname(os.getcwd()))
 
 
-def make_index(docs_path):
+def make_index(docs_path: str) -> None:
     html = (
         '<!DOCTYPE html>\n'
         '<html lang="en">\n'
@@ -38,7 +38,7 @@ def make_index(docs_path):
         file.write(html)
 
 
-def main():
+def main() -> None:
     docs_path = os.getcwd() + '/docs'
     if os.path.exists(docs_path):
         shutil.rmtree(docs_path)

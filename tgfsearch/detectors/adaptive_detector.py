@@ -1,4 +1,6 @@
-"""Child class of Detector made to handle data for instruments with arbitrary scintillator configurations."""
+"""A module containing a child class of Detector for handling instruments with arbitrary scintillator configurations."""
+from __future__ import annotations
+
 import json as json
 import os as os
 
@@ -7,7 +9,8 @@ from tgfsearch.detectors.scintillator import Scintillator
 
 
 class AdaptiveDetector(Detector):
-    def __init__(self, date_str):
+    """A child class of Detector made to handle data for instruments with arbitrary scintillator configurations."""
+    def __init__(self, date_str: str) -> None:
         super().__init__('ADAPTIVE', date_str, read_identity=False)
 
     def _reset_identity(self):
@@ -20,7 +23,7 @@ class AdaptiveDetector(Detector):
         self.scint_list.clear()
         self.deployment = self._get_deployment()
 
-    def _infer_identity(self):
+    def _infer_identity(self) -> None:
         """Uses files in import loc to determine instrument type and scintillator configuration."""
         all_files = self._get_serial_num_filelist('*')
         if len(all_files) == 0:
@@ -75,12 +78,12 @@ class AdaptiveDetector(Detector):
 
         self._has_identity = True
 
-    def set_import_loc(self, loc):
+    def set_import_loc(self, loc: str) -> None:
         self._reset_identity()
         super().set_import_loc(loc)
         self._infer_identity()
 
-    def get_clone(self):
+    def get_clone(self) -> AdaptiveDetector:
         clone = type(self)(self.date_str)
         if self.has_identity:
             clone._import_loc = self._import_loc

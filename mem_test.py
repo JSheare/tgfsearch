@@ -4,16 +4,18 @@ import numpy as np
 import os as os
 import pandas as pd
 import sys as sys
+from typing import Any
 
 # Adds grandparent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 import tgfsearch.helpers.helper_funcs as helper_funcs
-import tgfsearch.tools.tools as tl
 from tgfsearch.search import search_check, get_detector
 
-def get_obj_size(obj, visited=None):
+
+def get_obj_size(obj: Any, visited: set | None = None) -> int:
+    """A function that returns the recursive size of the passed object in bytes."""
     if isinstance(obj, pd.DataFrame):
         size = obj.memory_usage(deep=True).sum()
     elif isinstance(obj, np.ndarray):
@@ -47,7 +49,7 @@ def get_obj_size(obj, visited=None):
     return size
 
 
-def main():
+def main() -> None:
     if len(sys.argv) >= 4:
         first_date = str(sys.argv[1])
         second_date = str(sys.argv[2])

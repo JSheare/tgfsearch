@@ -1,4 +1,6 @@
-"""A graphical user interface for running the TGF search program."""
+"""A module containing classes that implement a graphical user interface for running the TGF search program."""
+from __future__ import annotations
+
 import multiprocessing as multiprocessing
 import os as os
 import sys as sys
@@ -6,9 +8,11 @@ import threading as threading
 import time as time
 import tkinter as tk
 import traceback as traceback
+from multiprocessing.connection import Connection
 from queue import Queue
 from tkinter import filedialog
 from tkinter import ttk
+from typing import Callable, List
 
 # Adds parent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
@@ -18,8 +22,9 @@ import tgfsearch.tools.tools as tl
 from tgfsearch.search import search_check, program
 
 
-# Redirects stdout and stderr from the search program. Meant to be run in a subprocess
-def search_program_wrapper(write, first_date, second_date, unit, mode_info):
+def search_program_wrapper(write: Connection, first_date: str, second_date: str, unit: str,
+                           mode_info: List[str]) -> None:
+    """Redirects stdout and stderr from the search program. Meant to be run in a subprocess."""
     # For running the program with pythonw (no terminal)
     if sys.stdout is None:
         sys.stdout = open(os.devnull, 'w')
@@ -41,34 +46,34 @@ def search_program_wrapper(write, first_date, second_date, unit, mode_info):
     sys.stdout.write = old_stdout_write
 
 
-# A helper class that keeps track of the required arguments for a single search
 class SearchArgs:
-    def __init__(self, first_date, second_date, detector, mode_info):
+    """A helper class that keeps track of the required arguments for a single search"""
+    def __init__(self, first_date: str, second_date: str, detector: str, mode_info: List[str]) -> None:
         self.first_date = first_date
         self.second_date = second_date
         self.detector = detector
         self.mode_info = mode_info
 
-    def __str__(self):
+    def __str__(self) -> str:
         search_string = f'{self.first_date} {self.second_date} {self.detector}'
         for arg in self.mode_info:
             search_string += f' {arg}'
 
         return search_string
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple([self.first_date, self.second_date, self.detector] + self.mode_info))
 
-    def __eq__(self, args2):
+    def __eq__(self, args2: SearchArgs) -> bool:
         return (self.first_date == args2.first_date and
                 self.second_date == args2.second_date and
                 self.detector == args2.detector and
                 self.mode_info == args2.mode_info)
 
 
-# A class for managing the search and keeping track of all the enqueued search information
 class SearchManager:
-    def __init__(self, write_func=print):
+    """A class for managing the search and keeping track of all the enqueued search information"""
+    def __init__(self, write_func: Callable = print) -> None:
         self._write = write_func  # The function for writing output
 
         self._mode_flags = {}
@@ -79,23 +84,23 @@ class SearchManager:
         self._running = threading.Event()  # Event that marks an active search
         self._stop_event = threading.Event()  # Event for stopping the search
 
-    # Enables the given mode
-    def add_mode(self, mode):
+    def add_mode(self, mode: str) -> None:
+        """Enables the given mode."""
         with self._lock:
             self._mode_flags[mode] = True
 
-    # Disables the given mode
-    def remove_mode(self, mode):
+    def remove_mode(self, mode: str) -> None:
+        """ Disables the given mode."""
         with self._lock:
             if mode in self._mode_flags:
                 self._mode_flags[mode] = False
 
-    # Returns the number of searches in the queue
-    def size(self):
+    def size(self) -> int:
+        """Returns the number of searches in the queue."""
         return self._search_queue.qsize()
 
-    # Enqueues a new search with the given parameters
-    def enqueue(self, first_date, second_date, detector, import_loc, export_loc):
+    def enqueue(self, first_date: str, second_date: str, detector: str, import_loc: str, export_loc: str) -> None:
+        """Enqueues a new search with the given parameters."""
         with self._lock:
             if second_date == 'yymmdd' or second_date == '':
                 second_date = first_date
@@ -130,8 +135,8 @@ class SearchManager:
                     self._search_queue.put(search_args)
                     self._search_set.add(search_args)
 
-    # Runs all the enqueued searches
-    def run(self):
+    def run(self) -> None:
+        """Runs all the enqueued searches."""
         with self._lock:
             self._running.set()
             while not self._search_queue.empty():
@@ -177,13 +182,13 @@ class SearchManager:
             self._stop_event.clear()
             self._running.clear()
 
-    # Stops the search if it's running
-    def stop(self):
+    def stop(self) -> None:
+        """Stops the search if it's running."""
         if self._running.is_set():
             self._stop_event.set()
 
-    # Clears the search queue and resets the selected modes
-    def reset(self):
+    def reset(self) -> None:
+        """Clears the search queue and resets the selected modes"""
         with self._lock:
             while not self._search_queue.empty():
                 self._search_queue.get()
@@ -193,9 +198,9 @@ class SearchManager:
                 self._mode_flags[mode] = False
 
 
-# A class implementing the search GUI window, all its widgets, and their associated functionality
 class SearchWindow(tk.Frame):
-    def __init__(self, master=None, **kwargs):
+    """A class implementing the search GUI window, all its widgets, and their associated functionality."""
+    def __init__(self, master: tk.Tk | None = None, **kwargs) -> None:
         super().__init__(master, **kwargs)
         self._master = master
         self._checkbox_variables = []
@@ -388,8 +393,8 @@ class SearchWindow(tk.Frame):
         self._enqueued_counter_interval = 20  # interval at which search queue size is checked in milliseconds
         self._update_enqueued_counter()
 
-    # Enqueues strings for writing to the big text box and notifies the handler
-    def write(self, *args, sep=' ', end='\n', **kwargs):
+    def write(self, *args, sep: str = ' ', end: str = '\n', **kwargs) -> None:
+        """Enqueues strings for writing to the big text box and notifies the handler."""
         if len(args) > 0:
             output = sep.join(args) + end
         else:
@@ -398,8 +403,8 @@ class SearchWindow(tk.Frame):
         self._write_queue.put(output)
         self.event_generate('<<write>>', when='tail')
 
-    # Writes text from the output queue to the big text box when the write event happens
-    def _write_handler(self, event):
+    def _write_handler(self, event: tk.Event) -> None:
+        """Writes text from the output queue to the big text box when the write event happens."""
         self._text_box['state'] = tk.NORMAL
         while not self._write_queue.empty():
             self._text_box.insert('end', self._write_queue.get(), 'last_insert')
@@ -407,77 +412,78 @@ class SearchWindow(tk.Frame):
 
         self._text_box['state'] = tk.DISABLED
 
-    # Creates a file dialogue and then puts the selected directory into the specified text entry box
     @staticmethod
-    def _select_dir(entry_box):
+    def _select_dir(entry_box: tk.Entry) -> None:
+        """Creates a file dialogue and then puts the selected directory into the specified text entry box."""
         directory = filedialog.askdirectory(initialdir='/')
         entry_box.delete(0, 'end')
         entry_box.insert(0, directory)
 
-    # Clears the sample text from the given text entry box
     @staticmethod
-    def _clear_ghost_text(entry_box, ghost_text):
+    def _clear_ghost_text(entry_box: tk.Entry, ghost_text: str) -> None:
+        """Clears the sample text from the given text entry box."""
         current_text = entry_box.get()
         if current_text == ghost_text:
             entry_box.delete(0, 'end')
 
-    # Updates the enqueued searches counter periodically
-    def _update_enqueued_counter(self):
+    def _update_enqueued_counter(self) -> None:
+        """Updates the enqueued searches counter periodically."""
         self._enqueue_label['text'] = f'Searches\nEnqueued:\n{self._search_manager.size()}'
         self.after(self._enqueued_counter_interval, self._update_enqueued_counter)
 
-    # Adds/removes the given mode from the search arguments when the corresponding checkbox is checked/unchecked
-    def _check_uncheck(self, var, mode):
+    def _check_uncheck(self, var: tk.IntVar, mode: str) -> None:
+        """Adds/removes the given mode from the search arguments when the corresponding checkbox is
+        checked/unchecked."""
         if var.get() == 1:
             self._search_manager.add_mode(mode)
         else:
             self._search_manager.remove_mode(mode)
 
-    # Enables/disables GUI widgets depending on the action parameter
-    def _change_widgets(self, action):
+    def _change_widgets(self, action: str) -> None:
+        """Enables/disables GUI widgets depending on the action parameter."""
         for widget in self._toggleable_widgets:
             widget['state'] = action
 
-    # Enables widgets when the enable widget event is received
-    def _enable_widget_handler(self, event):
+    def _enable_widget_handler(self, event: tk.Event) -> None:
+        """Enables widgets when the enable widget event is received."""
         self._change_widgets(tk.NORMAL)
 
-    # Disables widgets when the enable widget event is received
-    def _disable_widget_handler(self, event):
+    def _disable_widget_handler(self, event: tk.Event) -> None:
+        """Disables widgets when the enable widget event is received."""
         self._change_widgets(tk.DISABLED)
 
-    # Enqueues a new search based on the current contents of all the text entry boxes
-    def _enqueue(self):
+    def _enqueue(self) -> None:
+        """Enqueues a new search based on the current contents of all the text entry boxes."""
         if self._search_thread is None or not self._search_thread.is_alive():
             self._search_manager.enqueue(self._date_one_entry.get(), self._date_two_entry.get(),
                                          self._detector_entry.get(), self._import_entry.get(), self._export_entry.get())
 
-    # Starts running the enqueued searches
-    def _start(self):
+    def _start(self) -> None:
+        """Starts running the enqueued searches."""
         self._enqueue()  # In case the current info hasn't been enqueued yet
         if (self._search_thread is None or not self._search_thread.is_alive()) and self._search_manager.size() > 0:
             self._search_thread = threading.Thread(target=self._run, args=())
             self._search_thread.start()  # Running the search in another thread to prevent the GUI from locking up
 
-    # Target function for search thread. Disables/Enables the GUI elements while the searches are running
-    def _run(self):
+    def _run(self) -> None:
+        """Target function for search thread. Disables/Enables the GUI elements while the searches are running."""
         self.event_generate('<<disable_widgets>>', when='tail')
         self._search_manager.run()
         self.event_generate('<<enable_widgets>>', when='tail')
 
-    # Stops the search if there is one
-    def _stop(self):
+    def _stop(self) -> None:
+        """Stops the search if there is one."""
         if self._search_thread is not None and self._search_thread.is_alive():
             self._search_manager.stop()
 
-    # Clears the big text box
-    def _clear(self):
+    def _clear(self) -> None:
+        """Clears the big text box."""
         self._text_box['state'] = tk.NORMAL
         self._text_box.delete('1.0', 'end')
         self._text_box['state'] = tk.DISABLED
 
-    # Stops the search and resets the GUI widgets back to their default states
-    def _reset(self):
+    def _reset(self) -> None:
+        """Stops the search and resets the GUI widgets back to their default states."""
         self._stop()
         self._search_manager.reset()  # Clearing the search queue and mode flags
         self._clear()
@@ -496,7 +502,7 @@ class SearchWindow(tk.Frame):
             variable.set(0)
 
 
-def main():
+def main() -> None:
     # For running the program with pythonw (no terminal)
     if sys.stdout is None:
         sys.stdout = open(os.devnull, 'w')

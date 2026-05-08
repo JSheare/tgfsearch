@@ -1,7 +1,10 @@
-"""A class for keeping track of a particular scintillator's data."""
+"""A module containing a class for keeping track of a particular scintillator's data."""
 import copy as copy
 import gc as gc
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
+from typing import Any, List
 
 import tgfsearch.config.parameters as params
 from tgfsearch.tools.reader import Reader
@@ -40,7 +43,7 @@ class Scintillator:
 
     """
 
-    def __init__(self, name, eRC, lm_format):
+    def __init__(self, name: str, eRC: str, lm_format: str) -> None:
         self.name = name
         self.eRC = eRC
         self.lm_format = lm_format
@@ -52,19 +55,19 @@ class Scintillator:
         self.traces = {}
         self.reader = Reader()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.clear()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Scintillator({self.name}, {self.eRC})'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self.data_present()
 
-    def data_present(self, data_type='lm'):
+    def data_present(self, data_type: str = 'lm') -> bool:
         if data_type == 'lm':
             # Using energy as an arbitrary check here. Seconds of day or any of the others would've worked as well
             return True if 'energies' in self.lm_frame and len(self.lm_frame['energies']) > 0 else False
@@ -73,7 +76,7 @@ class Scintillator:
         else:
             raise ValueError(f"'{data_type}' is not a valid data type.")
 
-    def get_attribute(self, attribute, deepcopy=True):
+    def get_attribute(self, attribute: str, deepcopy: bool = True) -> Any:
         """Returns the requested attribute."""
         if hasattr(self, attribute):
             if deepcopy:
@@ -83,7 +86,7 @@ class Scintillator:
         else:
             raise ValueError(f"'{attribute}' is not a valid attribute.")
 
-    def set_attribute(self, attribute, info, deepcopy=True):
+    def set_attribute(self, attribute: str, info: Any, deepcopy: bool = True) -> None:
         """Updates the requested attribute."""
         if hasattr(self, attribute):
             attribute_type = type(getattr(self, attribute))
@@ -101,7 +104,7 @@ class Scintillator:
         else:
             raise ValueError(f"'{attribute}' is not a valid attribute.")
 
-    def get_lm_data(self, column, file_name=None):
+    def get_lm_data(self, column: str, file_name: str | None = None) -> npt.NDArray[np.float64]:
         """Returns a single column of list mode data as a numpy array."""
         if file_name is None:
             frame = self.lm_frame
@@ -113,7 +116,7 @@ class Scintillator:
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")
 
-    def set_lm_data(self, column, new_data, file_name=None):
+    def set_lm_data(self, column: str, new_data: npt.NDArray[np.float64], file_name: str | None = None) -> None:
         """Sets a single column of list mode data to the new data specified."""
         if file_name is None:
             frame = self.lm_frame
@@ -128,7 +131,7 @@ class Scintillator:
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")
 
-    def find_lm_file_index(self, count_time):
+    def find_lm_file_index(self, count_time: float) -> int:
         """Returns the index of the list mode file that the given count occurred in."""
         # Checking to see that the count is inside the day or in the ~500 seconds of the next day included sometimes
         if count_time < 0:
@@ -148,7 +151,7 @@ class Scintillator:
 
         return -1
 
-    def find_lm_file(self, count_time):
+    def find_lm_file(self, count_time: float) -> str:
         """Returns the name of the list mode file that the given count occurred in."""
         index = self.find_lm_file_index(count_time)
         if index != -1:
@@ -156,7 +159,7 @@ class Scintillator:
         else:
             return ''
 
-    def get_lm_file(self, file_name, deepcopy=True):
+    def get_lm_file(self, file_name: str, deepcopy: bool = True) -> pd.DataFrame:
         """Returns the list mode data for the specified list mode file."""
         if file_name in self.lm_file_indices:
             indices = self.lm_file_indices[file_name]
@@ -168,7 +171,7 @@ class Scintillator:
         else:
             raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
 
-    def get_trace(self, trace_name, deepcopy=True):
+    def get_trace(self, trace_name: str, deepcopy: bool = True) -> pd.DataFrame:
         """Returns trace data for the given time id."""
         if trace_name in self.traces:
             if deepcopy:
@@ -179,11 +182,11 @@ class Scintillator:
         else:
             raise ValueError(f"No trace with name '{trace_name}' for scintillator '{self.name}'.")
 
-    def get_trace_names(self):
+    def get_trace_names(self) -> List[str]:
         """Returns a list of names for traces that are currently being stored."""
         return list(self.traces.keys())
 
-    def find_matching_traces(self, count_time, date_str, trace_list=None):
+    def find_matching_traces(self, count_time: float, date_str: str, trace_list: List[str] | None = None) -> List[str]:
         """Finds the traces that could be a match for the given count (if they exist)."""
         if count_time < 0 or count_time > params.SEC_PER_DAY + 500:  # Checking that count is inside the day
             return []
@@ -212,7 +215,7 @@ class Scintillator:
 
         return matches
 
-    def clear(self, clear_filelists=True):
+    def clear(self, clear_filelists: bool = True) -> None:
         """Clears all data currently stored in the Scintillator."""
         self.lm_frame = pd.DataFrame()
         self.lm_file_ranges.clear()

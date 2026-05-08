@@ -1,4 +1,4 @@
-"""Parameters for use by the TGF search program and its modules."""
+"""A module containing parameters used by various parts of the package."""
 
 """General Parameters"""
 SEC_PER_DAY = 86400  # Number of seconds in a day

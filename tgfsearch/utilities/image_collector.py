@@ -13,7 +13,7 @@ import tgfsearch.helpers.helper_funcs as helper_funcs
 from tgfsearch.search import search_check
 
 
-def is_valid_dir_path(path):
+def is_valid_dir_path(path: str) -> bool:
     if os.path.exists(path):
         if os.path.isdir(path):
             return True
@@ -29,7 +29,7 @@ def is_valid_dir_path(path):
     return True
 
 
-def main():
+def main() -> None:
     if len(sys.argv) >= 4:
         first_date = str(sys.argv[1])
         second_date = str(sys.argv[2])

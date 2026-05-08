@@ -1,10 +1,13 @@
-"""A base class for keeping track of lightning data and associated information."""
+"""A module containing a base class for keeping track of instrument data and associated information."""
+from __future__ import annotations
+
 import datetime as dt
 import gc as gc
 import glob as glob
 import json as json
 import multiprocessing as multiprocessing
 import numpy as np
+import numpy.typing as npt
 import os as os
 import pandas as pd
 import pickle
@@ -12,6 +15,9 @@ import psutil as psutil
 import sys as sys
 import threading as threading
 import warnings as warnings
+from multiprocessing.connection import Connection
+from multiprocessing.pool import Pool
+from typing import Any, Dict, Generator, List, Tuple
 
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
@@ -20,13 +26,13 @@ from tgfsearch.detectors.scintillator import Scintillator
 from tgfsearch.tools.reader import Reader
 
 
-def worker_init():
+def worker_init() -> None:
     """Data importer worker process initialization function. Mutes worker stdout and stderr output."""
     sys.stdout = open(os.devnull, 'w')
     sys.stderr = open(os.devnull, 'w')
 
 
-def read_data_file(reader, filelist, clean_energy, connection):
+def read_data_files(reader: Reader, filelist: List[str], clean_energy: bool, connection: Connection) -> None:
     """Reading the given data files and sending them to the given pipe. Meant to be run in a subprocess, which
     means that the passed arguments and piped values are serialized/deserialized on each end."""
     warning_strings = []
@@ -68,7 +74,11 @@ class Detector:
 
     Attributes
     ----------
-    log : _io.TextIO
+    lm_growth_factors : dict
+        A mapping of bytes of memory to bytes of file growth factors for each list mode data file type.
+    trace_growth_factors : dict
+        A mapping of bytes of memory to bytes of file growth factors for each trace mode data file type.
+    log : _io.TextIOWrapper
         The file where actions and findings are logged.
     first_sec : float
         The first second of the day in EPOCH time.
@@ -92,7 +102,11 @@ class Detector:
 
     """
 
-    def __init__(self, unit, date_str, **kwargs):
+    lm_growth_factors = {'godot_lm': 1.2606058060274177, 'ssv_nrl_lm': 0.8465044061959315,
+                         'thor_lm': 0.7123617288020386, 'json_nrl_lm': 0.6251838546767902}
+    trace_growth_factors = {'godot_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0, 'json_nrl_lm': 1.0}
+
+    def __init__(self, unit: str, date_str: str, **kwargs) -> None:
         # Basic information
         self.date_str = date_str  # yymmdd
         self.log = None
@@ -117,15 +131,15 @@ class Detector:
 
         self.set_export_loc(os.getcwd().replace('\\', '/'))
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.clear()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String casting overload. Returns a string of the form 'Detector(unit, date_str)'."""
         return f'Detector({self.unit}, {self.date_str})'
 
     # Debugging string dunder
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Debugging string dunder method. Returns a string of the form 'Detector(unit, date_str)' along
         with some info about which Scintillators have data."""
         scintillators_with_data = []
@@ -139,13 +153,13 @@ class Detector:
         data_string = f' in {scintillators_with_data}' if has_data else ''
         return default_string + f' Has data = {has_data} ' + data_string
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[str, None, None]:
         """Iterator dunder. Returns a generator that yields the Detector's scintillator names according to the order
         of priority specified in the Detector config file."""
         for scintillator in self.scint_list:
             yield scintillator
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """Bool casting overload. Returns True if data for any scintillator is present."""
         if self._has_identity:
             for scintillator in self._scintillators:
@@ -154,17 +168,17 @@ class Detector:
 
         return False
 
-    def __contains__(self, scintillator):
+    def __contains__(self, scintillator) -> bool:
         """Contains overload. Returns True if the provided string corresponds to a scintillator in Detector,
         False otherwise."""
         return scintillator in self._scintillators
 
-    def __add__(self, operand_detector):
+    def __add__(self, operand_detector) -> Detector:
         """Addition operator overload. Returns a new Detector containing data from the current Detector
         and the provided one. See splice() method documentation for more information."""
         return self.splice(operand_detector)
 
-    def _get_deployment(self):
+    def _get_deployment(self) -> Dict[str, Any]:
         """Returns a dictionary full of deployment information for the instrument on its specified date."""
         for file in glob.glob(
                 f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/deployments/'
@@ -178,7 +192,7 @@ class Detector:
                 'tz_identifier': '', 'weather_station': '', 'sounding_station': '', 'latitude': 0., 'longitude': 0.,
                 'altitude': 0., 'notes': ''}
 
-    def _read_identity(self):
+    def _read_identity(self) -> None:
         """Gets and fills in the identity of the Detector from the config file based on the name and date."""
         try:
             with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
@@ -219,7 +233,7 @@ class Detector:
         else:
             raise ValueError(f"'no entry for '{self.unit}' in detector config file.")
 
-    def pickle(self, file_name, path=None):
+    def pickle(self, file_name: str, path: str| None = None) -> str:
         """Pickles the Detector instance to a file and returns the path.
 
         Parameters
@@ -252,7 +266,7 @@ class Detector:
         return export_path
 
     @staticmethod
-    def unpickle(pickle_path):
+    def unpickle(pickle_path: str) -> Detector:
         """Unpickles a Detector from a file and returns it.
 
         Parameters
@@ -272,12 +286,12 @@ class Detector:
 
         return detector
 
-    def has_identity(self):
+    def has_identity(self) -> bool:
         """Returns True if the Detector has an established identity (established name, scintillator configuration,
         etc.), False otherwise."""
         return self._has_identity
 
-    def get_import_loc(self):
+    def get_import_loc(self) -> str:
         """Returns the directory where data will be imported from.
 
         Returns
@@ -289,7 +303,7 @@ class Detector:
 
         return self._import_loc
 
-    def set_import_loc(self, loc):
+    def set_import_loc(self, loc: str) -> None:
         """Sets the directory where data will be imported from.
 
         Parameters
@@ -306,7 +320,7 @@ class Detector:
 
         self._import_loc = loc
 
-    def get_export_loc(self):
+    def get_export_loc(self) -> str:
         """Returns the directory where all data and results will be exported.
 
         Returns
@@ -318,7 +332,7 @@ class Detector:
 
         return self._export_loc
 
-    def set_export_loc(self, loc, subdir=True):
+    def set_export_loc(self, loc: str, subdir: bool = True) -> None:
         """Sets the directory where all data and results will be stored.
 
         Parameters
@@ -342,7 +356,7 @@ class Detector:
         else:
             self._export_loc = loc
 
-    def is_named(self, name):
+    def is_named(self, name: str) -> bool:
         """Returns True if the Detector has the same name as the passed string.
 
         Parameters
@@ -359,7 +373,7 @@ class Detector:
 
         return name.upper() in self.unit
 
-    def is_valid_scintillator(self, scintillator):
+    def is_valid_scintillator(self, scintillator: str) -> bool:
         """Returns True if the Detector contains the specified scintillator, False otherwise
 
         Parameters
@@ -376,7 +390,7 @@ class Detector:
 
         return scintillator in self._scintillators
 
-    def data_present_in(self, scintillator, data_type='lm'):
+    def data_present_in(self, scintillator: str, data_type: str = 'lm') -> bool:
         """Returns True if data is present for the specified scintillator and False otherwise.
 
         Parameters
@@ -399,7 +413,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_attribute(self, scintillator, attribute, deepcopy=True):
+    def get_attribute(self, scintillator: str, attribute: str, deepcopy: bool = True) -> Any:
         """Returns the requested attribute for a particular scintillator.
 
         Parameters
@@ -426,7 +440,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def set_attribute(self, scintillator, attribute, new_info, deepcopy=True):
+    def set_attribute(self, scintillator: str, attribute: str, new_info: Any, deepcopy: bool = True) -> None:
         """Updates the requested attribute for a particular scintillator.
         Note: new info must be of the same type as the old, and if either a list mode or trace file list is supplied
         it is assumed that the list is in order and contains no duplicates.
@@ -449,7 +463,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_lm_data(self, scintillator, column, file_name=None):
+    def get_lm_data(self, scintillator: str, column: str, file_name: str | None = None) -> npt.NDArray[np.float64]:
         """Returns a single column of list mode data as a numpy array.
 
         Parameters
@@ -474,7 +488,8 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def set_lm_data(self, scintillator, column, new_data, file_name=None):
+    def set_lm_data(self, scintillator: str, column: str, new_data: npt.NDArray[np.float64],
+                    file_name: str | None = None) -> None:
         """Sets a single column of list mode data to the new data specified.
 
         Parameters
@@ -496,7 +511,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def find_lm_file_index(self, scintillator, count_time):
+    def find_lm_file_index(self, scintillator: str, count_time: float) -> int:
         """Helper function. Returns the index of the list mode file that the given count occurred in.
 
         Parameters
@@ -519,7 +534,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def find_lm_file(self, scintillator, count_time):
+    def find_lm_file(self, scintillator: str, count_time: float) -> str:
         """Returns the name of the list mode file that the given count occurred in.
 
         Parameters
@@ -542,7 +557,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_lm_file(self, scintillator, file_name, deepcopy=True):
+    def get_lm_file(self, scintillator: str, file_name: str, deepcopy: bool = True) -> pd.DataFrame:
         """Returns the list mode data for the specified list mode file.
 
         Parameters
@@ -567,7 +582,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_trace(self, scintillator, trace_name, deepcopy=True):
+    def get_trace(self, scintillator: str, trace_name: str, deepcopy: bool = True) -> pd.DataFrame:
         """Returns the trace data for the given scintillator and trace name.
 
         Parameters
@@ -591,7 +606,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_trace_names(self, scintillator):
+    def get_trace_names(self, scintillator: str) -> List[str]:
         """Returns a list of names of the traces that are currently being stored.
 
         Parameters
@@ -611,7 +626,8 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def find_matching_traces(self, scintillator, count_time, trace_list=None):
+    def find_matching_traces(self, scintillator: str, count_time: float,
+                             trace_list: List[str] | None = None) -> List[str]:
         """Finds the traces that could be a match for the given count (if they exist).
 
         Parameters
@@ -636,7 +652,7 @@ class Detector:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def clear(self, clear_filelists=True):
+    def clear(self, clear_filelists: bool = True) -> None:
         """Clears all data currently stored in the Detector.
 
         Parameters
@@ -652,28 +668,24 @@ class Detector:
         if clear_filelists:
             self.dates_stored = [self.date_str]
 
-    def _projected_memory(self):
+    def _projected_memory(self) -> float:
         """Returns the projected size (in bytes) of the object after all currently listed files have been imported."""
-        lm_growth_factors = {'godot_lm': 1.2606058060274177, 'ssv_nrl_lm': 0.8465044061959315,
-                             'thor_lm': 0.7123617288020386, 'json_nrl_lm': 0.6251838546767902}
-        trace_growth_factors = {'godot_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0, 'json_nrl_lm': 1.0}
-
         total_file_size = 0
         for scintillator in self._scintillators:
             lm_format = self._scintillators[scintillator].lm_format
             for file in self.get_attribute(scintillator, 'lm_filelist', deepcopy=False):
-                total_file_size += helper_funcs.file_size(file) * lm_growth_factors[lm_format]
+                total_file_size += helper_funcs.file_size(file) * self.lm_growth_factors[lm_format]
 
             for file in self.get_attribute(scintillator, 'trace_filelist', deepcopy=False):
-                total_file_size += helper_funcs.file_size(file) * trace_growth_factors[lm_format]
+                total_file_size += helper_funcs.file_size(file) * self.trace_growth_factors[lm_format]
 
         return total_file_size
 
-    def _file_form(self, eRC):
-        """Returns the pattern for a scintillator's files given the scintillator's eRC serial number."""
+    def _file_form(self, eRC: str) -> str:
+        """Returns the glob pattern for a scintillator's files given the scintillator's eRC serial number."""
         return f'eRC{eRC}*_*_{self.date_str}_*'
 
-    def _get_serial_num_filelist(self, eRC):
+    def _get_serial_num_filelist(self, eRC: str) -> List[str]:
         """Returns a list of data files for the scintillator with the given eRC serial number."""
         complete_filelist = glob.glob(f'{self._import_loc}/{self._file_form(eRC)}')
         if len(complete_filelist) == 0:  # Here in case the data files are grouped into daily folders
@@ -684,7 +696,7 @@ class Detector:
 
         return complete_filelist
 
-    def _get_scint_filelists(self, scintillator):
+    def _get_scint_filelists(self, scintillator: str) -> Tuple[List[str], List[str]]:
         """Returns the list mode and trace filelists for the given scintillator."""
         lm_extensions = ['.csv', '.txt']
         trace_extensions = ['.xtr']
@@ -712,7 +724,7 @@ class Detector:
         trace_filelist.sort()
         return lm_filelist, trace_filelist
 
-    def __import_lm(self, process_pool, scintillator, options):
+    def __import_lm(self, process_pool: Pool, scintillator: str, options: Dict[str, bool]) -> Tuple[int, str]:
         """Imports list mode data for the given scintillator."""
         lm_filelist = self._scintillators[scintillator].lm_filelist
         file_frames = []
@@ -727,8 +739,8 @@ class Detector:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(read_data_file, args=(self._scintillators[scintillator].reader, lm_filelist,
-                                                       options['clean_energy'], end2))
+        process_pool.apply_async(read_data_files, args=(self._scintillators[scintillator].reader, lm_filelist,
+                                                        options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
             end1.send(1)  # Notifying the other process that the data has been received
@@ -797,7 +809,7 @@ class Detector:
 
         return len(file_frames), ''.join(log_strings)
 
-    def __import_traces(self, process_pool, scintillator, options):
+    def __import_traces(self, process_pool: Pool, scintillator: str, options: Dict[str, bool]) -> Tuple[int, str]:
         """Imports trace data for the given scintillator."""
         trace_filelist = self._scintillators[scintillator].trace_filelist
         traces = {}
@@ -808,8 +820,8 @@ class Detector:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(read_data_file, args=(self._scintillators[scintillator].reader, trace_filelist,
-                                                       options['clean_energy'], end2))
+        process_pool.apply_async(read_data_files, args=(self._scintillators[scintillator].reader, trace_filelist,
+                                                        options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
             end1.send(1)  # Notifying the other process that the data has been received
@@ -844,7 +856,8 @@ class Detector:
 
         return len(traces), ''.join(log_strings)
 
-    def __import_scintillator(self, process_pool, output_lock, scintillator, options):
+    def __import_scintillator(self, process_pool: Pool, output_lock: threading.Lock, scintillator: str,
+                              options: Dict[str, bool]) -> None:
         """Manages data importing for a single scintillator. Meant to be run on a separate thread."""
         eRC = self._scintillators[scintillator].eRC
         lm_filelist_len = len(self._scintillators[scintillator].lm_filelist)
@@ -901,8 +914,9 @@ class Detector:
                     if options['import_traces'] and trace_results is not None:
                         self.log.write(trace_results[1])
 
-    def import_data(self, existing_filelists=False, import_traces=True, import_lm=True, import_scints=None,
-                    clean_energy=False, mem_frac=1., **kwargs):
+    def import_data(self, existing_filelists: bool = False, import_traces: bool = True, import_lm: bool = True,
+                    import_scints: List[str] | None = None, clean_energy: bool = False, mem_frac: float = 1.,
+                    **kwargs) -> None:
         """Imports and stores data from the daily data files.
 
         Parameters
@@ -976,7 +990,7 @@ class Detector:
 
         gc.collect()
 
-    def get_clone(self):
+    def get_clone(self) -> Detector:
         """Returns a new Detector with the same identity as the current one (but no data).
 
         Returns
@@ -992,7 +1006,7 @@ class Detector:
         clone._export_loc = self._export_loc
         return clone
 
-    def splice(self, operand_detector):
+    def splice(self, operand_detector: Detector) -> Detector:
         """Returns a new Detector with the combined data of the current Detector and the one provided.
 
         Parameters

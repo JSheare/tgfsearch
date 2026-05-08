@@ -9,15 +9,16 @@
 <tr class="heading-text decor">
 <td class="title">&nbsp;<br><strong class="title">reader</strong></td>
 <td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Cdata%20processing%20stuff%5Csearch%20package%5Ctgfsearch%5Ctools%5Creader.py">d:\documents\tgf research\data processing stuff\search package\tgfsearch\tools\reader.py</a></td></tr></table>
-    <p><span class="code">A&nbsp;class&nbsp;that&nbsp;wraps&nbsp;and&nbsp;serves&nbsp;as&nbsp;an&nbsp;easy&nbsp;interface&nbsp;for&nbsp;the&nbsp;data&nbsp;reader.</span></p>
+    <p><span class="code">A&nbsp;module&nbsp;containing&nbsp;a&nbsp;class&nbsp;that&nbsp;wraps&nbsp;and&nbsp;serves&nbsp;as&nbsp;an&nbsp;easy&nbsp;interface&nbsp;for&nbsp;the&nbsp;data&nbsp;reader.</span></p>
 <p>
 <table class="section">
 <tr class="decor pkg-content-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
     
 <tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
-<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="tgfsearch.data_reader.html">tgfsearch.data_reader</a><br>
-</td><td class="multicolumn"></td><td class="multicolumn"></td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="tgfsearch.tools.data_reader.html">tgfsearch.tools.data_reader</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"></td><td class="multicolumn"></td></tr></table></td></tr></table><p>
 <table class="section">
 <tr class="decor index-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
@@ -37,7 +38,9 @@
 <td class="section-title" colspan=3>&nbsp;<br><a name="Reader">class <strong>Reader</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
     
 <tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
-<td class="decor title-decor" colspan=2><span class="code">A&nbsp;class&nbsp;that&nbsp;wraps&nbsp;and&nbsp;serves&nbsp;as&nbsp;an&nbsp;easy&nbsp;interface&nbsp;for&nbsp;the&nbsp;data&nbsp;reader.<br>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#Reader">Reader</a>()&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;that&nbsp;wraps&nbsp;and&nbsp;serves&nbsp;as&nbsp;an&nbsp;easy&nbsp;interface&nbsp;for&nbsp;the&nbsp;data&nbsp;reader.<br>
 &nbsp;<br>
 Attributes<br>
 ----------<br>
@@ -45,11 +48,16 @@ passtime&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;information&nbsp;needed&nbsp;to&nbsp;import&nbsp;the&nbsp;subsequent&nbsp;list&nbsp;mode&nbsp;files&nbsp;properly&nbsp;(if&nbsp;applicable).<br>&nbsp;</span></td></tr>
 <tr><td>&nbsp;</td>
 <td class="singlecolumn">Methods defined here:<br>
-<dl><dt><a name="Reader-__call__"><strong>__call__</strong></a>(self, file_name, reset_after=False)</dt><dd><span class="code">Defines&nbsp;the&nbsp;behavior&nbsp;for&nbsp;calling&nbsp;a&nbsp;class&nbsp;instance&nbsp;like&nbsp;a&nbsp;function.</span></dd></dl>
+<dl><dt><a name="Reader-__call__"><strong>__call__</strong></a>(self, file_name, reset_after=False) -&gt; Any</dt><dd><span class="code">Defines&nbsp;the&nbsp;behavior&nbsp;for&nbsp;calling&nbsp;a&nbsp;class&nbsp;instance&nbsp;like&nbsp;a&nbsp;function.</span></dd></dl>
 
-<dl><dt><a name="Reader-__init__"><strong>__init__</strong></a>(self)</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+<dl><dt><a name="Reader-__init__"><strong>__init__</strong></a>(self) -&gt; None</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
 
-<dl><dt><a name="Reader-read"><strong>read</strong></a>(self, file_name, reset_after=False, clean_energy=False)</dt><dd><span class="code">Reads&nbsp;the&nbsp;data&nbsp;file&nbsp;with&nbsp;the&nbsp;given&nbsp;name&nbsp;and&nbsp;returns&nbsp;the&nbsp;data&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
+<dl><dt><a name="Reader-read"><strong>read</strong></a>(
+    self,
+    file_name: str,
+    reset_after: bool = False,
+    clean_energy: bool = False
+) -&gt; pandas.core.frame.DataFrame</dt><dd><span class="code">Reads&nbsp;the&nbsp;data&nbsp;file&nbsp;with&nbsp;the&nbsp;given&nbsp;name&nbsp;and&nbsp;returns&nbsp;the&nbsp;data&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -67,7 +75,7 @@ Returns<br>
 pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;given&nbsp;file's&nbsp;data.</span></dd></dl>
 
-<dl><dt><a name="Reader-reset"><strong>reset</strong></a>(self)</dt><dd><span class="code">Resets&nbsp;the&nbsp;reader&nbsp;instance&nbsp;back&nbsp;to&nbsp;its&nbsp;default&nbsp;state.</span></dd></dl>
+<dl><dt><a name="Reader-reset"><strong>reset</strong></a>(self) -&gt; None</dt><dd><span class="code">Resets&nbsp;the&nbsp;reader&nbsp;instance&nbsp;back&nbsp;to&nbsp;its&nbsp;default&nbsp;state.</span></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

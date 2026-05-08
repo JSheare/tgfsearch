@@ -1,11 +1,12 @@
 """A module containing functions used by various parts of the package."""
 import os
 import struct
+from typing import List
 
 import tgfsearch.config.parameters as params
 
 
-def make_path(path):
+def make_path(path: str) -> None:
     """Checks to see if a directory path corresponding to the given string exists and, if not, creates it.
 
     Parameters
@@ -19,7 +20,7 @@ def make_path(path):
         os.makedirs(path)
 
 
-def file_size(file, uncompressed=True):
+def file_size(file: str, uncompressed: bool = True) -> int:
     """Returns the size of the given file in bytes.
 
     Parameters
@@ -49,7 +50,7 @@ def file_size(file, uncompressed=True):
     return size
 
 
-def days_per_month(month, year):
+def days_per_month(month: int, year: int) -> int:
     """Returns the number of days in the requested month based on the year.
 
     Parameters
@@ -95,7 +96,7 @@ def days_per_month(month, year):
             return 0
 
 
-def roll_date_forward(date_str):
+def roll_date_forward(date_str: str) -> str:
     """Returns the calendar date after the one given as an argument.
 
     Parameters
@@ -126,7 +127,7 @@ def roll_date_forward(date_str):
     return date_str
 
 
-def roll_date_backward(date_str):
+def roll_date_backward(date_str: str) -> str:
     """Returns the calendar date before the one given as an argument.
 
     Parameters
@@ -158,7 +159,7 @@ def roll_date_backward(date_str):
     return date_str
 
 
-def make_date_list(first_date, second_date):
+def make_date_list(first_date: str, second_date: str) -> List[str]:
     """Makes a list of dates from first_date to second_date (inclusive).
 
     Parameters

@@ -1,19 +1,23 @@
-"""A script that searches for TGFs and glows."""
+"""A module containing classes and functions that implement the TGF and glow search program."""
 import datetime as dt
 import gc as gc
-import glob as glob
+import glob
 import heapq
-import json as json
-import matplotlib as matplotlib
+import json
+import matplotlib
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
-import os as os
-import psutil as psutil
+import numpy.typing as npt
+import os
+import pandas as pd
+import psutil
 import scipy as sp
-import sys as sys
-import traceback as traceback
-import warnings as warnings
+import sys
+import traceback
+import warnings
+from io import TextIOWrapper
+from typing import Dict, List, Tuple
 
 # Adds parent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
@@ -27,8 +31,9 @@ from tgfsearch.detectors.detector import Detector
 
 
 class TraceInfo:
-    """A helper class used to keep track of aligned traces"""
-    def __init__(self, trace_name, buff_no, times, energies):
+    """A helper class used to keep track of aligned traces."""
+    def __init__(self, trace_name: str, buff_no: int, times: npt.NDArray[np.float64],
+                 energies: npt.NDArray[np.float64]) -> None:
         self.trace_name = trace_name
         self.buff_no = buff_no
         self.times = times
@@ -37,10 +42,10 @@ class TraceInfo:
 
 class ShortEvent:
     """A helper class used to keep track of and process short events."""
-    def __init__(self, event_start, event_length, scintillator):
-        self.start = int(event_start)
-        self.length = int(event_length)
-        self.stop = int(event_start + event_length)  # non-inclusive (in line with array slicing)
+    def __init__(self, event_start: int, event_length: int, scintillator: str) -> None:
+        self.start = event_start
+        self.length = event_length
+        self.stop = event_start + event_length  # non-inclusive (in line with array slicing)
         self.scintillator = scintillator
         self.weather_conditions = 'no weather data'
         self.lm_files = {}
@@ -56,42 +61,39 @@ class ShortEvent:
         self.number = 0
         self.rank = 0
 
-    # String casting overload
-    def __str__(self):
+    def __str__(self) -> str:
         return f'ShortEvent({self.start}, {self.stop}, {self.scintillator})'
 
-    # Debugging string dunder
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
 class LongEvent:
     """A helper class used to keep track of and process long events."""
-    def __init__(self, start, length, z_scores, day_bins):
-        self.start = int(start)
-        self.stop = int(start + length - 1) if length > 1 else int(start + length)  # Non-inclusive (for slicing)
-        self.length = int(length)
+    def __init__(self, start: int, length: int, z_scores: npt.NDArray[np.float64],
+                 bins_allday: npt.NDArray[np.int64]) -> None:
+        self.start = start
+        self.stop = start + length - 1 if length > 1 else start + length  # Non-inclusive (for slicing)
+        self.length = length
 
         glow_scores = z_scores[self.start:self.stop]
         self.peak_index = np.argmax(glow_scores) + self.start
         self.highest_score = glow_scores[self.peak_index - self.start]
 
-        self.start_sec = day_bins[self.start]
-        self.stop_sec = day_bins[self.stop - 1] + (day_bins[1] - day_bins[0])
+        self.start_sec = bins_allday[self.start]
+        self.stop_sec = bins_allday[self.stop - 1] + (bins_allday[1] - bins_allday[0])
 
         self.lm_files = {}
 
-    # String casting magic method
     def __str__(self):
         return f'LongEvent({self.start}, {self.length}, ...)'
 
-    # Debugging string magic method
     def __repr__(self):
         return self.__str__()
 
 
-# Returns True if the provided unit is a valid detector name and False otherwise
-def is_valid_detector(unit):
+def is_valid_detector(unit: str) -> bool:
+    """Returns True if the provided unit is a valid detector name and False otherwise."""
     unit_upper = unit.upper()
     if unit_upper == 'ADAPTIVE':
         return True
@@ -105,8 +107,8 @@ def is_valid_detector(unit):
             raise SyntaxError('invalid syntax in detector config file.')
 
 
-# Returns a tuple containing 1) a bool for the validity of the search, and 2) a string containing the reason
-def search_check(first_date, second_date, unit):
+def search_check(first_date: str, second_date: str, unit: str) -> Tuple[bool, str]:
+    """Returns a tuple containing 1) a bool for the validity of the search, and 2) a string containing the reason."""
     # Checks that both dates are digits in the proper format
     if not first_date.isdigit() or not second_date.isdigit() \
             or len(first_date) != 6 or len(second_date) != 6:
@@ -125,16 +127,16 @@ def search_check(first_date, second_date, unit):
     return True, ''
 
 
-# Returns the correct detector object based on the parameters provided
-def get_detector(unit, date_str):
+def get_detector(unit: str, date_str: str) -> Detector | AdaptiveDetector:
+    """Returns a Detector (or AdaptiveDetector) instance based on the parameters provided."""
     if unit.upper() == 'ADAPTIVE':
         return AdaptiveDetector(date_str)
     else:
         return Detector(unit, date_str)
 
 
-# Makes the modes dict used by many of the program's functions
-def get_modes(mode_info):
+def get_modes(mode_info: List[str]) -> Dict[str, bool]:
+    """Returns the modes dict used by many of the program's functions."""
     modes = dict()
     # Aircraft mode
     modes['aircraft'] = True if '--aircraft' in mode_info else False
@@ -166,8 +168,8 @@ def get_modes(mode_info):
     return modes
 
 
-# Returns the maximum allowed fraction of available system memory that the program is allowed to use for data
-def get_max_mem_frac():
+def get_max_mem_frac() -> float:
+    """Returns the maximum allowed fraction of available system memory that the program is allowed to use for data."""
     available_memory = psutil.virtual_memory()[1]
     if available_memory * params.MEMORY_ALLOWANCE_FRAC < params.ABS_MEMORY_ALLOWANCE:
         return params.MEMORY_ALLOWANCE_FRAC
@@ -175,7 +177,7 @@ def get_max_mem_frac():
     return params.ABS_MEMORY_ALLOWANCE / available_memory
 
 
-def print_logger(string, logfile):
+def print_logger(string: str, logfile: TextIOWrapper) -> None:
     """Prints the specified string to both stdout and the specified file.
 
     Parameters
@@ -192,8 +194,8 @@ def print_logger(string, logfile):
         print(string, file=logfile)
 
 
-# Logs errors that occur during daily searches
-def log_error(detector, modes, ex):
+def log_error(detector: Detector, modes: Dict[str, bool], ex: Exception) -> None:
+    """Logs errors that occur during daily searches."""
     print_logger('\n', detector.log)
     print_logger(f'Search could not be completed due to the following error: {ex}', detector.log)
     print_logger('See error log for details.', detector.log)
@@ -207,8 +209,8 @@ def log_error(detector, modes, ex):
         err_file.write(traceback.format_exc())
 
 
-# Plots the given list of traces
-def plot_traces(detector, scintillator, trace_names):
+def plot_traces(detector: Detector, scintillator: str, trace_names: List[str]) -> None:
+    """Plots the given list of traces."""
     if trace_names:
         # Makes the trace plot path
         plot_path = f'{detector.get_export_loc()}/traces'
@@ -233,8 +235,9 @@ def plot_traces(detector, scintillator, trace_names):
             gc.collect()
 
 
-# Searches through all traces in detector and returns lists of good ones for each scintillator. Also plots good traces
-def find_traces(detector):
+def find_traces(detector: Detector) -> Dict[str, List[str]]:
+    """Searches through all traces in detector and returns lists of good ones for each scintillator. Also plots good
+    traces."""
     # Filtering traces and setting up trace_dict, which keeps track of filtered trace names
     trace_dict = {}
     for scintillator in detector:
@@ -246,8 +249,8 @@ def find_traces(detector):
     return trace_dict
 
 
-# Returns the high/low channel ratio for the given range
-def get_hl_channel_ratio(energies, start, stop):
+def get_hl_channel_ratio(energies: npt.NDArray[np.float64], start: int, stop: int) -> float:
+    """Returns the high/low channel ratio for the given range."""
     assert params.CHANNEL_SEPARATION >= 0
     low_channel_start = params.LOW_CHANNEL_START
     low_channel_end = low_channel_start + params.CHANNEL_RANGE_WIDTH
@@ -268,8 +271,8 @@ def get_hl_channel_ratio(energies, start, stop):
     return float('inf')
 
 
-# Returns the n highest energy count on the given range
-def get_n_highest_count(energies, start, stop, n):
+def get_n_highest_count(energies: npt.NDArray[np.float64], start: int, stop: int, n: int) -> float:
+    """Returns the n highest energy count on the given range."""
     if n <= 0 or n > stop - start:
         return 0.
 
@@ -283,8 +286,8 @@ def get_n_highest_count(energies, start, stop, n):
     return heapq.heappop(priority_queue)
 
 
-# Returns the clumpiness and high energy lead values for the given range
-def get_clumpiness_and_hel(times, energies, start, stop):
+def get_clumpiness_and_hel(times: np.ndarray, energies: np.ndarray, start: int, stop: int) -> Tuple[float, float]:
+    """Returns the clumpiness and high energy lead values for the given range."""
     length = stop - start
     if length == 0:
         return 0., 0.
@@ -329,8 +332,9 @@ def get_clumpiness_and_hel(times, energies, start, stop):
     return clumpiness, high_energy_lead
 
 
-# Short event search algorithm
-def short_event_search(detector, modes, scintillator, rollgap, times, energies):
+def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator: str, rollgap: int,
+                       times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64]) -> List[ShortEvent]:
+    """Runs the short event search algorithm on the given data."""
     # Stats
     total_potential_events = 0
     total_threshold_reached = 0
@@ -421,8 +425,9 @@ def short_event_search(detector, modes, scintillator, rollgap, times, energies):
     return short_events
 
 
-# Calculates and records subscores and final score for the given short event
-def calculate_se_score(detector, event, weather_cache, times, energies):
+def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dict[str, pd.DataFrame],
+                       times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64]) -> None:
+    """Calculates and records subscores and final score for the given short event."""
     # Calculating and recording the length subscore
     event.len_subscore = event.length / params.GOOD_LEN_THRESH
 
@@ -466,8 +471,9 @@ def calculate_se_score(detector, event, weather_cache, times, energies):
                              params.WEATHER_WEIGHT * event.weather_subscore)
 
 
-# Finds the list mode file(s) associated with a short event
-def find_se_files(detector, event, times, count_scints):
+def find_se_files(detector: Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+                  count_scints: npt.NDArray[np.str_]) -> None:
+    """Finds the list mode file(s) associated with a short event."""
     if count_scints is None:
         scintillators_left = 1
     else:
@@ -492,8 +498,9 @@ def find_se_files(detector, event, times, count_scints):
             break
 
 
-# Finds the traces associated with a short event
-def find_se_traces(detector, event, trace_dict, times, count_scints):
+def find_se_traces(detector: Detector, event: ShortEvent, trace_dict: Dict[str, List[str]],
+                   times: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
+    """Finds the traces associated with a short event."""
     if count_scints is None:
         scintillators_left = 1
     else:
@@ -540,8 +547,9 @@ def find_se_traces(detector, event, trace_dict, times, count_scints):
                 break
 
 
-# Makes the scatter plot for a short event
-def make_se_scatterplot(detector, event, times, energies, count_scints):
+def make_se_scatterplot(detector: Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+                        energies: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
+    """Makes the scatter plot for a short event."""
     timestamp = dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)
     # Subplot timescales
     timescales = [params.SE_TIMESCALE_ONE, params.SE_TIMESCALE_TWO, params.SE_TIMESCALE_THREE]
@@ -594,7 +602,7 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     ax_list = [ax1, ax2, ax3]
     assert len(ax_list) == len(timescales)
 
-    best_time = event_times[best_index - event.start]
+    best_time = float(event_times[best_index - event.start])
     for i in range(len(ax_list)):
         ts = timescales[i]
         ax = ax_list[i]
@@ -653,8 +661,9 @@ def make_se_scatterplot(detector, event, times, energies, count_scints):
     gc.collect()
 
 
-# Makes the json file for a short event
-def make_se_json(detector, event, times, energies, count_scints):
+def make_se_json(detector:Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+                 energies: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
+    """Makes the json file for a short event."""
     event_path = f'{detector.get_export_loc()}/event_files/short_events/'
     helper_funcs.make_path(event_path)
     event_dict = dict()
@@ -678,8 +687,9 @@ def make_se_json(detector, event, times, energies, count_scints):
         json.dump(event_dict, file)
 
 
-# Runs the short event search
-def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=None):
+def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Dict[str, List[str]],
+                      weather_cache: Dict[str, pd.DataFrame], event_numbers: Dict[str, int] | None = None) -> None:
+    """Runs the short event search."""
     if modes['aircraft']:
         rollgap = params.AIRCRAFT_ROLLGAP
     elif modes['onescint'] or modes['allscints']:
@@ -802,8 +812,8 @@ def find_short_events(detector, modes, trace_dict, weather_cache, event_numbers=
     gc.collect()
 
 
-# Returns the list of preferred scintillators to be used in the long event search depending on the Detector
-def get_le_scint_prefs(detector):
+def get_le_scint_prefs(detector: Detector) -> List[str]:
+    """Returns the list of preferred scintillators to be used in the long event search depending on the Detector."""
     try:
         with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json', 'r') as file:
             all_preferences = json.load(file)['long_event_search_scints']
@@ -821,8 +831,9 @@ def get_le_scint_prefs(detector):
     return []
 
 
-# Makes histogram used in long event search. If possible, cuts out counts below a certain energy
-def make_le_hist(detector, scintillator, hist_end, bin_size):
+def make_le_hist(detector: Detector, scintillator: str, hist_end: int,
+                 bin_size: int) -> Tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
+    """Makes the histogram used in the long event search. If possible, cuts out counts below a certain energy."""
     # Rounding the edge down to the nearest full bin
     hist_end -= hist_end % bin_size
     bins_allday = np.arange(0, hist_end + bin_size, bin_size)
@@ -837,8 +848,8 @@ def make_le_hist(detector, scintillator, hist_end, bin_size):
     return bins_allday[:-1], hist_allday  # Bins is always longer than hist by one for some reason
 
 
-# Calculates mean for the long event search algorithm
-def calculate_mue(hist_allday):
+def calculate_mue(hist_allday: npt.NDArray[np.int64]) -> float:
+    """Calculates the mean for the long event search algorithm."""
     hist_sum = 0
     hist_allday_nz = []
     for bin_val in hist_allday:
@@ -872,8 +883,9 @@ def calculate_mue(hist_allday):
         return mue_val
 
 
-# Calculates normal rolling baseline
-def normal_baseline(mue, hist_allday, bin_size):
+def normal_baseline(mue: npt.NDArray[np.float64], hist_allday: npt.NDArray[np.int64],
+                    bin_size: int) -> npt.NDArray[np.float64]:
+    """Calculates normal rolling baseline."""
     window_size = params.N_WINDOW_SIZE // bin_size
     data_gap_locs = np.where(hist_allday == 0)[0]
     # Savgol can't handle data gaps, so here we find sections where data exists and only apply it to those
@@ -912,18 +924,19 @@ def normal_baseline(mue, hist_allday, bin_size):
     return mue
 
 
-def o1_poly(x, a=0., b=0.):
+def o1_poly(x: float, a: float = 0., b: float = 0.) -> float:
     """Returns the y value at the given x for a first-order polynomial with terms a and b."""
     return x * a + b
 
 
-def o2_poly(x, a=0., b=0., c=0.):
+def o2_poly(x: float, a: float = 0., b: float = 0., c: float = 0.) -> float:
     """Returns the y value at the given x for a second-order polynomial with terms a, b, and c."""
     return a * x ** 2 + b * x + c
 
 
-# Calculates rolling baseline for aircraft mode
-def aircraft_baseline(mue, bins_allday, hist_allday, bin_size):
+def aircraft_baseline(mue: npt.NDArray[np.float64], bins_allday: npt.NDArray[np.int64],
+                      hist_allday: npt.NDArray[np.int64], bin_size: int) -> npt.NDArray[np.float64]:
+    """Calculates rolling baseline for aircraft mode."""
     max_index = len(bins_allday) - 1
     # Getting the window size and gap in units of bins
     window_size = params.A_WINDOW_SIZE // bin_size
@@ -1043,8 +1056,9 @@ def aircraft_baseline(mue, bins_allday, hist_allday, bin_size):
     return mue
 
 
-# Long event search algorithm
-def long_event_search(modes, day_bins, hist_allday, mue, sigma):
+def long_event_search(modes: Dict[str, bool], bins_allday: npt.NDArray[np.int64], hist_allday: npt.NDArray[np.int64],
+                      mue: npt.NDArray[np.float64], sigma: npt.NDArray[np.float64]) -> List[LongEvent]:
+    """Runs the long event search algorithm on the given data."""
     z_scores = (hist_allday - mue) / sigma
     z_flags = np.where(z_scores > params.FLAG_THRESH)[0]  # Flags only those z-scores > params.FLAG_THRESH
 
@@ -1062,7 +1076,7 @@ def long_event_search(modes, day_bins, hist_allday, mue, sigma):
         elif prev_bin == previous_flag:  # Adding to the length of the glow
             glow_length += 1
         elif prev_bin > previous_flag:  # Recording the previous glow and starting to record a new one
-            potential_glows.append(LongEvent(glow_start, glow_length, z_scores, day_bins))
+            potential_glows.append(LongEvent(glow_start, glow_length, z_scores, bins_allday))
             glow_start = flag
             glow_length = 1
 
@@ -1070,7 +1084,7 @@ def long_event_search(modes, day_bins, hist_allday, mue, sigma):
 
     # Recording the last glow (if there is one)
     if glow_length > 0:
-        potential_glows.append(LongEvent(glow_start, glow_length, z_scores, day_bins))
+        potential_glows.append(LongEvent(glow_start, glow_length, z_scores, bins_allday))
 
     # Rejects events whose bins don't have enough counts (aircraft only)
     if modes['aircraft']:
@@ -1086,8 +1100,8 @@ def long_event_search(modes, day_bins, hist_allday, mue, sigma):
     return potential_glows
 
 
-# Finds the list mode file(s) associated with a long event
-def find_le_files(detector, le_scint_list, event):
+def find_le_files(detector: Detector, le_scint_list: List[str], event: LongEvent) -> Dict[str, str]:
+    """Finds the list mode file(s) associated with a long event."""
     lm_files = {}
     for scintillator in le_scint_list:
         lm_files[scintillator] = detector.find_lm_file(scintillator, event.start_sec)
@@ -1095,8 +1109,8 @@ def find_le_files(detector, le_scint_list, event):
     return lm_files
 
 
-# Makes the text file for a long event
-def make_le_txt(detector, event, bin_size, event_num):
+def make_le_txt(detector: Detector, event: LongEvent, bin_size: int, event_num: int) -> None:
+    """Makes the text file for a long event."""
     event_path = f'{detector.get_export_loc()}/event_files/long_events/{bin_size}_sec_bins/'
     helper_funcs.make_path(event_path)
     timestamp = dt.datetime.fromtimestamp(event.start_sec + detector.first_sec, dt.UTC)
@@ -1113,8 +1127,9 @@ def make_le_txt(detector, event, bin_size, event_num):
             print(f'{scintillator}: {event.lm_files[scintillator]}', file=event_file)
 
 
-# Runs the long event search
-def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
+def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: List[str],
+                     bins_allday: npt.NDArray[np.int64], hist_allday: npt.NDArray[np.int64]) -> None:
+    """Runs the long event search."""
     bin_size = int(bins_allday[1] - bins_allday[0])  # Bin size in seconds
     # Note: mue is an array full of the mue values for each bin
     mue_val = calculate_mue(hist_allday)
@@ -1227,8 +1242,8 @@ def find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday):
     gc.collect()
 
 
-# Mapping traces to their corresponding list mode files based on their timestamps
-def map_traces(lm_filelist, trace_filelist):
+def map_traces(lm_filelist: List[str], trace_filelist: List[str]) -> Dict[str, List[str]]:
+    """Mapping traces to their corresponding list mode files based on their timestamps."""
     if len(trace_filelist) == 0 or len(lm_filelist) == 0:
         return {}
 
@@ -1261,8 +1276,8 @@ def map_traces(lm_filelist, trace_filelist):
     return trace_map
 
 
-# Returns a list of indices for each partition point defining the set of files during or after the point
-def get_lm_sets(partition_points, lm_filelist):
+def get_lm_sets(partition_points: List[int], lm_filelist: List[str]):
+    """Returns a list of indices for each partition point defining the set of files during or after the point."""
     set_indices = [0] * len(partition_points)
     set_indices[-1] = len(lm_filelist)  # The last partition point must contain no files
     part_index = 1  # The first partition point must contain all files, so its index stays zero
@@ -1284,8 +1299,9 @@ def get_lm_sets(partition_points, lm_filelist):
     return set_indices
 
 
-# Returns the total memory in bytes of all files contained in the partition defined by points start and end
-def get_partition_memory(detector, scintillator, start, end, trace_map, lm_filelist):
+def get_partition_memory(detector: Detector, scintillator: str, start: int, end: int, trace_map: Dict[str, List[str]],
+                         lm_filelist: List[str]) -> float:
+    """Returns the total memory in bytes of all files contained in the partition defined by points start and end."""
     memory = 0
     for i in range(start, end):
         file = lm_filelist[i]
@@ -1297,8 +1313,9 @@ def get_partition_memory(detector, scintillator, start, end, trace_map, lm_filel
     return memory
 
 
-# Returns lists of all files contained in the partition defined by points start and end
-def get_partition_files(start, end, trace_map, lm_filelist):
+def get_partition_files(start: int, end: int, trace_map: Dict[str, List[str]],
+                        lm_filelist: List[str]) -> Tuple[List[str], List[List[str]]]:
+    """Returns lists of all files contained in the partition defined by points start and end."""
     lm_partition = lm_filelist[start:end]
     trace_partition = []
     for file in lm_partition:
@@ -1308,8 +1325,8 @@ def get_partition_files(start, end, trace_map, lm_filelist):
     return lm_partition, trace_partition
 
 
-# Partitions the day into self-contained detector objects depending on the memory limit in parameters
-def make_chunks(detector):
+def make_chunks(detector: Detector) -> List[Detector]:
+    """Partitions the day into self-contained detector objects depending on the memory limit in parameters."""
     allowed_memory = psutil.virtual_memory()[1] * get_max_mem_frac()
 
     lm_filelists = {scintillator: detector.get_attribute(scintillator, 'lm_filelist')
@@ -1384,8 +1401,8 @@ def make_chunks(detector):
     return chunk_list
 
 
-# Gets necessary info from command line args and then runs the program
-def main():
+def main() -> None:
+    """Gets necessary info from command line args and then runs the program."""
     if len(sys.argv) >= 4:
         first_date = str(sys.argv[1])
         second_date = str(sys.argv[2])
@@ -1408,8 +1425,8 @@ def main():
     program(first_date, second_date, unit, mode_info)
 
 
-# Main program function
 def program(first_date, second_date, unit, mode_info):
+    """Main program function."""
     matplotlib.use('Agg')  # Memory leaks without this
     modes = get_modes(mode_info)
 
