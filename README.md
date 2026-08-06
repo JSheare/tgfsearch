@@ -4,6 +4,11 @@
 
     pip install tgfsearch@git+https://github.com/JSheare/tgfsearch
 
+
+### Afterwards, it is also recommended that you update the package's built in data with the following command:
+
+    tgfsearch-update
+
 # **Instructions for Search Program Use:**
 The package's main tool is a program that searches data for TGFs and Glows. There are two ways to run the program: via
 the GUI, and via the command line.

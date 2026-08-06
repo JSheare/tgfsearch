@@ -227,8 +227,8 @@ class Detector:
                 # Creating the scintillator objects
                 for scintillator in self.scint_list:
                     scint_entry = identity['scintillators'][correct_date_str][scintillator]
-                    self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['eRC'],
-                                                                     scint_entry['file_format'])
+                    self._scintillators[scintillator] = Scintillator(scintillator, scint_entry['erc'],
+                                                                     scint_entry['format_name'])
 
                 self._has_identity = True
             except KeyError:

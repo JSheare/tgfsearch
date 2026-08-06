@@ -1,18 +1,12 @@
 """A module containing tools for working with UCSC TGF group data."""
 import datetime as dt
-import io as io
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-import zoneinfo as zi
-from selenium import webdriver as webdriver
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import tgfsearch.config.parameters as params
+import tgfsearch.helpers.api as api
 from tgfsearch.detectors.detector import Detector
 
 
@@ -43,141 +37,19 @@ def get_first_sec(date_str: str) -> float:
     return (dt.datetime(year, month, day, 0, 0) - dt.datetime(1970, 1, 1)).total_seconds()
 
 
-def convert_clock_hour(clock_hour: str) -> float:
-    """Converts a timestamp of the form hh:mm AM/PM into seconds since the beginning of the day."""
-
-    meridiem = clock_hour.split()[1]
-    hour = int(clock_hour.split()[0].split(':')[0])
-    minute = int(clock_hour.split()[0].split(':')[1])
-
-    # Converting from 12 hour time to 24 hour time
-    if meridiem == 'AM' and hour == 12:  # midnight
-        hour = 0
-    elif meridiem == 'PM' and hour == 12:  # noon
-        pass
-    elif meridiem == 'PM':  # PM conversion
-        hour += 12
-
-    return float((hour * params.SEC_PER_HOUR) + (minute * 60))
-
-
-def get_weather_table(local_date: str, deployment_info: Dict[str, Any]) -> pd.DataFrame:
-    """Scrapes weather data from the internet and returns the results as a pandas dataframe.
+def get_weather_conditions(event_time: float, instrument: str,
+                           weather_cache: Dict[str, pd.DataFrame | None] | None = None) -> str:
+    """Returns the weather conditions around the time of an event as a string.
 
     Parameters
     ----------
-    local_date : str
-        The local date that weather data is being requested for in yyyy-mm-dd format.
-    deployment_info : dict
-        A dictionary containing deployment information, including the timezone identifier and weather station callsign.
-
-    Returns
-    -------
-    pandas.core.frame.DataFrame
-        A pandas dataframe with weather information for the given day. Time entries are epoch timestamps. An empty
-        table is returned if the scraping fails.
-
-    """
-
-    local_dt = dt.datetime(int(local_date[0:4]), int(local_date[5:7]), int(local_date[8:10]),
-                           tzinfo=zi.ZoneInfo(deployment_info['tz_identifier']))
-    try:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Runs chrome in headless mode (no browser tab)
-        # The below options prevent an annoying logging entry from being printed to stdout
-        chrome_options.add_experimental_option("excludeSwitches", ['enable-logging'])
-        chrome_options.add_argument("--log-level=3")
-        chrome_options.set_capability("browserVersion", "117")
-        chrome_options.add_argument("start-maximized")
-
-        driver = webdriver.Chrome(options=chrome_options)
-
-        url = (f'https://www.wunderground.com/history/daily/'
-                   f'{deployment_info["weather_station"]}/date/{local_dt.date()}')
-
-        driver.get(url)
-        tables = WebDriverWait(driver, 20).until(ec.presence_of_all_elements_located((By.CSS_SELECTOR, "table")))
-        table = pd.read_html(io.StringIO(tables[1].get_attribute('outerHTML')))[0].dropna()
-    except:
-        return pd.DataFrame()
-
-    local_daystart_timestamp = (local_dt.timestamp() - (local_dt.hour * params.SEC_PER_HOUR) - (local_dt.minute * 60) -
-                                local_dt.second - (local_dt.microsecond * 1e-6))
-    table['Time'] = [local_daystart_timestamp + convert_clock_hour(hour) for hour in table['Time']]
-    return table
-
-
-def assemble_weather_info(detector: Detector, event_time: float,
-                          weather_cache: Dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Returns a table of weather information from around the vicinity of the given event time. The function will
-    attempt to make a table with at least +/- params.WEATHER_PADDING hours around the given time. An empty table will be
-    returned if no information could be retrieved."""
-    event_timestamp = event_time + detector.first_sec
-    local_dt = dt.datetime.fromtimestamp(event_timestamp).astimezone(zi.ZoneInfo(detector.deployment['tz_identifier']))
-    local_date = local_dt.date()
-    local_date_str = str(local_date)
-    if local_date_str in weather_cache:
-        table = weather_cache[local_date_str]
-    else:
-        table = get_weather_table(local_date_str, detector.deployment)
-        # Returning an empty table immediately to avoid erroneously caching it and/or concatenating with it
-        if table.empty:
-            return table
-
-        weather_cache[local_date_str] = table
-
-    # Checking to see if we need to retrieve weather data from the previous local day based on the window size
-    left_dt = dt.datetime.fromtimestamp(
-        event_timestamp - params.WEATHER_PADDING * params.SEC_PER_HOUR).astimezone(
-        zi.ZoneInfo(detector.deployment['tz_identifier']))
-    left_date = left_dt.date()
-    left_date_str = str(left_date)
-    if left_date < local_date:
-        if left_date_str not in weather_cache:
-            left_table = get_weather_table(left_date_str, detector.deployment)
-            # If this table is empty, concatenation will fail. To avoid this, and to avoid caching the empty table, we
-            # just return the table that we already have
-            if left_table.empty:
-                return table
-
-            weather_cache[left_date_str] = left_table
-
-        return pd.concat([weather_cache[left_date_str], table])
-
-    # Checking to see if we need to retrieve weather data from the next local day based on the window size
-    right_dt = dt.datetime.fromtimestamp(
-        event_timestamp + params.WEATHER_PADDING * params.SEC_PER_HOUR).astimezone(
-        zi.ZoneInfo(detector.deployment['tz_identifier']))
-    right_date = right_dt.date()
-    right_date_str = str(right_date)
-    if right_date > local_date:
-        if right_date_str not in weather_cache:
-            right_table = get_weather_table(right_date_str, detector.deployment)
-            # If this table is empty, concatenation will fail. To avoid this, and to avoid caching the empty table, we
-            # just return the table that we already have
-            if right_table.empty:
-                return table
-
-            weather_cache[right_date_str] = right_table
-
-        return pd.concat([table, weather_cache[right_date_str]])
-
-    return table
-
-
-def get_weather_conditions(detector: Detector, event_time: float,
-                           weather_cache: Dict[str, pd.DataFrame] | None = None) -> str:
-    """Scrapes weather underground and returns the weather around the time of an event.
-
-    Parameters
-    ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector that contains the name of the nearest weather station.
     event_time : float
-        The time that the event occurred at during the day in units of seconds since beginning of day.
-    weather_cache : dict
-       Optional. A cache containing weather tables that have already been retrieved. The keys are local dates in
-       yyyy-mm-dd format.
+        The epoch time of the event.
+    instrument : str
+        The name of the instrument that detected the event.
+    weather_cache : Dict[str, pandas.core.frame.DataFrame] | None
+        Optional. A cache containing weather tables that have already been retrieved. The keys are dates in yymmdd
+        format.
 
     Returns
     -------
@@ -186,47 +58,86 @@ def get_weather_conditions(detector: Detector, event_time: float,
 
     """
 
-    weather_table = assemble_weather_info(detector, event_time, weather_cache)
-    if not weather_table.empty:
-        # Finds the time in the table that's closest to the time of the event
-        event_timestamp = event_time + detector.first_sec
-        index = 0
-        best_diff = float('inf')
-        best_index = 0
-        for timestamp in weather_table['Time']:
-            diff = abs(event_timestamp - timestamp)
-            if diff < best_diff:
-                best_diff = diff
-                best_index = index
+    assert(params.WEATHER_PADDING < params.SEC_PER_DAY)
+    if weather_cache is None:
+        weather_cache = dict()
 
-            index += 1
-
-        # Gets the weather conditions at the closest hour to the event and the surrounding params.WEATHER_PADDING hours
-        weather = []
-        for i in range(best_index - params.WEATHER_PADDING, best_index + params.WEATHER_PADDING + 1):
-            if 0 <= i < index:
-                weather.append(weather_table['Condition'][i])
-
-        heavy_rain = False
-        rain = False
-        for condition in weather:
-            for variation in ['Thunder', 'T-Storm', 'Storm', 'Lightning', 'Hail']:
-                if variation in condition:
-                    return 'lightning or hail'
-
-                if 'Heavy' in condition:
-                    heavy_rain = True
-                elif 'Rain' in condition:
-                    rain = True
-
-        if heavy_rain:
-            return 'heavy rain'
-        elif rain:
-            return 'light rain'
-
-        return 'fair'
+    event_date = dt.datetime.fromtimestamp(event_time, dt.UTC).date()
+    event_date_str = event_date.strftime('%y%m%d')
+    if event_date_str in weather_cache:
+        weather_table = weather_cache[event_date_str]
     else:
-        return 'error getting weather data'
+        weather_table = api.get_weather_table(instrument, event_date_str)
+        weather_cache[event_date_str] = weather_table
+
+    if weather_table is None:
+        return 'no weather data available'
+
+    # Locating the index of the measurement closest to the time of the event
+    index = 0
+    best_diff = float('inf')
+    best_index = 0
+    for time in weather_table['measurement_time']:
+        diff = abs(event_time - time)
+        if diff < best_diff:
+            best_diff = diff
+            best_index = index
+
+        index += 1
+
+    # Getting weather conditions +/- params.WEATHER_PADDING seconds around the event
+    # The first iteration is for before the event, the second iteration is for after
+    conditions = set()
+    backwards = False
+    for i in range(0, 2):
+        backwards = not backwards
+        weather_table = weather_cache[event_date_str]
+        j = best_index
+        prev_time = weather_table['measurement_time'][j]
+        seconds_remaining = params.WEATHER_PADDING
+        while True:
+            if j < 0 or j >= len(weather_table):
+                # Switching to the previous or next day's weather data if necessary
+                date_str = (event_date + dt.timedelta(days=-1 if backwards else 1)).strftime('%y%m%d')
+                if date_str in weather_cache:
+                    weather_table = weather_cache[date_str]
+                else:
+                    weather_table = api.get_weather_table(instrument, date_str)
+                    weather_cache[date_str] = weather_table
+
+                if weather_table is None:
+                    break
+
+                j = len(weather_table) - 1 if backwards else 0
+
+            seconds_remaining -= abs(prev_time - weather_table['measurement_time'][j])
+            if seconds_remaining < 0:
+                break
+
+            prev_time = weather_table['measurement_time'][j]
+            conditions.add(weather_table['condition'][j])
+            j = j + (-1 if backwards else 1)
+
+    # Returning the highest priority weather condition that we find
+    heavy_rain = False
+    rain = False
+    for condition in conditions:
+        condition_lower = condition.lower()
+        for variation in ['thunder', 't-storm', 'storm', 'lightning', 'hail']:
+            if variation in condition_lower:
+                return 'lightning or hail'
+
+        if 'heavy' in condition_lower:
+            heavy_rain = True
+        elif 'rain' in condition_lower:
+            rain = True
+
+    if heavy_rain:
+        return 'heavy rain'
+    elif rain:
+        return 'light rain'
+
+    return 'fair'
 
 
 def combine_data(detector: Detector) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.str_]]:

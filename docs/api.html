@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module api</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">api</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:d%3A%5Cdocuments%5Ctgf%20research%5Cdata%20processing%20stuff%5Csearch%20package%5Ctgfsearch%5Chelpers%5Capi.py">d:\documents\tgf research\data processing stuff\search package\tgfsearch\helpers\api.py</a></td></tr></table>
+    <p><span class="code">A&nbsp;module&nbsp;containing&nbsp;functions&nbsp;used&nbsp;to&nbsp;access&nbsp;the&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;API.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="json.html">json</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
+</td><td class="multicolumn"><a href="requests.html">requests</a><br>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-get_data_root"><strong>get_data_root</strong></a>(timeout: float = 60.0) -&gt; str | None</dt><dd><span class="code">Returns&nbsp;the&nbsp;root&nbsp;location&nbsp;for&nbsp;all&nbsp;TGF&nbsp;data&nbsp;on&nbsp;the&nbsp;main&nbsp;data&nbsp;computer.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+str&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;data&nbsp;root,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.</span></dd></dl>
+ <dl><dt><a name="-get_instrument_config"><strong>get_instrument_config</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[Dict[str, Dict[str, Dict[str, str | bool]]]]</dt><dd><span class="code">Returns&nbsp;the&nbsp;configuration&nbsp;information&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;to&nbsp;get&nbsp;configuration&nbsp;information&nbsp;for.<br>
+date&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;get&nbsp;configuration&nbsp;information&nbsp;for.&nbsp;This&nbsp;should&nbsp;be&nbsp;of&nbsp;the&nbsp;form&nbsp;'YYMMDD',&nbsp;or&nbsp;an&nbsp;asterisk&nbsp;to&nbsp;get&nbsp;all<br>
+&nbsp;&nbsp;&nbsp;&nbsp;configurations&nbsp;for&nbsp;the&nbsp;instrument.<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+Dict[str,&nbsp;Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;bool]]]&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;the&nbsp;given&nbsp;instrument's&nbsp;configuration&nbsp;on&nbsp;the&nbsp;given&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was<br>
+&nbsp;&nbsp;&nbsp;&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;The&nbsp;dictionary&nbsp;contains&nbsp;instrument&nbsp;configurations&nbsp;after&nbsp;particular&nbsp;dates,&nbsp;and&nbsp;each<br>
+&nbsp;&nbsp;&nbsp;&nbsp;entry&nbsp;has&nbsp;the&nbsp;following&nbsp;form:&nbsp;{after_date_1:&nbsp;{scint_name_1:&nbsp;{'erc':&nbsp;x,&nbsp;'format_name':&nbsp;x,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'long_event_search':&nbsp;x},&nbsp;scint_name_2:&nbsp;...}}.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+ <dl><dt><a name="-get_instrument_deployment"><strong>get_instrument_deployment</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[List[Dict[str, str | float]]]</dt><dd><span class="code">Returns&nbsp;deployment&nbsp;information&nbsp;for&nbsp;a&nbsp;particular&nbsp;instrument.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;to&nbsp;get&nbsp;deployment&nbsp;information&nbsp;for.<br>
+date&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;get&nbsp;deployment&nbsp;information&nbsp;for.&nbsp;This&nbsp;should&nbsp;be&nbsp;of&nbsp;the&nbsp;form&nbsp;'YYMMDD',&nbsp;or&nbsp;an&nbsp;asterisk&nbsp;to&nbsp;get&nbsp;all<br>
+&nbsp;&nbsp;&nbsp;&nbsp;deployments&nbsp;for&nbsp;the&nbsp;instrument.<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+List[Dict[str,&nbsp;str&nbsp;|&nbsp;float]]&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;containing&nbsp;deployments&nbsp;that&nbsp;match&nbsp;the&nbsp;given&nbsp;instrument&nbsp;and&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was<br>
+&nbsp;&nbsp;&nbsp;&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;deployment&nbsp;dictionary&nbsp;is&nbsp;of&nbsp;the&nbsp;following&nbsp;form:&nbsp;{'instrument':&nbsp;instrument,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'start_date':&nbsp;YYMMDD,&nbsp;'end_date':&nbsp;YYMMDD,&nbsp;'location':&nbsp;x,&nbsp;'tz_identifier':&nbsp;x,&nbsp;'weather_station':&nbsp;x,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'sounding_station':&nbsp;x,&nbsp;'latitude':&nbsp;x,&nbsp;'longitude':&nbsp;x,&nbsp;'altitude':&nbsp;x,&nbsp;'notes':&nbsp;x}.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+ <dl><dt><a name="-get_instrument_subdir"><strong>get_instrument_subdir</strong></a>(instrument: str, timeout: float = 60.0) -&gt; str | None</dt><dd><span class="code">Returns&nbsp;the&nbsp;data&nbsp;subdirectory&nbsp;for&nbsp;a&nbsp;particular&nbsp;instrument&nbsp;(within&nbsp;the&nbsp;data&nbsp;root)&nbsp;on&nbsp;the&nbsp;UCSC&nbsp;TGF&nbsp;group's&nbsp;main<br>
+data&nbsp;computer.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;to&nbsp;get&nbsp;the&nbsp;subdirectory&nbsp;for.<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+str&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;instrument's&nbsp;data&nbsp;subdirectory,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;is&nbsp;invalid.</span></dd></dl>
+ <dl><dt><a name="-get_instruments"><strong>get_instruments</strong></a>(timeout: float = 60.0) -&gt; Optional[List[str]]</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;registered&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;instruments.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+List[str]&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;all&nbsp;registered&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;instruments,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None&nbsp;otherwise</span></dd></dl>
+ <dl><dt><a name="-get_scintillators"><strong>get_scintillators</strong></a>(timeout: float = 60.0) -&gt; Optional[Dict[str, Dict[str, str | int]]]</dt><dd><span class="code">Returns&nbsp;a&nbsp;record&nbsp;of&nbsp;all&nbsp;registered&nbsp;scintillator&nbsp;types&nbsp;and&nbsp;their&nbsp;associated&nbsp;information.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;int]]&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;records&nbsp;for&nbsp;all&nbsp;registered&nbsp;scintillator&nbsp;types,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;entry&nbsp;in&nbsp;the&nbsp;dictionary&nbsp;will&nbsp;be&nbsp;of&nbsp;the&nbsp;following&nbsp;form:&nbsp;{scint_name:&nbsp;{'scint_priority':&nbsp;x,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'plot_color':&nbsp;x}}.</span></dd></dl>
+ <dl><dt><a name="-get_weather"><strong>get_weather</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[List[Dict[str, str | float]]]</dt><dd><span class="code">Returns&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;to&nbsp;get&nbsp;weather&nbsp;information&nbsp;for.<br>
+date&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;get&nbsp;weather&nbsp;information&nbsp;for.&nbsp;This&nbsp;should&nbsp;be&nbsp;of&nbsp;the&nbsp;form&nbsp;'YYMMDD'.<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+List[Dict[str,&nbsp;float&nbsp;|&nbsp;str]]&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;weather&nbsp;measurements&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;measurement&nbsp;has&nbsp;the&nbsp;following&nbsp;form&nbsp;{'measurement_time':&nbsp;x_epoch,&nbsp;'condition':&nbsp;x}.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+ <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; pandas.core.frame.DataFrame | None</dt><dd><span class="code">Returns&nbsp;a&nbsp;weather&nbsp;table&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;to&nbsp;get&nbsp;weather&nbsp;information&nbsp;for.<br>
+date&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;to&nbsp;get&nbsp;weather&nbsp;information&nbsp;for.&nbsp;This&nbsp;should&nbsp;be&nbsp;of&nbsp;the&nbsp;form&nbsp;'YYMMDD'.<br>
+timeout&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;maximum&nbsp;amount&nbsp;of&nbsp;time&nbsp;to&nbsp;wait&nbsp;for&nbsp;a&nbsp;response&nbsp;from&nbsp;the&nbsp;API.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+pandas.core.frame.DataFrame&nbsp;|&nbsp;None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;passed&nbsp;instrument&nbsp;on&nbsp;the&nbsp;passed&nbsp;date,&nbsp;if&nbsp;the&nbsp;API<br>
+&nbsp;&nbsp;&nbsp;&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;The&nbsp;dataframe&nbsp;has&nbsp;two&nbsp;columns:&nbsp;'measurement_time',&nbsp;which&nbsp;contains<br>
+&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;time&nbsp;of&nbsp;the&nbsp;measurement&nbsp;in&nbsp;epoch,&nbsp;and&nbsp;'condition',&nbsp;which&nbsp;contains&nbsp;the&nbsp;weather&nbsp;condition&nbsp;at&nbsp;the&nbsp;time&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;measurement.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+ValueError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>Dict</strong> = typing.Dict<br>
+<strong>List</strong> = typing.List</td></tr></table>
+</body></html>

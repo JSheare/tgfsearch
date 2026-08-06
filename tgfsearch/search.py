@@ -425,7 +425,7 @@ def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator:
     return short_events
 
 
-def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dict[str, pd.DataFrame],
+def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dict[str, pd.DataFrame | None],
                        times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64]) -> None:
     """Calculates and records subscores and final score for the given short event."""
     # Calculating and recording the length subscore
@@ -440,7 +440,8 @@ def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dic
 
     # Calculating the recording the weather subscore
     if detector.deployment['weather_station'] != '':
-        event.weather_conditions = tl.get_weather_conditions(detector, times[event.start], weather_cache=weather_cache)
+        event.weather_conditions = tl.get_weather_conditions(times[event.start] + detector.first_sec, detector.unit,
+                                                             weather_cache=weather_cache)
         match event.weather_conditions:
             case 'lightning or hail':
                 event.weather_subscore = 1

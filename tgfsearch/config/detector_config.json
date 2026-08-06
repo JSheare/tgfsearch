@@ -1,149 +1,302 @@
 {
-  "default_data_root" : "/media/david/AllDetectorData/Detectors",
-
-  "scintillator_priority" : ["lpl", "ipl", "mpl", "nai", "spl", "gpl"],
-
-  "identities" : {
-    "FRANCE": {
-      "subdir": "FRANCE/Data",
-      "scintillators": {
-        "000000": {
-                  "mpl": {"eRC": "5072", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "5071", "file_format": "thor_lm"}}
-      }
-    },
-
-    "GODOT": {
-      "subdir": "GODOT/Data",
-      "scintillators": {
-        "000000": {
-                  "spl": {"eRC": "1489", "file_format": "godot_lm"},
-                  "nai": {"eRC": "1490", "file_format": "godot_lm"},
-                  "lpl": {"eRC": "1491", "file_format": "godot_lm"}},
-        "170524": {
-                  "gpl": {"eRC": "1488", "file_format": "godot_lm"},
-                  "spl": {"eRC": "1489", "file_format": "godot_lm"},
-                  "nai": {"eRC": "1490", "file_format": "godot_lm"},
-                  "lpl": {"eRC": "1491", "file_format": "godot_lm"}}
-      }
-    },
-
-    "ISRAEL": {
-      "subdir": "ISRAEL/Data",
-      "scintillators": {
-        "000000": {
-                  "mpl": {"eRC": "5069", "file_format": "thor_lm"}}
-      }
-    },
-
-    "MINITHOR1": {
-      "subdir": "MINITHOR1/Data",
-      "scintillators": {
-        "000000": {
-                  "ipl": {"eRC": "4194", "file_format": "thor_lm"},
-                  "nai": {"eRC": "4179", "file_format": "thor_lm"}}
-      }
-    },
-
-    "SANTIS": {
-      "subdir": "SANTIS/Data",
-      "scintillators": {
-        "000000": {
-                  "lpl": {"eRC": "2549", "file_format": "ssv_nrl_lm"}}
-      }
-    },
-
-    "SPLIT": {
-      "subdir": "SPLIT/Data",
-      "scintillators": {
-        "000000": {
-                  "mpl": {"eRC": "4193", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "2549", "file_format": "json_nrl_lm"}}
-      }
-    },
-
-    "THOR1": {
-      "subdir": "THOR/THOR1/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4179", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4194", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4189", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4195", "file_format": "thor_lm"}}
-      }
-    },
-    "THOR2": {
-      "subdir": "THOR/THOR2/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
-                  "spl": {"eRC": "4176", "file_format": "ssv_nrl_lm"},
-                  "mpl": {"eRC": "4167", "file_format": "ssv_nrl_lm"},
-                  "lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"}},
-        "230316": {
-                  "nai": {"eRC": "4182", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4172", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4167", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4187", "file_format": "thor_lm"}}
-      }
-    },
-
-    "THOR3": {
-      "subdir": "THOR/THOR3/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4169", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4175", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4174", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4185", "file_format": "thor_lm"}}
-      }
-    },
-
-    "THOR4": {
-      "subdir": "THOR/THOR4/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4177", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4191", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4192","file_format": "thor_lm"},
-                  "lpl": {"eRC": "4181", "file_format": "thor_lm"}}
-      }
-    },
-
-    "THOR5": {
-      "subdir": "THOR/THOR5/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4188", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4190", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4178", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4173", "file_format": "thor_lm"}},
-        "221109": {
-                  "nai": {"eRC": "4188", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4190", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4169", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4173", "file_format": "thor_lm"}}
-      }
-    },
-
-    "THOR6": {
-      "subdir": "THOR/THOR6/Data",
-      "scintillators": {
-        "000000": {
-                  "nai": {"eRC": "4186", "file_format": "thor_lm"},
-                  "spl": {"eRC": "4176", "file_format": "thor_lm"},
-                  "mpl": {"eRC": "4183", "file_format": "thor_lm"},
-                  "lpl": {"eRC": "4180", "file_format": "thor_lm"}}
-      }
-    },
-
-    "TRIGGER" : {
-      "subdir": "TRIGGER/Data",
-      "scintillators": {
-        "000000": {
-                  "mpl": {"eRC": "4168", "file_format": "thor_lm"}
+    "default_data_root": "/media/david/AllDetectorData/Detectors",
+    "scintillator_priority": [
+        "lpl",
+        "ipl",
+        "mpl",
+        "nai",
+        "spl",
+        "gpl"
+    ],
+    "identities": {
+        "FRANCE": {
+            "subdir": "FRANCE/Data",
+            "scintillators": {
+                "000000": {
+                    "mpl": {
+                        "erc": "5072",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "5071",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "GODOT": {
+            "subdir": "GODOT/Data",
+            "scintillators": {
+                "000000": {
+                    "spl": {
+                        "erc": "1489",
+                        "format_name": "godot_lm"
+                    },
+                    "nai": {
+                        "erc": "1490",
+                        "format_name": "godot_lm"
+                    },
+                    "lpl": {
+                        "erc": "1491",
+                        "format_name": "godot_lm"
+                    }
+                },
+                "170524": {
+                    "gpl": {
+                        "erc": "1488",
+                        "format_name": "godot_lm"
+                    },
+                    "spl": {
+                        "erc": "1489",
+                        "format_name": "godot_lm"
+                    },
+                    "nai": {
+                        "erc": "1490",
+                        "format_name": "godot_lm"
+                    },
+                    "lpl": {
+                        "erc": "1491",
+                        "format_name": "godot_lm"
+                    }
+                }
+            }
+        },
+        "ISRAEL": {
+            "subdir": "ISRAEL/Data",
+            "scintillators": {
+                "000000": {
+                    "mpl": {
+                        "erc": "5069",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "MINITHOR1": {
+            "subdir": "MINITHOR1/Data",
+            "scintillators": {
+                "000000": {
+                    "ipl": {
+                        "erc": "4194",
+                        "format_name": "thor_lm"
+                    },
+                    "nai": {
+                        "erc": "4179",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "SANTIS": {
+            "subdir": "SANTIS/Data",
+            "scintillators": {
+                "000000": {
+                    "lpl": {
+                        "erc": "2549",
+                        "format_name": "ssv_nrl_lm"
+                    }
+                }
+            }
+        },
+        "SPLIT": {
+            "subdir": "SPLIT/Data",
+            "scintillators": {
+                "000000": {
+                    "mpl": {
+                        "erc": "4193",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "2549",
+                        "format_name": "json_nrl_lm"
+                    }
+                }
+            }
+        },
+        "THOR1": {
+            "subdir": "THOR/THOR1/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4179",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4194",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4189",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4195",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "THOR2": {
+            "subdir": "THOR/THOR2/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4182",
+                        "format_name": "ssv_nrl_lm"
+                    },
+                    "spl": {
+                        "erc": "4176",
+                        "format_name": "ssv_nrl_lm"
+                    },
+                    "mpl": {
+                        "erc": "4167",
+                        "format_name": "ssv_nrl_lm"
+                    },
+                    "lpl": {
+                        "erc": "4187",
+                        "format_name": "ssv_nrl_lm"
+                    }
+                },
+                "230316": {
+                    "nai": {
+                        "erc": "4182",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4172",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4167",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4187",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "THOR3": {
+            "subdir": "THOR/THOR3/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4169",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4175",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4174",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4185",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "THOR4": {
+            "subdir": "THOR/THOR4/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4177",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4191",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4192",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4181",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "THOR5": {
+            "subdir": "THOR/THOR5/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4188",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4190",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4178",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4173",
+                        "format_name": "thor_lm"
+                    }
+                },
+                "221109": {
+                    "nai": {
+                        "erc": "4188",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4190",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4169",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4173",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "THOR6": {
+            "subdir": "THOR/THOR6/Data",
+            "scintillators": {
+                "000000": {
+                    "nai": {
+                        "erc": "4186",
+                        "format_name": "thor_lm"
+                    },
+                    "spl": {
+                        "erc": "4176",
+                        "format_name": "thor_lm"
+                    },
+                    "mpl": {
+                        "erc": "4183",
+                        "format_name": "thor_lm"
+                    },
+                    "lpl": {
+                        "erc": "4180",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
+        },
+        "TRIGGER": {
+            "subdir": "TRIGGER/Data",
+            "scintillators": {
+                "000000": {
+                    "mpl": {
+                        "erc": "4168",
+                        "format_name": "thor_lm"
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

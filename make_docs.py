@@ -32,6 +32,8 @@ def make_index(docs_path: str) -> None:
         '\t<a href="reader.html"> &#x2022; Reader Wrapper Documentation</a>\n'
         '\t<br>\n'
         '\t<a href="tools.html"> &#x2022; Tools Documentation</a>\n'
+        '\t<br>\n'
+        '\t<a href="api.html"> &#x2022; API Documentation</a>\n'
         '</body>'
     )
     with open(f'{docs_path}/index.html', 'w') as file:
@@ -58,7 +60,10 @@ def main() -> None:
     make_doc('reader', os.getcwd() + '/tgfsearch/tools', docs_path)
 
     # Docs for data reader
-    make_doc('data_reader', os.getcwd() + '/tgfsearch', docs_path)
+    make_doc('data_reader', os.getcwd() + '/tgfsearch/tools', docs_path)
+
+    # Docs for the api
+    make_doc('api', os.getcwd() + '/tgfsearch/helpers', docs_path)
 
     # Writing the index
     # Remember to update make_index if you add a new file.

@@ -17,15 +17,15 @@ JSON-formatted. The detector config details all the configuration information pe
 		"subdir": "THOR/THOR2/Data",
 		"scintillators": {
 			"000000": {
-				"nai": {"eRC": "4182", "file_format": "ssv_nrl_lm"},
-				"spl": {"eRC": "4176", "file_format": "ssv_nrl_lm"},
-				"mpl": {"eRC": "4167", "file_format": "ssv_nrl_lm"},
-				"lpl": {"eRC": "4187", "file_format": "ssv_nrl_lm"}},
+				"nai": {"erc": "4182", "format_name": "ssv_nrl_lm"},
+				"spl": {"erc": "4176", "format_name": "ssv_nrl_lm"},
+				"mpl": {"erc": "4167", "format_name": "ssv_nrl_lm"},
+				"lpl": {"erc": "4187", "format_name": "ssv_nrl_lm"}},
 			"230316": {
-				"nai": {"eRC": "4182", "file_format": "thor_lm"},
-				"spl": {"eRC": "4172", "file_format": "thor_lm"},
-				"mpl": {"eRC": "4167", "file_format": "thor_lm"},
-				"lpl": {"eRC": "4187", "file_format": "thor_lm"}}
+				"nai": {"erc": "4182", "format_name": "thor_lm"},
+				"spl": {"erc": "4172", "format_name": "thor_lm"},
+				"mpl": {"erc": "4167", "format_name": "thor_lm"},
+				"lpl": {"erc": "4187", "format_name": "thor_lm"}}
 		}
 	},
 	This details support for THOR2. Its data is, by default, located in the directory named "default_data_root/THOR/THOR2/Data", and it has two scintillator configurations:
