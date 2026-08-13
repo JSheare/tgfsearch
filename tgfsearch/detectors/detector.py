@@ -20,7 +20,6 @@ from typing import Any, Dict, Generator, List, Tuple
 
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
-import tgfsearch.tools.tools as tl
 from tgfsearch.detectors.scintillator import Scintillator
 from tgfsearch.tools.reader import Reader
 
@@ -61,8 +60,8 @@ def read_data_files(reader: Reader, filelist: List[str], clean_energy: bool, con
 class Detector:
     """A class used to store all relevant information about an instrument and its data for a day.
 
-    The Detector class is used to store the name of the detector, the date in various formats,
-    and the actual data for the requested day in a single, centralized location.
+    The Detector class is used to store the name of the detector, the date, and the actual data for the requested day
+    in a single, centralized location.
 
     Parameters
     ----------
@@ -77,14 +76,14 @@ class Detector:
         A mapping of bytes of memory to bytes of file growth factors for each list mode data file type.
     trace_growth_factors : dict
         A mapping of bytes of memory to bytes of file growth factors for each trace mode data file type.
-    log : _io.TextIOWrapper
-        The file where actions and findings are logged.
+    date : datetime.date
+        The date that the Detector represents.
     first_sec : float
         The first second of the day in EPOCH time.
-    full_date_str : str
-        The timestamp for the requested in day in yyyy-mm-dd format.
     dates_stored : list
         A list of dates currently being stored in the Detector.
+    log : _io.TextIOWrapper
+        The file where actions and findings are logged.
     _has_identity : bool
         A flag for whether the Detector has an identity (established name, scintillator configuration, etc.).
     _import_loc : str
@@ -111,11 +110,10 @@ class Detector:
 
     def __init__(self, unit: str, date_str: str, **kwargs) -> None:
         # Basic information
-        self.date_str = date_str  # yymmdd
+        self.date = helper_funcs.yymmdd_to_date(date_str)
+        self.first_sec = helper_funcs.get_first_sec(date_str)
+        self.dates_stored = [self.date]
         self.log = None
-        self.first_sec = tl.get_first_sec(self.date_str)
-        self.full_date_str = dt.datetime.fromtimestamp(int(self.first_sec), dt.UTC).strftime('%Y-%m-%d')  # yyyy-mm-dd
-        self.dates_stored = [date_str]
 
         # Identity-related information
         self._has_identity = False
@@ -139,7 +137,7 @@ class Detector:
 
     def __str__(self) -> str:
         """String casting overload. Returns a string of the form 'Detector(unit, date_str)'."""
-        return f'Detector({self.unit}, {self.date_str})'
+        return f'Detector({self.unit}, {self.date.strftime("%Y%m%d")})'
 
     # Debugging string dunder
     def __repr__(self) -> str:
@@ -187,7 +185,9 @@ class Detector:
                 f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/deployments/'
                 f'{self.unit}_deployment_*.json'):
             file_dates = file.split('deployment')[-1][1:].split('.')[0].split('_')
-            if int(file_dates[0]) <= int(self.date_str) <= int(file_dates[1]):
+            start_date = dt.datetime.strptime(file_dates[0], '%y%m%d').astimezone(dt.UTC).date()
+            end_date = dt.datetime.strptime(file_dates[1], '%y%m%d').astimezone(dt.UTC).date()
+            if start_date <= self.date <= end_date:
                 return helper_funcs.read_json_file(file)
 
         return {'location': 'no location listed', 'instrument': self.unit, 'start_date': '000000', 'end_date': '000000',
@@ -205,12 +205,17 @@ class Detector:
         if self.unit in entries['identities']:
             identity = entries['identities'][self.unit]
             try:
-                self._import_loc = f'{entries["default_data_root"]}/{identity["subdir"]}/{self.date_str}'
+                self._import_loc = f'{entries["default_data_root"]}/{identity["subdir"]}/{self.date.strftime("%y%m%d")}'
 
                 # Getting the right scintillator configuration based on the date
                 correct_date_str = ''
                 for after_date_str in identity['scintillators']:
-                    if int(self.date_str) >= int(after_date_str):
+                    if after_date_str == '000000':
+                        after_date = dt.datetime.fromtimestamp(0, dt.UTC).date()
+                    else:
+                        after_date = dt.datetime.strptime(after_date_str, '%y%m%d').astimezone(dt.UTC).date()
+
+                    if self.date >= after_date:
                         correct_date_str = after_date_str
                     else:
                         break
@@ -353,7 +358,7 @@ class Detector:
                 loc = loc[:-1]
 
         if subdir:
-            self._export_loc = loc + f'/Results/{self.unit}/{self.date_str}'
+            self._export_loc = loc + f'/Results/{self.unit}/{self.date.strftime("%y%m%d")}'
         else:
             self._export_loc = loc
 
@@ -707,7 +712,8 @@ class Detector:
         """
 
         if scintillator in self._scintillators:
-            return self._scintillators[scintillator].find_matching_traces(count_time, self.date_str, trace_list)
+            return self._scintillators[scintillator].find_matching_traces(count_time, self.date.strftime('%y%m%d'),
+                                                                          trace_list)
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
@@ -725,7 +731,7 @@ class Detector:
             self._scintillators[scintillator].clear(clear_filelists)
 
         if clear_filelists:
-            self.dates_stored = [self.date_str]
+            self.dates_stored = [self.date]
 
     def _projected_memory(self) -> float:
         """Returns the projected size (in bytes) of the object after all currently listed files have been imported."""
@@ -742,13 +748,13 @@ class Detector:
 
     def _file_form(self, eRC: str) -> str:
         """Returns the glob pattern for a scintillator's files given the scintillator's eRC serial number."""
-        return f'eRC{eRC}*_*_{self.date_str}_*'
+        return f'eRC{eRC}*_*_{self.date.strftime("%y%m%d")}_*'
 
     def _get_serial_num_filelist(self, eRC: str) -> List[str]:
         """Returns a list of data files for the scintillator with the given eRC serial number."""
         complete_filelist = glob.glob(f'{self._import_loc}/{self._file_form(eRC)}')
         if len(complete_filelist) == 0:  # Here in case the data files are grouped into daily folders
-            complete_filelist = glob.glob(f'{self._import_loc}/{self.date_str}/{self._file_form(eRC)}')
+            complete_filelist = glob.glob(f'{self._import_loc}/{self.date.strftime("%y%m%d")}/{self._file_form(eRC)}')
 
         if len(complete_filelist) == 0:  # Here in case the data files are grouped into non-daily folders
             complete_filelist = glob.glob(f'{self._import_loc}/*/{self._file_form(eRC)}')
@@ -1069,7 +1075,7 @@ class Detector:
 
         """
 
-        clone = type(self)(self.unit, self.date_str)
+        clone = type(self)(self.unit, self.date.strftime("%y%m%d"))
         clone._import_loc = self._import_loc
         clone._export_loc = self._export_loc
         return clone
@@ -1104,26 +1110,20 @@ class Detector:
         """
 
         if operand_detector.unit == self.unit and operand_detector._scintillators.keys() == self._scintillators.keys():
-            if int(self.date_str) < int(operand_detector.date_str):
+            if self.date < operand_detector.date:
                 new_detector = self.get_clone()
                 earlier = self
                 later = operand_detector
-            elif int(self.date_str) > int(operand_detector.date_str):
+            elif self.date > operand_detector.date:
                 new_detector = operand_detector.get_clone()
                 earlier = operand_detector
                 later = self
             else:
                 raise ValueError('cannot splice the same day into itself.')
 
-            new_detector.dates_stored.append(later.date_str)
+            new_detector.dates_stored.append(later.date)
 
-            # Measuring the number of days between the earlier and later date
-            day_difference = 0
-            rolled_date = earlier.date_str
-            while rolled_date != later.date_str:
-                rolled_date = helper_funcs.roll_date_forward(rolled_date)
-                day_difference += 1
-
+            day_difference = (later.date - earlier.date).days
             for scintillator in self._scintillators:
                 # Combining list mode file lists
                 new_detector.set_attribute(scintillator, 'lm_filelist',

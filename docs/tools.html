@@ -112,8 +112,6 @@ Returns<br>
 -------<br>
 list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;requested&nbsp;scintillator.</span></dd></dl>
- <dl><dt><a name="-full_date_to_short"><strong>full_date_to_short</strong></a>(full_date_str: str) -&gt; str</dt><dd><span class="code">Converts&nbsp;a&nbsp;date&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;yyyy-mm-dd&nbsp;to&nbsp;the&nbsp;form&nbsp;yymmdd.</span></dd></dl>
- <dl><dt><a name="-get_first_sec"><strong>get_first_sec</strong></a>(date_str: str) -&gt; float</dt><dd><span class="code">Converts&nbsp;the&nbsp;given&nbsp;date&nbsp;string&nbsp;(in&nbsp;yymmdd&nbsp;format)&nbsp;to&nbsp;its&nbsp;first&nbsp;second&nbsp;in&nbsp;EPOCH&nbsp;time.</span></dd></dl>
  <dl><dt><a name="-get_weather_conditions"><strong>get_weather_conditions</strong></a>(
     event_time: float,
     instrument: str,
@@ -170,7 +168,6 @@ Returns<br>
 -------<br>
 dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;with&nbsp;separated&nbsp;data&nbsp;for&nbsp;each&nbsp;scintillator&nbsp;in&nbsp;count_scints.</span></dd></dl>
- <dl><dt><a name="-short_to_full_date"><strong>short_to_full_date</strong></a>(date_str: str) -&gt; str</dt><dd><span class="code">Converts&nbsp;a&nbsp;date&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;yymmdd&nbsp;to&nbsp;the&nbsp;form&nbsp;yyyy-mm-dd.</span></dd></dl>
  <dl><dt><a name="-trace_to_counts"><strong>trace_to_counts</strong></a>(
     trace_energies: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]
 ) -&gt; Tuple[numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]]]</dt><dd><span class="code">Simulates&nbsp;the&nbsp;eMorpho&nbsp;response&nbsp;to&nbsp;trace&nbsp;data&nbsp;and&nbsp;returns&nbsp;the&nbsp;results.</span></dd></dl>

@@ -19,24 +19,6 @@ def file_timestamp(file: str) -> str:
     return labels[-1]
 
 
-def full_date_to_short(full_date_str: str) -> str:
-    """Converts a date string of the form yyyy-mm-dd to the form yymmdd."""
-    return full_date_str[2:].replace('-', '')
-
-
-def short_to_full_date(date_str: str) -> str:
-    """Converts a date string of the form yymmdd to the form yyyy-mm-dd."""
-    return f'{params.CENTURY}{date_str[0:2]}-{date_str[2:4]}-{date_str[4:]}'
-
-
-def get_first_sec(date_str: str) -> float:
-    """Converts the given date string (in yymmdd format) to its first second in EPOCH time."""
-    day = int(date_str[4:])
-    month = int(date_str[2:4])
-    year = int(params.CENTURY + date_str[0:2])
-    return (dt.datetime(year, month, day, 0, 0) - dt.datetime(1970, 1, 1)).total_seconds()
-
-
 def get_weather_conditions(event_time: float, instrument: str,
                            weather_cache: Dict[str, pd.DataFrame | None] | None = None) -> str:
     """Returns the weather conditions around the time of an event as a string.

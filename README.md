@@ -5,7 +5,7 @@
     pip install tgfsearch@git+https://github.com/JSheare/tgfsearch
 
 
-### Afterwards, it is also recommended that you update the package's built in data with the following command:
+### Afterward, it is also recommended that you update the package's built in data with the following command:
 
     tgfsearch-update
 
@@ -327,8 +327,7 @@ for scintillator in detector:
 The Detector class has several useful class attributes containing basic information that are worth knowing about:
 ```python3
 unit = detector.unit  # The name of the instrument (string).
-date_str = detector.date_str  # The date in yymmdd format (string).
-full_date_str = detector.full_date_str  # The date in yyyy-mm-dd format (string).
+date = detector.date  # The date (datetime.date).
 first_sec = detector.first_sec  # The first second of the day in epoch time.
 deployment = detector.deployment  # Deployment information for the instrument on the requested day (if available).
 scint_list = detector.scint_list  # A list of abbreviations corresponding to the instrument's scintillators.
@@ -562,34 +561,14 @@ if is_good:
 Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/detector.html).
 
 ### **Tools:**
-- tgf.print_logger()
-  - Prints the specified string to both stdout and the specified file.
-- tgf.days_per_month()
-  - Returns the number of days in the requested month based on the year.
-- tgf.file_size()
-  - Returns the size of the given file in bytes.
-- tgf.roll_date_forward()
-  - Returns the calendar date after the one given as an argument.
-- tgf.roll_date_backward()
-  - Returns the calendar date before the one given as an argument.
-- tgf.make_date_list()
-  - Makes a list of dates from first_date to second_date (inclusive).
-- tgf.full_date_to_short()
-  - Converts a date string of the form yyyy-mm-dd to the form yymmdd.
-- tgf.short_to_full_date()
-  - Converts a date string of the form yymmdd to the form yyyy-mm-dd.
-- tgf.get_first_sec()
-  - Converts the given date string (in yymmdd format) to its first second in EPOCH time.
-- tgf.pickle_detector()
-  - Pickles Detectors.
-- tgf.unpickle_detector()
-  - Unpickles Detectors.
-- tgf.scrape_weather()
-  - Scrapes weather from weather underground and returns the results as a pandas data frame.
+- tgf.file_timestamp()
+  - Returns the timestamp of the given data file as a string of the form hhmmss.
+- tgf.get_weather_conditions()
+  - Returns the weather conditions around the time of an event as a string.
 - tgf.combine_data()
   - Combines data from all scintillators into one set of arrays.
 - tgf.separate_data()
-  - Separates combined data from multiple scintillators into separate data for each scintillator.
+  - Separates combined data from multiple scintillators into separate data for each scintillator()
 - tgf.is_good_trace()
   - Returns True if the given trace is likely to be interesting and False otherwise.
 - tgf.filter_traces()

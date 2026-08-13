@@ -18,7 +18,6 @@ from typing import Callable, List
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-import tgfsearch.tools.tools as tl
 from tgfsearch.search import search_check, program
 
 
@@ -129,8 +128,8 @@ class SearchManager:
                 if search_args not in self._search_set:
                     # Reasoning behind 3: one for custom, the last two for custom import/export locations
                     modes_string = f' [{", ".join(mode_info[0:-3]).replace("-", "")}]' if len(mode_info) > 3 else ''
-                    self._write(f'Enqueueing {tl.short_to_full_date(first_date)}'
-                          f'{" - " + tl.short_to_full_date(second_date) if first_date != second_date else ""}'
+                    self._write(f'Enqueueing {first_date}'
+                          f'{" - " + second_date if first_date != second_date else ""}'
                           f' on {detector.upper()}{modes_string}.')
                     self._search_queue.put(search_args)
                     self._search_set.add(search_args)
@@ -144,9 +143,9 @@ class SearchManager:
                 self._search_set.remove(search_args)
 
                 # Outputs feedback about what date and modes were selected
-                feedback_string = f'\nRunning search for {tl.short_to_full_date(search_args.first_date)}'
+                feedback_string = f'\nRunning search for {search_args.first_date}'
                 if search_args.first_date != search_args.second_date:
-                    feedback_string += f' - {tl.short_to_full_date(search_args.second_date)}'
+                    feedback_string += f' - {search_args.second_date}'
 
                 feedback_string += f' on {search_args.detector}.'
                 self._write(feedback_string)

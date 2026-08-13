@@ -200,7 +200,7 @@ def log_error(detector: Detector, modes: Dict[str, bool], ex: Exception) -> None
     print_logger('See error log for details.', detector.log)
     with open(f'{detector.get_export_loc()}/err.txt', 'w') as err_file:
         print('Info:', file=err_file)
-        print(f'{detector.date_str} {detector.unit}', file=err_file)
+        print(f'{detector.date.strftime("%y%m%d")} {detector.unit}', file=err_file)
         for mode in modes:
             print(f'{mode}: {modes[mode]}', file=err_file)
 
@@ -1147,7 +1147,7 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
 
     # Making histogram
     figure = plt.figure(figsize=[20, 11.0])
-    figure.suptitle(f'{detector.unit} at {detector.deployment["location"]}, {detector.full_date_str}, '
+    figure.suptitle(f'{detector.unit} at {detector.deployment["location"]}, {detector.date.strftime("%Y-%m-%d)")}, '
                     f'{bin_size} sec bins')
 
     ax1 = figure.add_subplot(5, 1, 1)  # Daily histogram
@@ -1233,7 +1233,7 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
     hist_path = f'{detector.get_export_loc()}'
     helper_funcs.make_path(hist_path)
     figure.savefig(f'{hist_path}/'
-                   f'{detector.date_str}_'
+                   f'{detector.date.strftime("%y%m%d")}_'
                    f'histogram_{bin_size}_sec_bins_'
                    f'{len(potential_glows)}_events.png',
                    dpi=500)
@@ -1425,20 +1425,20 @@ def main() -> None:
     program(first_date, second_date, unit, mode_info)
 
 
-def program(first_date, second_date, unit, mode_info):
+def program(first_date: str, second_date: str, unit: str, mode_info: List[str]):
     """Main program function."""
     matplotlib.use('Agg')  # Memory leaks without this
     modes = get_modes(mode_info)
 
     # Looping through the dates
-    for date_str in helper_funcs.make_date_list(first_date, second_date):
+    for date in helper_funcs.get_date_list(first_date, second_date):
         low_memory_mode = False
         print('')
-        print(f'{tl.short_to_full_date(date_str)}:')
+        print(f'{date.strftime('%Y-%m-%d')}:')
 
         # Initializes the detector object
         print('Importing data...')
-        detector = get_detector(unit, date_str)
+        detector = get_detector(unit, date.strftime('%y%m%d'))
         try:
             # Tells the detector to use custom import/export directories if the user asks for it
             if modes['custom']:
@@ -1464,7 +1464,7 @@ def program(first_date, second_date, unit, mode_info):
         log_path = f'{detector.get_export_loc()}'
         helper_funcs.make_path(log_path)
         log = open(f'{log_path}/log.txt', 'w')
-        print(f'{tl.short_to_full_date(date_str)}:', file=log)
+        print(f'{date.strftime('%Y-%m-%d')}:', file=log)
 
         # Normal operating mode
         try:

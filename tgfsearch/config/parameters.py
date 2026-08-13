@@ -1,10 +1,8 @@
-"""A module containing parameters used by various parts of the package."""
+"""A module containing parameters and constants used by various parts of the package."""
 
 """General Parameters"""
 SEC_PER_DAY = 86400  # Number of seconds in a day
 SEC_PER_HOUR = 3600  # Number of seconds in an hour
-CENTURY = '20'  # The current century (numerically)
-TWO_AM = 7200  # Number of seconds of the day corresponding to 2:00AM
 WEATHER_PADDING = 10800  # The number of seconds on either side of an event to check the weather for
 ABS_MEMORY_ALLOWANCE = 8589934592  # The upper bound of memory that the program can use for data in bytes
 MEMORY_ALLOWANCE_FRAC = 0.40  # The fraction of available memory on the system that the program can use for data.

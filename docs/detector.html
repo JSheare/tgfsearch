@@ -20,18 +20,16 @@
 <a href="gc.html">gc</a><br>
 <a href="glob.html">glob</a><br>
 <a href="tgfsearch.helpers.helper_funcs.html">tgfsearch.helpers.helper_funcs</a><br>
-<a href="json.html">json</a><br>
 </td><td class="multicolumn"><a href="multiprocessing.html">multiprocessing</a><br>
 <a href="numpy.html">numpy</a><br>
 <a href="numpy.typing.html">numpy.typing</a><br>
 <a href="os.html">os</a><br>
-<a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
-</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
+<a href="pandas.html">pandas</a><br>
 <a href="pickle.html">pickle</a><br>
 <a href="psutil.html">psutil</a><br>
-<a href="sys.html">sys</a><br>
+</td><td class="multicolumn"><a href="sys.html">sys</a><br>
 <a href="threading.html">threading</a><br>
-</td><td class="multicolumn"><a href="tgfsearch.tools.tools.html">tgfsearch.tools.tools</a><br>
 <a href="warnings.html">warnings</a><br>
 </td></tr></table></td></tr></table><p>
 <table class="section">
@@ -57,8 +55,8 @@
 &nbsp;<br>
 A&nbsp;class&nbsp;used&nbsp;to&nbsp;store&nbsp;all&nbsp;relevant&nbsp;information&nbsp;about&nbsp;an&nbsp;instrument&nbsp;and&nbsp;its&nbsp;data&nbsp;for&nbsp;a&nbsp;day.<br>
 &nbsp;<br>
-The&nbsp;<a href="#Detector">Detector</a>&nbsp;class&nbsp;is&nbsp;used&nbsp;to&nbsp;store&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;detector,&nbsp;the&nbsp;date&nbsp;in&nbsp;various&nbsp;formats,<br>
-and&nbsp;the&nbsp;actual&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;day&nbsp;in&nbsp;a&nbsp;single,&nbsp;centralized&nbsp;location.<br>
+The&nbsp;<a href="#Detector">Detector</a>&nbsp;class&nbsp;is&nbsp;used&nbsp;to&nbsp;store&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;detector,&nbsp;the&nbsp;date,&nbsp;and&nbsp;the&nbsp;actual&nbsp;data&nbsp;for&nbsp;the&nbsp;requested&nbsp;day<br>
+in&nbsp;a&nbsp;single,&nbsp;centralized&nbsp;location.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -73,14 +71,14 @@ lm_growth_factors&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;mapping&nbsp;of&nbsp;bytes&nbsp;of&nbsp;memory&nbsp;to&nbsp;bytes&nbsp;of&nbsp;file&nbsp;growth&nbsp;factors&nbsp;for&nbsp;each&nbsp;list&nbsp;mode&nbsp;data&nbsp;file&nbsp;type.<br>
 trace_growth_factors&nbsp;:&nbsp;dict<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;mapping&nbsp;of&nbsp;bytes&nbsp;of&nbsp;memory&nbsp;to&nbsp;bytes&nbsp;of&nbsp;file&nbsp;growth&nbsp;factors&nbsp;for&nbsp;each&nbsp;trace&nbsp;mode&nbsp;data&nbsp;file&nbsp;type.<br>
-log&nbsp;:&nbsp;_io.TextIOWrapper<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;file&nbsp;where&nbsp;actions&nbsp;and&nbsp;findings&nbsp;are&nbsp;logged.<br>
+date&nbsp;:&nbsp;datetime.date<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;that&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;represents.<br>
 first_sec&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;first&nbsp;second&nbsp;of&nbsp;the&nbsp;day&nbsp;in&nbsp;EPOCH&nbsp;time.<br>
-full_date_str&nbsp;:&nbsp;str<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;timestamp&nbsp;for&nbsp;the&nbsp;requested&nbsp;in&nbsp;day&nbsp;in&nbsp;yyyy-mm-dd&nbsp;format.<br>
 dates_stored&nbsp;:&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dates&nbsp;currently&nbsp;being&nbsp;stored&nbsp;in&nbsp;the&nbsp;<a href="#Detector">Detector</a>.<br>
+log&nbsp;:&nbsp;_io.TextIOWrapper<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;file&nbsp;where&nbsp;actions&nbsp;and&nbsp;findings&nbsp;are&nbsp;logged.<br>
 _has_identity&nbsp;:&nbsp;bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;flag&nbsp;for&nbsp;whether&nbsp;the&nbsp;<a href="#Detector">Detector</a>&nbsp;has&nbsp;an&nbsp;identity&nbsp;(established&nbsp;name,&nbsp;scintillator&nbsp;configuration,&nbsp;etc.).<br>
 _import_loc&nbsp;:&nbsp;str<br>

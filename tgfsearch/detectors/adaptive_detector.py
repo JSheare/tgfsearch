@@ -83,7 +83,7 @@ class AdaptiveDetector(Detector):
         self._infer_identity()
 
     def get_clone(self) -> AdaptiveDetector:
-        clone = type(self)(self.date_str)
+        clone = type(self)(self.date.strftime("%y%m%d"))
         if self.has_identity:
             clone._import_loc = self._import_loc
             clone._export_loc = self._export_loc
