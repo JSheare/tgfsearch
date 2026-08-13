@@ -3,7 +3,6 @@ import datetime as dt
 import gc as gc
 import glob
 import heapq
-import json
 import matplotlib
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -17,7 +16,7 @@ import sys
 import traceback
 import warnings
 from io import TextIOWrapper
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 # Adds parent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
@@ -99,11 +98,11 @@ def is_valid_detector(unit: str) -> bool:
         return True
     else:
         try:
-            with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/detector_config.json', 'r') as file:
-                identities = json.load(file)['identities']
+            identities = helper_funcs.read_json_file(
+                f'{os.path.dirname(os.path.realpath(__file__))}/config/detector_config.json')['identities']
 
             return unit_upper in identities
-        except json.decoder.JSONDecodeError:
+        except SyntaxError:
             raise SyntaxError('invalid syntax in detector config file.')
 
 
@@ -548,7 +547,7 @@ def find_se_traces(detector: Detector, event: ShortEvent, trace_dict: Dict[str, 
                 break
 
 
-def make_se_scatterplot(detector: Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+def make_se_scatterplot(detector: Detector, prefs: Dict[str, Any], event: ShortEvent, times: npt.NDArray[np.float64],
                         energies: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
     """Makes the scatter plot for a short event."""
     timestamp = dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)
@@ -556,11 +555,7 @@ def make_se_scatterplot(detector: Detector, event: ShortEvent, times: npt.NDArra
     timescales = [params.SE_TIMESCALE_ONE, params.SE_TIMESCALE_TWO, params.SE_TIMESCALE_THREE]
 
     # Dot colors. Dots for unsupported scintillators will be black (see below)
-    try:
-        with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json', 'r') as file:
-            colors = json.load(file)['short_event_search_colors']
-    except json.decoder.JSONDecodeError:
-        raise SyntaxError('invalid syntax in search config file.')
+    colors = prefs['short_event_search_colors']
 
     # Determining the best place to center the plot around and slicing the arrays accordingly
     event_times = times[event.start:event.stop]
@@ -678,19 +673,23 @@ def make_se_json(detector:Detector, event: ShortEvent, times: npt.NDArray[np.flo
     # Saves the json file
     event_num_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.number)))
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
-    with open(
-            f'{event_path}/'
-            f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec).strftime("%y%m%d_%H%M%S")}_'
-            f'{event.scintillator}_'
-            f'event{event_num_padding}{event.number}_'
-            f'rank{rank_padding}{event.rank}_'
-            f'score{("%.3f" % event.total_score).replace(".", "p")}.json', 'w') as file:
-        json.dump(event_dict, file)
+    helper_funcs.write_json_file(
+        event_dict, f'{event_path}/'
+                    f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec).strftime("%y%m%d_%H%M%S")}_'
+                    f'{event.scintillator}_'
+                    f'event{event_num_padding}{event.number}_'
+                    f'rank{rank_padding}{event.rank}_'
+                    f'score{("%.3f" % event.total_score).replace(".", "p")}.json')
 
 
 def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Dict[str, List[str]],
                       weather_cache: Dict[str, pd.DataFrame], event_numbers: Dict[str, int] | None = None) -> None:
     """Runs the short event search."""
+    try:
+        prefs = helper_funcs.read_json_file(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json')
+    except SyntaxError:
+        raise SyntaxError('invalid syntax in search config file.')
+
     if modes['aircraft']:
         rollgap = params.AIRCRAFT_ROLLGAP
     elif modes['onescint'] or modes['allscints']:
@@ -798,7 +797,7 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
                       file=detector.log)
 
                 # Makes the scatter plot for the event
-                make_se_scatterplot(detector, event, times, energies, count_scints)
+                make_se_scatterplot(detector, prefs, event, times, energies, count_scints)
 
                 # Makes the json file for the event
                 make_se_json(detector, event, times, energies, count_scints)
@@ -816,9 +815,9 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
 def get_le_scint_prefs(detector: Detector) -> List[str]:
     """Returns the list of preferred scintillators to be used in the long event search depending on the Detector."""
     try:
-        with open(f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json', 'r') as file:
-            all_preferences = json.load(file)['long_event_search_scints']
-    except json.decoder.JSONDecodeError:
+        all_preferences = helper_funcs.read_json_file(
+            f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json')['long_event_search_scints']
+    except SyntaxError:
         raise SyntaxError('invalid syntax in search config file.')
 
     if detector.unit in all_preferences:

@@ -4,7 +4,6 @@ from __future__ import annotations
 import datetime as dt
 import gc as gc
 import glob as glob
-import json as json
 import multiprocessing as multiprocessing
 import numpy as np
 import numpy.typing as npt
@@ -189,8 +188,7 @@ class Detector:
                 f'{self.unit}_deployment_*.json'):
             file_dates = file.split('deployment')[-1][1:].split('.')[0].split('_')
             if int(file_dates[0]) <= int(self.date_str) <= int(file_dates[1]):
-                with open(file, 'r') as deployment:
-                    return json.load(deployment)
+                return helper_funcs.read_json_file(file)
 
         return {'location': 'no location listed', 'instrument': self.unit, 'start_date': '000000', 'end_date': '000000',
                 'tz_identifier': '', 'weather_station': '', 'sounding_station': '', 'latitude': 0., 'longitude': 0.,
@@ -199,10 +197,9 @@ class Detector:
     def _read_identity(self) -> None:
         """Gets and fills in the identity of the Detector from the config file based on the name and date."""
         try:
-            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
-                      'r') as file:
-                entries = json.load(file)
-        except json.decoder.JSONDecodeError:
+            entries = helper_funcs.read_json_file(
+                f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json')
+        except SyntaxError:
             raise SyntaxError('invalid syntax in detector config file.')
 
         if self.unit in entries['identities']:

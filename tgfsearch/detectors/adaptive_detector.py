@@ -1,9 +1,9 @@
 """A module containing a child class of Detector for handling instruments with arbitrary scintillator configurations."""
 from __future__ import annotations
 
-import json as json
 import os as os
 
+import tgfsearch.helpers.helper_funcs as helper_funcs
 from tgfsearch.detectors.detector import Detector
 from tgfsearch.detectors.scintillator import Scintillator
 
@@ -38,11 +38,10 @@ class AdaptiveDetector(Detector):
             self._export_loc = self._export_loc.replace('Results/ADAPTIVE', f'Results/{self.unit}')
 
         try:
-            with open(f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json',
-                      'r') as config_file:
-                entries = json.load(config_file)
+            entries = helper_funcs.read_json_file(
+                f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config/detector_config.json')
 
-        except json.decoder.JSONDecodeError:
+        except SyntaxError:
             raise SyntaxError('invalid syntax in detector config file.')
 
         # Getting all supported scintillators and their priorities (greatest to least)

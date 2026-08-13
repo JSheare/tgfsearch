@@ -204,10 +204,13 @@ def read_json_file(file: str) -> Any:
 
     """
 
-    with open(file, 'r') as f:
-        result = json.load(f)
+    try:
+        with open(file, 'r') as f:
+            result = json.load(f)
 
-    return result
+        return result
+    except json.decoder.JSONDecodeError:
+        raise SyntaxError('invalid JSON syntax.')
 
 
 def write_json_file(data: Any, file: str, pretty: bool = False) -> None:

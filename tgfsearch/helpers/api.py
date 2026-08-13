@@ -2,7 +2,7 @@
 import json
 import pandas
 import requests
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import tgfsearch.config.parameters as params
 
