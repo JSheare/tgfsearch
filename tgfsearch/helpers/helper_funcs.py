@@ -1,5 +1,5 @@
 """A module containing functions used by various parts of the package."""
-import datetime
+import datetime as dt
 import json
 import os
 import struct
@@ -95,17 +95,17 @@ def write_json_file(data: Any, file: str, pretty: bool = False) -> None:
                 json.dump(data, f)
 
 
-def yymmdd_to_date(date_str: str) -> datetime.date:
+def yymmdd_to_date(date_str: str) -> dt.date:
     """Returns the given date string in YYMMDD format as a datetime.date object."""
-    return datetime.datetime.strptime(date_str, '%y%m%d').astimezone(datetime.UTC).date()
+    return dt.datetime.strptime(date_str, '%y%m%d').astimezone(dt.UTC).date()
 
 
-def date_to_yymmdd(date: datetime.date) -> str:
+def date_to_yymmdd(date: dt.date) -> str:
     """Returns the given datetime.date object as a string in the YYMMDD format."""
     return date.strftime('%y%m%d')
 
 
-def get_date_list(date_str_1: str, date_str_2: str)-> List[datetime.date]:
+def get_date_list(date_str_1: str, date_str_2: str)-> List[dt.date]:
     """Returns a list of datetime.date objects on the given date_range.
 
     Parameters
@@ -127,7 +127,7 @@ def get_date_list(date_str_1: str, date_str_2: str)-> List[datetime.date]:
     dates = []
     while start != end:
         dates.append(start)
-        start += datetime.timedelta(days=1)
+        start += dt.timedelta(days=1)
 
     dates.append(end)
     return dates
@@ -135,6 +135,6 @@ def get_date_list(date_str_1: str, date_str_2: str)-> List[datetime.date]:
 
 def get_first_sec(date_str: str) -> float:
     """Returns the first epoch second of the given YYMMDD-format date."""
-    date = datetime.datetime.strptime(date_str, '%y%m%d').astimezone(datetime.UTC)
-    return (date - datetime.timedelta(hours=date.hour, minutes=date.minute, seconds=date.second,
-                                      microseconds=date.microsecond)).timestamp()
+    date = dt.datetime.strptime(date_str, '%y%m%d').astimezone(dt.UTC)
+    return (date - dt.timedelta(hours=date.hour, minutes=date.minute, seconds=date.second,
+                                microseconds=date.microsecond)).timestamp()

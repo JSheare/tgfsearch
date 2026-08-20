@@ -1,9 +1,9 @@
 """A script that measures the average bytes of Detector memory added for every byte of data file imported."""
-import gc as gc
+import gc
 import numpy as np
-import os as os
+import os
 import pandas as pd
-import sys as sys
+import sys
 from typing import Any
 
 # Adds grandparent directory to sys.path. Necessary to make the imports below work when running this file as a script
@@ -96,7 +96,8 @@ def main() -> None:
     lm_growth_factors = []
     trace_growth_factors = []
     try:
-        for date_str in helper_funcs.make_date_list(first_date, second_date):
+        for date in helper_funcs.get_date_list(first_date, second_date):
+            date_str = date.strftime('%y%m%d')
             print(f'Importing data for {date_str}...')
             detector = get_detector(unit, date_str)
             if import_loc != '':

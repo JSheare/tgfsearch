@@ -1,6 +1,6 @@
 """A module containing a class for keeping track of a particular scintillator's data."""
-import copy as copy
-import gc as gc
+import copy
+import gc
 import numpy as np
 import numpy.typing as npt
 import pandas as pd

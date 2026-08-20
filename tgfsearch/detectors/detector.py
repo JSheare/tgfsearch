@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 import datetime as dt
-import gc as gc
-import glob as glob
-import multiprocessing as multiprocessing
+import gc
+import glob
+import logging
+import multiprocessing
 import numpy as np
 import numpy.typing as npt
-import os as os
+import os
 import pandas as pd
 import pickle
-import psutil as psutil
-import sys as sys
-import threading as threading
-import warnings as warnings
+import psutil
+import sys
+import threading
+import warnings
 from multiprocessing.connection import Connection
 from multiprocessing.pool import Pool
 from typing import Any, Dict, Generator, List, Tuple
@@ -82,8 +83,6 @@ class Detector:
         The first second of the day in EPOCH time.
     dates_stored : list
         A list of dates currently being stored in the Detector.
-    log : _io.TextIOWrapper
-        The file where actions and findings are logged.
     _has_identity : bool
         A flag for whether the Detector has an identity (established name, scintillator configuration, etc.).
     _import_loc : str
@@ -113,7 +112,6 @@ class Detector:
         self.date = helper_funcs.yymmdd_to_date(date_str)
         self.first_sec = helper_funcs.get_first_sec(date_str)
         self.dates_stored = [self.date]
-        self.log = None
 
         # Identity-related information
         self._has_identity = False
@@ -262,13 +260,10 @@ class Detector:
 
         helper_funcs.make_path(path)
 
-        log = self.log
-        self.log = None  # serializing open file objects results in errors
         export_path = f'{path}/{file_name}.pickle'
         with open(export_path, 'wb') as file:
             pickle.dump(self, file)
 
-        self.log = log
         return export_path
 
     @staticmethod
@@ -791,15 +786,13 @@ class Detector:
 
     def __import_lm(self, process_pool: Pool, scintillator: str, options: Dict[str, bool]) -> Tuple[int, str]:
         """Imports list mode data for the given scintillator."""
+        logger = logging.getLogger(params.PACKAGE_NAME)
         lm_filelist = self._scintillators[scintillator].lm_filelist
         file_frames = []
         file_ranges = []
         file_indices = {}
         start_index = 0
-        log_strings = []
-
-        if self.log is not None:
-            log_strings.append('List Mode Files:\nFile|Import Success|\n')
+        log_strings = ['List Mode Files:\nFile|Import Success|\n']
 
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
@@ -831,8 +824,7 @@ class Detector:
             # Determines the time gaps between adjacent files
             file_ranges.append([first_second, last_second])
             file_frames.append(data)
-            if self.log is not None:
-                log_strings.append(f'{lm_filelist[file_index]}|True|\n')
+            log_strings.append(f'{lm_filelist[file_index]}|True|\n')
 
             # Keeps track of file indices in the larger dataframe
             data_length = len(data.index)
@@ -865,12 +857,10 @@ class Detector:
             self._scintillators[scintillator].lm_file_ranges = file_ranges
             self._scintillators[scintillator].lm_file_indices = file_indices
 
-            if self.log is not None:
-                log_strings.append(f'\nTotal Counts: {len(self._scintillators[scintillator].lm_frame.index)}\n\n')
+            log_strings.append(f'\nTotal Counts: {len(self._scintillators[scintillator].lm_frame.index)}\n\n')
 
         else:
-            if self.log is not None:
-                log_strings.append('\n')
+            log_strings.append('\n')
 
         return len(file_frames), ''.join(log_strings)
 
@@ -878,9 +868,7 @@ class Detector:
         """Imports trace data for the given scintillator."""
         trace_filelist = self._scintillators[scintillator].trace_filelist
         traces = {}
-        log_strings = []
-        if self.log is not None:
-            log_strings.append('Trace Files:\nFile|Import Success|\n')
+        log_strings = ['Trace Files:\nFile|Import Success|\n']
 
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
@@ -907,8 +895,7 @@ class Detector:
                 continue
 
             traces[trace_filelist[file_index]] = data
-            if self.log is not None:
-                log_strings.append(f'{trace_filelist[file_index]}|True|\n')
+            log_strings.append(f'{trace_filelist[file_index]}|True|\n')
 
             file_index += 1
 
@@ -916,8 +903,7 @@ class Detector:
         if len(traces) > 0:
             self._scintillators[scintillator].traces = traces
 
-        if self.log is not None:
-            log_strings.append('\n')
+        log_strings.append('\n')
 
         return len(traces), ''.join(log_strings)
 
@@ -954,7 +940,7 @@ class Detector:
         else:
             trace_results = None
 
-        if (lm_results is not None or trace_results is not None) and (options['feedback'] or self.log is not None):
+        if lm_results is not None or trace_results is not None:
             with output_lock:
                 # Writing import status to stdout
                 if options['feedback']:
@@ -971,13 +957,13 @@ class Detector:
                         print(f'No traces imported')
 
                 # Writing import information to the log
-                if self.log is not None:
-                    print(f'For eRC {eRC} ({scintillator}):', file=self.log)
-                    if options['import_lm'] and lm_results is not None:
-                        self.log.write(lm_results[1])
+                logger = logging.getLogger(params.PACKAGE_NAME)
+                logger.info(f'For eRC {eRC} ({scintillator}):')
+                if options['import_lm'] and lm_results is not None:
+                    logger.info(lm_results[1])
 
-                    if options['import_traces'] and trace_results is not None:
-                        self.log.write(trace_results[1])
+                if options['import_traces'] and trace_results is not None:
+                    logger.info(trace_results[1])
 
     def import_data(self, existing_filelists: bool = False, import_traces: bool = True, import_lm: bool = True,
                     import_scints: List[str] | None = None, clean_energy: bool = False, mem_frac: float = 1.,
@@ -1040,8 +1026,7 @@ class Detector:
         if self._projected_memory() > psutil.virtual_memory()[1] * mem_frac:
             raise MemoryError('dataset larger than specified limit.')
 
-        if self.log is not None:
-            print('', file=self.log)
+        logging.getLogger(params.PACKAGE_NAME).info('Importing data:')
 
         options = {'import_traces': import_traces, 'import_lm': import_lm, 'clean_energy': clean_energy,
                    'feedback': kwargs['feedback'] if 'feedback' in kwargs else False}

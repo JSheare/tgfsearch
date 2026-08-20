@@ -1,6 +1,7 @@
 """A module containing parameters and constants used by various parts of the package."""
 
 """General Parameters"""
+PACKAGE_NAME = 'tgfsearch'
 SEC_PER_DAY = 86400  # Number of seconds in a day
 SEC_PER_HOUR = 3600  # Number of seconds in an hour
 WEATHER_PADDING = 10800  # The number of seconds on either side of an event to check the weather for

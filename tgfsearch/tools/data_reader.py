@@ -1,10 +1,10 @@
 """A module containing functions for reading UCSC TGF group data files."""
-import gzip as gzip
-import json as json
+import gzip
+import json
 import numpy as np
 import pandas as pd
-import re as re
-import warnings as warnings
+import re
+import warnings
 from datetime import datetime
 from typing import Any, Dict, List, Tuple, Generator
 
