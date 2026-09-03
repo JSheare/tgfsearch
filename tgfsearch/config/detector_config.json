@@ -268,10 +268,6 @@
             "subdir": "THOR/THOR6/Data",
             "scintillators": {
                 "000000": {
-                    "nai": {
-                        "erc": "4186",
-                        "format_name": "thor_lm"
-                    },
                     "spl": {
                         "erc": "4176",
                         "format_name": "thor_lm"
@@ -282,6 +278,10 @@
                     },
                     "lpl": {
                         "erc": "4180",
+                        "format_name": "thor_lm"
+                    },
+                    "nai": {
+                        "erc": "4186",
                         "format_name": "thor_lm"
                     }
                 }

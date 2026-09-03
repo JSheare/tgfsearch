@@ -9,6 +9,8 @@ ABS_MEMORY_ALLOWANCE = 8589934592  # The upper bound of memory that the program 
 MEMORY_ALLOWANCE_FRAC = 0.40  # The fraction of available memory on the system that the program can use for data.
 #   Bounded by the ABS_MEMORY_ALLOWANCE
 API_URL = 'https://thrud.pbsci.ucsc.edu'  # The url of the UCSC TGF group API
+API_BACKOFF_BASE_DELAY = 0.1  # The number of seconds to use as the base delay in the API module's exponential backoff
+API_MAX_RETRIES = 8  # The number of retries to do in the API module's exponential backoff before giving up
 
 
 """Trace-Related Parameters"""

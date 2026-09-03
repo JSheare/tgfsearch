@@ -2,9 +2,21 @@
 import json
 import pandas
 import requests
-from typing import Dict, List
+import time
+from typing import Dict, Generator, List
 
 import tgfsearch.config.parameters as params
+
+
+def _exponential_backoff() -> Generator[float, None, None]:
+    """Helper function implementing a generator that yields an exponentially increasing retry wait time up to a certain
+    maximum number of retries."""
+    attempt = 1
+    while attempt <= params.API_MAX_RETRIES:
+        yield params.API_BACKOFF_BASE_DELAY * 2**attempt
+        attempt += 1
+
+    yield 0.0
 
 
 def get_data_root(timeout: float = 60.0) -> str | None:
@@ -22,12 +34,24 @@ def get_data_root(timeout: float = 60.0) -> str | None:
 
     """
 
-    try:
-        response = requests.get(f'{params.API_URL}/data-root/', timeout=timeout)
-        response.raise_for_status()
-        return response.json()['data_root']
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
-        return None
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/data-root/', timeout=timeout)
+            response.raise_for_status()
+            return response.json()['data_root']
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 429:
+                if wait == 0:
+                    break
+
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_instruments(timeout: float = 60.0) -> List[str] | None:
@@ -46,12 +70,24 @@ def get_instruments(timeout: float = 60.0) -> List[str] | None:
 
     """
 
-    try:
-        response = requests.get(f'{params.API_URL}/instruments/', timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError):
-        return None
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/instruments/', timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 429:
+                if wait == 0:
+                    break
+
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_scintillators(timeout: float = 60.0) -> Dict[str, Dict[str, str | int]] | None:
@@ -69,14 +105,31 @@ def get_scintillators(timeout: float = 60.0) -> Dict[str, Dict[str, str | int]] 
         None otherwise. Each entry in the dictionary will be of the following form: {scint_name: {'scint_priority': x,
         'plot_color': x}}.
 
+    Raises
+    ------
+    requests.exceptions.HTTPError
+        If the API replied with an HTTP error.
+
     """
 
-    try:
-        response = requests.get(f'{params.API_URL}/scintillators/', timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError):
-        return None
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/scintillators/', timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 429:
+                if wait == 0:
+                    break
+
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_instrument_subdir(instrument: str, timeout: float = 60.0) -> str | None:
@@ -98,32 +151,36 @@ def get_instrument_subdir(instrument: str, timeout: float = 60.0) -> str | None:
     Raises
     ------
     ValueError
-        If the given instrument is invalid.
+        If the given instrument name is invalid.
 
     """
 
-    response = None
-    try:
-        response = requests.get(f'{params.API_URL}/instrument-subdir/', params={'instrument': instrument},
-                                timeout=timeout)
-        response.raise_for_status()
-        return response.json()['subdir']
-    except requests.exceptions.HTTPError:
-        if response is not None:
-            body = response.json()
-            if response.status_code == 400:
-                raise ValueError(body['detail'] if 'detail' in body else 'invalid input.')
-            elif response.status_code == 422:
-                if 'detail' in body and len(body['detail']) >= 0 and ('msg' in body['detail'][0] and 'input' in
-                                                                      body['detail'][0]):
-                    raise ValueError(f"input '{body['detail'][0]['input']}' is invalid. {body['detail'][0]['msg']}")
-                else:
-                    raise ValueError('invalid input.')
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/instrument-subdir/', params={'instrument': instrument},
+                                    timeout=timeout)
+            response.raise_for_status()
+            return response.json()['subdir']
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 422:
+                try:
+                    feedback = ex.response.json()['detail']
+                except (json.decoder.JSONDecodeError, KeyError):
+                    feedback = 'one or more inputs is invalid.'
 
-        return None
+                raise ValueError(feedback)
+            elif ex.response.status_code == 429:
+                if wait == 0:
+                    break
 
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
-        return None
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_instrument_config(instrument: str, date: str,
@@ -151,32 +208,36 @@ def get_instrument_config(instrument: str, date: str,
     Raises
     ------
     ValueError
-        If the given instrument or date are invalid.
+        If either the given instrument name or date are invalid.
 
     """
 
-    response = None
-    try:
-        response = requests.get(f'{params.API_URL}/instrument-config/', params={'instrument': instrument, 'date': date},
-                                timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError:
-        if response is not None:
-            body = response.json()
-            if response.status_code == 400:
-                raise ValueError(body['detail'] if 'detail' in body else 'invalid input.')
-            elif response.status_code == 422:
-                if 'detail' in body and len(body['detail']) >= 0 and ('msg' in body['detail'][0] and 'input' in
-                                                                      body['detail'][0]):
-                    raise ValueError(f"input '{body['detail'][0]['input']}' is invalid. {body['detail'][0]['msg']}")
-                else:
-                    raise ValueError('invalid input.')
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/instrument-config/',
+                                    params={'instrument': instrument, 'date': date}, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 422:
+                try:
+                    feedback = ex.response.json()['detail']
+                except (json.decoder.JSONDecodeError, KeyError):
+                    feedback = 'one or more inputs is invalid.'
 
-        return None
+                raise ValueError(feedback)
+            elif ex.response.status_code == 429:
+                if wait == 0:
+                    break
 
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError):
-        return None
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_instrument_deployment(instrument: str, date: str, timeout: float = 60.0) -> List[Dict[str, str | float]] | None:
@@ -203,36 +264,40 @@ def get_instrument_deployment(instrument: str, date: str, timeout: float = 60.0)
     Raises
     ------
     ValueError
-        If the given instrument or date are invalid.
+        If either the given instrument name or date are invalid.
 
     """
 
-    response = None
-    try:
-        response = requests.get(f'{params.API_URL}/instrument-deployment/',
-                                params={'instrument': instrument, 'date': date}, timeout=timeout)
-        response.raise_for_status()
-        deployments = response.json()
-        for i in range(0, len(deployments)):
-            deployments[i]['instrument'] = instrument
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/instrument-deployment/',
+                                    params={'instrument': instrument, 'date': date}, timeout=timeout)
+            response.raise_for_status()
+            deployments = response.json()
+            for i in range(0, len(deployments)):
+                deployments[i]['instrument'] = instrument
 
-        return deployments
-    except requests.exceptions.HTTPError:
-        if response is not None:
-            body = response.json()
-            if response.status_code == 400:
-                raise ValueError(body['detail'] if 'detail' in body else 'invalid input.')
-            elif response.status_code == 422:
-                if 'detail' in body and len(body['detail']) >= 0 and ('msg' in body['detail'][0] and 'input' in
-                                                                      body['detail'][0]):
-                    raise ValueError(f"input '{body['detail'][0]['input']}' is invalid. {body['detail'][0]['msg']}")
-                else:
-                    raise ValueError('invalid input.')
+            return deployments
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 422:
+                try:
+                    feedback = ex.response.json()['detail']
+                except (json.decoder.JSONDecodeError, KeyError):
+                    feedback = 'one or more inputs is invalid.'
 
-        return None
+                raise ValueError(feedback)
+            elif ex.response.status_code == 429:
+                if wait == 0:
+                    break
 
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError):
-        return None
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_weather(instrument: str, date: str, timeout: float = 60.0) -> List[Dict[str, float | str]] | None:
@@ -256,32 +321,36 @@ def get_weather(instrument: str, date: str, timeout: float = 60.0) -> List[Dict[
     Raises
     ------
     ValueError
-        If the given instrument or date are invalid.
+        If either the given instrument name or date are invalid.
 
     """
 
-    response = None
-    try:
-        response = requests.get(f'{params.API_URL}/weather/', params={'instrument': instrument, 'date': date},
-                                timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError:
-        if response is not None:
-            body = response.json()
-            if response.status_code == 400:
-                raise ValueError(body['detail'] if 'detail' in body else 'invalid input.')
-            elif response.status_code == 422:
-                if 'detail' in body and len(body['detail']) >= 0 and ('msg' in body['detail'][0] and 'input' in
-                                                                      body['detail'][0]):
-                    raise ValueError(f"input '{body['detail'][0]['input']}' is invalid. {body['detail'][0]['msg']}")
-                else:
-                    raise ValueError('invalid input.')
+    for wait in _exponential_backoff():
+        try:
+            response = requests.get(f'{params.API_URL}/weather/', params={'instrument': instrument, 'date': date},
+                                    timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as ex:
+            if ex.response.status_code == 422:
+                try:
+                    feedback = ex.response.json()['detail']
+                except (json.decoder.JSONDecodeError, KeyError):
+                    feedback = 'one or more inputs is invalid.'
 
-        return None
+                raise ValueError(feedback)
+            elif ex.response.status_code == 429:
+                if wait == 0:
+                    break
 
-    except (requests.exceptions.RequestException, json.decoder.JSONDecodeError):
-        return None
+                time.sleep(wait)
+            else:
+                return None
+
+        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, KeyError):
+            return None
+
+    return None
 
 
 def get_weather_table(instrument: str, date: str, timeout: float = 60.0) -> pandas.DataFrame | None:
@@ -306,8 +375,8 @@ def get_weather_table(instrument: str, date: str, timeout: float = 60.0) -> pand
 
     Raises
     ------
-    ValueError
-        If the passed instrument or date are invalid.
+    requests.exceptions.HTTPError
+        If the API replied with an HTTP error.
 
     """
 
