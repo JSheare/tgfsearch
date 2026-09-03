@@ -17,10 +17,11 @@
     
 <tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><table><tr><td class="multicolumn"><a href="json.html">json</a><br>
-</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+<a href="pandas.html">pandas</a><br>
 </td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
-</td><td class="multicolumn"><a href="requests.html">requests</a><br>
-</td></tr></table></td></tr></table><p>
+<a href="requests.html">requests</a><br>
+</td><td class="multicolumn"><a href="time.html">time</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
 <table class="section">
 <tr class="decor functions-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
@@ -60,7 +61,7 @@ Dict[str,&nbsp;Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;bool]]]&nbsp;|&nbsp
 Raises<br>
 ------<br>
 ValueError<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;given&nbsp;instrument&nbsp;name&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
  <dl><dt><a name="-get_instrument_deployment"><strong>get_instrument_deployment</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[List[Dict[str, str | float]]]</dt><dd><span class="code">Returns&nbsp;deployment&nbsp;information&nbsp;for&nbsp;a&nbsp;particular&nbsp;instrument.<br>
 &nbsp;<br>
 Parameters<br>
@@ -84,7 +85,7 @@ List[Dict[str,&nbsp;str&nbsp;|&nbsp;float]]&nbsp;|&nbsp;None<br>
 Raises<br>
 ------<br>
 ValueError<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;given&nbsp;instrument&nbsp;name&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
  <dl><dt><a name="-get_instrument_subdir"><strong>get_instrument_subdir</strong></a>(instrument: str, timeout: float = 60.0) -&gt; str | None</dt><dd><span class="code">Returns&nbsp;the&nbsp;data&nbsp;subdirectory&nbsp;for&nbsp;a&nbsp;particular&nbsp;instrument&nbsp;(within&nbsp;the&nbsp;data&nbsp;root)&nbsp;on&nbsp;the&nbsp;UCSC&nbsp;TGF&nbsp;group's&nbsp;main<br>
 data&nbsp;computer.<br>
 &nbsp;<br>
@@ -103,7 +104,7 @@ str&nbsp;|&nbsp;None<br>
 Raises<br>
 ------<br>
 ValueError<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;is&nbsp;invalid.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;name&nbsp;is&nbsp;invalid.</span></dd></dl>
  <dl><dt><a name="-get_instruments"><strong>get_instruments</strong></a>(timeout: float = 60.0) -&gt; Optional[List[str]]</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;registered&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;instruments.<br>
 &nbsp;<br>
 Parameters<br>
@@ -128,7 +129,12 @@ Returns<br>
 Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;int]]&nbsp;|&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;records&nbsp;for&nbsp;all&nbsp;registered&nbsp;scintillator&nbsp;types,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A<br>
 &nbsp;&nbsp;&nbsp;&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;entry&nbsp;in&nbsp;the&nbsp;dictionary&nbsp;will&nbsp;be&nbsp;of&nbsp;the&nbsp;following&nbsp;form:&nbsp;{scint_name:&nbsp;{'scint_priority':&nbsp;x,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;'plot_color':&nbsp;x}}.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;'plot_color':&nbsp;x}}.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+requests.exceptions.HTTPError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;API&nbsp;replied&nbsp;with&nbsp;an&nbsp;HTTP&nbsp;error.</span></dd></dl>
  <dl><dt><a name="-get_weather"><strong>get_weather</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[List[Dict[str, str | float]]]</dt><dd><span class="code">Returns&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
 &nbsp;<br>
 Parameters<br>
@@ -149,7 +155,7 @@ List[Dict[str,&nbsp;float&nbsp;|&nbsp;str]]&nbsp;|&nbsp;None<br>
 Raises<br>
 ------<br>
 ValueError<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;given&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;given&nbsp;instrument&nbsp;name&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
  <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; pandas.core.frame.DataFrame | None</dt><dd><span class="code">Returns&nbsp;a&nbsp;weather&nbsp;table&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
 &nbsp;<br>
 Parameters<br>
@@ -171,8 +177,8 @@ pandas.core.frame.DataFrame&nbsp;|&nbsp;None<br>
 &nbsp;<br>
 Raises<br>
 ------<br>
-ValueError<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;passed&nbsp;instrument&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
+requests.exceptions.HTTPError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;API&nbsp;replied&nbsp;with&nbsp;an&nbsp;HTTP&nbsp;error.</span></dd></dl>
 </td></tr></table><p>
 <table class="section">
 <tr class="decor data-decor heading-text">
@@ -180,5 +186,6 @@ ValueError<br>
     
 <tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><strong>Dict</strong> = typing.Dict<br>
+<strong>Generator</strong> = typing.Generator<br>
 <strong>List</strong> = typing.List</td></tr></table>
 </body></html>
