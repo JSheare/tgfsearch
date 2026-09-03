@@ -117,9 +117,9 @@ def main() -> None:
     short_hist_path = f'{export_path}/{unit}/histograms/{params.SHORT_BIN_SIZE}_sec_bins'
     long_hist_path = f'{export_path}/{unit}/histograms/{params.LONG_BIN_SIZE}_sec_bins'
 
-    requested_dates = helper_funcs.make_date_list(first_date, second_date)
-    for date_str in requested_dates:
-        path = f'{detector_path}/{date_str}'
+    requested_dates = helper_funcs.get_date_list(first_date, second_date)
+    for date in requested_dates:
+        path = f'{detector_path}/{date.strftime("%y%m%d")}'
 
         # Traces
         trace_list = glob.glob(f'{path}/traces/*xtr*.png')
@@ -161,7 +161,8 @@ def main() -> None:
             shutil.copyfile(plot, f'{short_event_path}/{s_filename}')
 
         # Histograms
-        short_hist_list = glob.glob(f'{path}/{date_str}_histogram_{params.SHORT_BIN_SIZE}_sec_bins_*_events.png')
+        short_hist_list = glob.glob(f'{path}/{date.strftime("%y%m%d")}_histogram_{params.SHORT_BIN_SIZE}_sec_bins_*_'
+                                    f'events.png')
         short_path_made = False
         for hist in short_hist_list:
             hist_filename = hist.split('/')[-1].split('\\')[-1]
@@ -172,7 +173,8 @@ def main() -> None:
 
                 shutil.copyfile(hist, f'{short_hist_path}/{hist_filename}')
 
-        long_hist_list = glob.glob(f'{path}/{date_str}_histogram_{params.LONG_BIN_SIZE}_sec_bins_*_events.png')
+        long_hist_list = glob.glob(f'{path}/{date.strftime("%y%m%d")}_histogram_{params.LONG_BIN_SIZE}_sec_bins_*_'
+                                   f'events.png')
         long_path_made = False
         for hist in long_hist_list:
             hist_filename = hist.split('/')[-1].split('\\')[-1]
