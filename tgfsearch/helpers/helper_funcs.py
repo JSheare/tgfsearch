@@ -6,6 +6,23 @@ import struct
 from typing import Any, List
 
 
+def is_valid_dir_path(path: str) -> bool:
+    """Returns true if the given path is a valid directory path."""
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            return True
+
+        return False
+
+    try:
+        os.mkdir(path)
+        os.rmdir(path)
+    except Exception:
+        return False
+
+    return True
+
+
 def make_path(path: str) -> None:
     """Checks to see if a directory path corresponding to the given string exists and, if not, creates it.
 
@@ -105,15 +122,15 @@ def date_to_yymmdd(date: dt.date) -> str:
     return date.strftime('%y%m%d')
 
 
-def get_date_list(date_str_1: str, date_str_2: str)-> List[dt.date]:
-    """Returns a list of datetime.date objects on the given date_range.
+def get_date_list(date1: dt.date, date2: dt.date)-> List[dt.date]:
+    """Returns a list of datetime.date objects on the given date range.
 
     Parameters
     ----------
-    date_str_1 : str
-        The beginning of the date range as a date string in YYMMDD format.
-    date_str_2 : str
-        The end (inclusive) of the date range as a date string in YYMMDD format.
+    date1 : str
+        The beginning of the date range.
+    date2 : str
+        The end (inclusive) of the date range.
 
     Returns
     -------
@@ -122,14 +139,12 @@ def get_date_list(date_str_1: str, date_str_2: str)-> List[dt.date]:
 
     """
 
-    start = yymmdd_to_date(date_str_1)
-    end = yymmdd_to_date(date_str_2)
     dates = []
-    while start != end:
-        dates.append(start)
-        start += dt.timedelta(days=1)
+    while date1 != date2:
+        dates.append(date1)
+        date1 += dt.timedelta(days=1)
 
-    dates.append(end)
+    dates.append(date2)
     return dates
 
 

@@ -2,12 +2,15 @@
 import datetime as dt
 import numpy as np
 import numpy.typing as npt
+import os
 import pandas as pd
 from typing import Dict, List, Tuple
 
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.api as api
+import tgfsearch.helpers.helper_funcs as helper_funcs
 from tgfsearch.detectors.detector import Detector
+from tgfsearch.detectors.adaptive_detector import AdaptiveDetector
 
 
 def file_timestamp(file: str) -> str:
@@ -17,6 +20,30 @@ def file_timestamp(file: str) -> str:
         return labels[-2]
 
     return labels[-1]
+
+
+def is_valid_detector(unit: str) -> bool:
+    """Returns True if the provided unit is a valid detector name and False otherwise."""
+    unit_upper = unit.upper()
+    if unit_upper == 'ADAPTIVE':
+        return True
+    else:
+        try:
+            identities = helper_funcs.read_json_file(
+                f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}'
+                f'/config/detector_config.json')['identities']
+
+            return unit_upper in identities
+        except SyntaxError:
+            raise SyntaxError('invalid syntax in detector config file.')
+
+
+def get_detector(unit: str, date_str: str) -> Detector | AdaptiveDetector:
+    """Returns a Detector (or AdaptiveDetector) instance based on the parameters provided."""
+    if unit.upper() == 'ADAPTIVE':
+        return AdaptiveDetector(date_str)
+    else:
+        return Detector(unit, date_str)
 
 
 def get_weather_conditions(event_time: float, instrument: str,

@@ -1,4 +1,5 @@
 """A module containing a utility that updates the tgfsearch package's built-in data."""
+import argparse
 import os
 from typing import Any, Dict
 
@@ -117,6 +118,10 @@ def build_search_config(piecewise_timeout: float = 60.0) -> Dict[str, Any] | Non
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(prog='tgfsearch-update', description="A tgfsearch package utility that updates "
+                                                                          "the package's configuration information.")
+    parser.parse_args()
+
     # Updating the config files
     config_loc = f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config'
     if os.access(config_loc, os.W_OK):

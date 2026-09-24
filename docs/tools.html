@@ -18,11 +18,13 @@
 <tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><table><tr><td class="multicolumn"><a href="tgfsearch.helpers.api.html">tgfsearch.helpers.api</a><br>
 <a href="datetime.html">datetime</a><br>
-</td><td class="multicolumn"><a href="numpy.html">numpy</a><br>
-<a href="numpy.typing.html">numpy.typing</a><br>
+</td><td class="multicolumn"><a href="tgfsearch.helpers.helper_funcs.html">tgfsearch.helpers.helper_funcs</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td class="multicolumn"><a href="numpy.typing.html">numpy.typing</a><br>
+<a href="os.html">os</a><br>
 </td><td class="multicolumn"><a href="tgfsearch.config.parameters.html">tgfsearch.config.parameters</a><br>
 <a href="pandas.html">pandas</a><br>
-</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+</td></tr></table></td></tr></table><p>
 <table class="section">
 <tr class="decor functions-decor heading-text">
 <td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
@@ -112,6 +114,7 @@ Returns<br>
 -------<br>
 list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;requested&nbsp;scintillator.</span></dd></dl>
+ <dl><dt><a name="-get_detector"><strong>get_detector</strong></a>(unit: str, date_str: str) -&gt; tgfsearch.detectors.detector.Detector | tgfsearch.detectors.adaptive_detector.AdaptiveDetector</dt><dd><span class="code">Returns&nbsp;a&nbsp;Detector&nbsp;(or&nbsp;AdaptiveDetector)&nbsp;instance&nbsp;based&nbsp;on&nbsp;the&nbsp;parameters&nbsp;provided.</span></dd></dl>
  <dl><dt><a name="-get_weather_conditions"><strong>get_weather_conditions</strong></a>(
     event_time: float,
     instrument: str,
@@ -143,6 +146,7 @@ Returns<br>
 -------<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting,&nbsp;False&nbsp;otherwise.</span></dd></dl>
+ <dl><dt><a name="-is_valid_detector"><strong>is_valid_detector</strong></a>(unit: str) -&gt; bool</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;unit&nbsp;is&nbsp;a&nbsp;valid&nbsp;detector&nbsp;name&nbsp;and&nbsp;False&nbsp;otherwise.</span></dd></dl>
  <dl><dt><a name="-separate_data"><strong>separate_data</strong></a>(
     data: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],
     count_scints: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.str_]],

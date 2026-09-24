@@ -2,7 +2,6 @@
 
 # Everything here should be available at the top level of the package upon importing
 from tgfsearch.tools.tools import *
-from tgfsearch.search import is_valid_detector, get_detector
 from tgfsearch.tools.data_reader import get_passtime, read_file, read_files, translate_flags
 from tgfsearch.detectors.adaptive_detector import AdaptiveDetector
 from tgfsearch.detectors.detector import Detector

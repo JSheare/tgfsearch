@@ -1,28 +1,31 @@
 """A module containing classes that implement a graphical user interface for running the TGF search program."""
 from __future__ import annotations
 
-import multiprocessing as multiprocessing
-import os as os
-import sys as sys
-import threading as threading
-import time as time
+import argparse
+import datetime as dt
+import multiprocessing
+import os
+import sys
+import threading
+import time
 import tkinter as tk
-import traceback as traceback
+import traceback
 from multiprocessing.connection import Connection
 from queue import Queue
 from tkinter import filedialog
 from tkinter import ttk
-from typing import Callable, List
+from typing import Callable, Dict, List
 
 # Adds parent directory to sys.path. Necessary to make the imports below work when running this file as a script
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from tgfsearch.search import search_check, program
+from tgfsearch.helpers.helper_funcs import date_to_yymmdd
+from tgfsearch.search import parse_search_args, program
 
 
-def search_program_wrapper(write: Connection, first_date: str, second_date: str, unit: str,
-                           mode_info: List[str]) -> None:
+def search_program_wrapper(write: Connection, first_date: dt.date, second_date: dt.date, unit: str, import_loc: str,
+                           export_loc: str, modes: Dict[str, bool]) -> None:
     """Redirects stdout and stderr from the search program. Meant to be run in a subprocess."""
     # For running the program with pythonw (no terminal)
     if sys.stdout is None:
@@ -35,7 +38,7 @@ def search_program_wrapper(write: Connection, first_date: str, second_date: str,
     old_stdout_write = sys.stdout.write
     sys.stdout.write = write.send
     try:
-        program(first_date, second_date, unit, mode_info)
+        program(first_date, second_date, unit, import_loc, export_loc, modes)
     except Exception as ex:
         print('Error: search program terminated with the following error or warning:\n')
         # Removing the top layer of the traceback (which is just this function) and printing the remainder
@@ -47,27 +50,32 @@ def search_program_wrapper(write: Connection, first_date: str, second_date: str,
 
 class SearchArgs:
     """A helper class that keeps track of the required arguments for a single search"""
-    def __init__(self, first_date: str, second_date: str, detector: str, mode_info: List[str]) -> None:
+    def __init__(self, first_date: dt.date, second_date: dt.date, detector: str, import_loc: str, export_loc: str,
+                 modes: Dict[str, bool]) -> None:
         self.first_date = first_date
         self.second_date = second_date
         self.detector = detector
-        self.mode_info = mode_info
+        self.import_loc = import_loc
+        self.export_loc = export_loc
+        self.modes = modes
 
     def __str__(self) -> str:
         search_string = f'{self.first_date} {self.second_date} {self.detector}'
-        for arg in self.mode_info:
-            search_string += f' {arg}'
+        for mode in self.modes:
+            if self.modes[mode]:
+                search_string += f' --{mode}'
 
         return search_string
 
     def __hash__(self) -> int:
-        return hash(tuple([self.first_date, self.second_date, self.detector] + self.mode_info))
+        return hash(tuple([self.first_date, self.second_date, self.detector] +
+                          sorted([mode for mode in self.modes if self.modes[mode]])))
 
     def __eq__(self, args2: SearchArgs) -> bool:
         return (self.first_date == args2.first_date and
                 self.second_date == args2.second_date and
                 self.detector == args2.detector and
-                self.mode_info == args2.mode_info)
+                self.modes == args2.modes)
 
 
 class SearchManager:
@@ -98,41 +106,42 @@ class SearchManager:
         """Returns the number of searches in the queue."""
         return self._search_queue.qsize()
 
-    def enqueue(self, first_date: str, second_date: str, detector: str, import_loc: str, export_loc: str) -> None:
+    def enqueue(self, first_date_str: str, second_date_str: str, detector: str, import_loc: str,
+                export_loc: str) -> None:
         """Enqueues a new search with the given parameters."""
         with self._lock:
-            if second_date == 'yymmdd' or second_date == '':
-                second_date = first_date
+            if second_date_str == 'yymmdd' or second_date_str == '':
+                second_date_str = first_date_str
+
+            arg_list = [first_date_str, second_date_str, detector]
+            if import_loc != '':
+                arg_list.append('--import-loc')
+                arg_list.append(import_loc)
+
+            if export_loc != '':
+                arg_list.append('--export-loc')
+                arg_list.append(export_loc)
+
+            for mode in self._mode_flags:
+                if self._mode_flags[mode]:
+                    arg_list.append(mode)
 
             # If the search command is valid, sets up a SearchArgs object to store it
-            check = search_check(first_date, second_date, detector)
-            if not(check[0]):
-                self._write(check[1])
-            else:
-                mode_info = []
-                for mode in self._mode_flags:
-                    if self._mode_flags[mode]:
-                        mode_info.append(mode)
+            try:
+                first_date, second_date, unit, import_loc, export_loc, modes = parse_search_args(arg_list)
+            except (argparse.ArgumentError, ValueError) as ex:
+                self._write(f'Error: {ex}')
+                return
 
-                mode_info.append('-c')
-                if import_loc == '':
-                    import_loc = 'none'
-
-                if export_loc == '':
-                    export_loc = 'none'
-
-                mode_info.append(import_loc)
-                mode_info.append(export_loc)
-                search_args = SearchArgs(first_date, second_date, detector.upper(), mode_info)
-                # Enqueues the search if it isn't a duplicate
-                if search_args not in self._search_set:
-                    # Reasoning behind 3: one for custom, the last two for custom import/export locations
-                    modes_string = f' [{", ".join(mode_info[0:-3]).replace("-", "")}]' if len(mode_info) > 3 else ''
-                    self._write(f'Enqueueing {first_date}'
-                          f'{" - " + second_date if first_date != second_date else ""}'
-                          f' on {detector.upper()}{modes_string}.')
-                    self._search_queue.put(search_args)
-                    self._search_set.add(search_args)
+            search_args = SearchArgs(first_date, second_date, unit, import_loc, export_loc, modes)
+            if search_args not in self._search_set:
+                modes = [mode for mode in search_args.modes if search_args.modes[mode]]
+                modes_string = f' {", ".join(modes)}' if len(modes) > 0 else ''
+                self._write(f'Enqueueing {first_date_str}'
+                            f'{" - " + second_date_str if first_date_str != second_date_str else ""}'
+                            f' on {detector.upper()}{modes_string}.')
+                self._search_queue.put(search_args)
+                self._search_set.add(search_args)
 
     def run(self) -> None:
         """Runs all the enqueued searches."""
@@ -143,22 +152,24 @@ class SearchManager:
                 self._search_set.remove(search_args)
 
                 # Outputs feedback about what date and modes were selected
-                feedback_string = f'\nRunning search for {search_args.first_date}'
+                feedback_string = f'\nRunning search for {date_to_yymmdd(search_args.first_date)}'
                 if search_args.first_date != search_args.second_date:
-                    feedback_string += f' - {search_args.second_date}'
+                    feedback_string += f' - {date_to_yymmdd(search_args.second_date)}'
 
                 feedback_string += f' on {search_args.detector}.'
                 self._write(feedback_string)
                 # Reasoning behind 3: one for custom, the last two for custom import/export locations
-                if len(search_args.mode_info) > 3:
+                modes = [mode for mode in search_args.modes if search_args.modes[mode]]
+                if len(modes) > 0:
                     self._write(f'This search will be run with the following modes: '
-                                 f'{", ".join(search_args.mode_info[0:-3]).replace("-", "")}.')
+                                f'{", ".join(modes)}.')
 
                 # Runs the search program in a separate process and manages it
                 read, write = multiprocessing.Pipe()
                 process = multiprocessing.Process(target=search_program_wrapper,
                                                   args=(write, search_args.first_date, search_args.second_date,
-                                                        search_args.detector, search_args.mode_info))
+                                                        search_args.detector, search_args.import_loc,
+                                                        search_args.export_loc, search_args.modes))
                 process.start()
                 while process.is_alive() and not self._stop_event.is_set():
                     # Writes the processes' piped stdout

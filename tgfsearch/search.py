@@ -1,4 +1,5 @@
 """A module containing classes and functions that implement the TGF and glow search program."""
+import argparse
 import datetime as dt
 import gc
 import glob
@@ -24,7 +25,6 @@ if __name__ == '__main__':
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
 import tgfsearch.tools.tools as tl
-from tgfsearch.detectors.adaptive_detector import AdaptiveDetector
 from tgfsearch.detectors.detector import Detector
 
 
@@ -90,80 +90,85 @@ class LongEvent:
         return self.__str__()
 
 
-def is_valid_detector(unit: str) -> bool:
-    """Returns True if the provided unit is a valid detector name and False otherwise."""
-    unit_upper = unit.upper()
-    if unit_upper == 'ADAPTIVE':
-        return True
-    else:
-        try:
-            identities = helper_funcs.read_json_file(
-                f'{os.path.dirname(os.path.realpath(__file__))}/config/detector_config.json')['identities']
+def parse_search_args(arg_list: List[str]) -> Tuple[dt.date, dt.date, str, str, str, Dict[str, bool]]:
+    """Parses, coerces, and validates a list of arguments and returns the necessary information for a search."""
+    parser = argparse.ArgumentParser(prog='tgfsearch',
+                                     description='A program that searches UCSC TGF Group data for TGFs and Glows.',
+                                     exit_on_error=False)
 
-            return unit_upper in identities
-        except SyntaxError:
-            raise SyntaxError('invalid syntax in detector config file.')
+    # Primary arguments
+    parser.add_argument('first_date', help='The first date in the range of dates to search')
+    parser.add_argument('second_date', help='The last date in the range of dates to search')
+    parser.add_argument('detector', help='The instrument whose data should be searched')
+    parser.add_argument('--import-loc', default='', help='The directory where data will be imported from')
+    parser.add_argument('--export-loc', default='', help='The directory where results will be exported')
 
+    # Mode flags
+    parser.add_argument('--aircraft', action='store_true',
+                        help='Run the search in aircraft mode')
+    parser.add_argument('--allscints', action='store_true',
+                        help='Run the short event search algorithm on each scintillator individually')
+    parser.add_argument('--clnenrg', action='store_true',
+                        help='Cut out all maximum energy counts and very low energy counts when the data is being read')
+    parser.add_argument('--onescint', action='store_true',
+                        help='Run the short event search algorithm on only the default scintillator')
+    parser.add_argument('--pickle', action='store_true',
+                        help='Serialize and save imported data for later use OR import previously-serialized data')
+    parser.add_argument('--sktrace', action='store_true',
+                        help='Skip the trace search algorithm')
+    parser.add_argument('--skshort', action='store_true',
+                        help='Skip the short event search algorithm')
+    parser.add_argument('--skglow', action='store_true',
+                        help='Skip the long event search algorithm')
 
-def search_check(first_date: str, second_date: str, unit: str) -> Tuple[bool, str]:
-    """Returns a tuple containing 1) a bool for the validity of the search, and 2) a string containing the reason."""
-    # Checks that both dates are digits in the proper format
-    if not first_date.isdigit() or not second_date.isdigit() \
-            or len(first_date) != 6 or len(second_date) != 6:
-        return False, 'Error: not a valid date. BOTH dates must be in yymmdd format.'
+    args = parser.parse_args(arg_list)
 
-    # Checks that both dates are sequential
-    if int(first_date) > int(second_date):
-        return False, 'Error: second date must be AFTER first date.'
+    # Coercing/validating input
+    try:
+        first_date = helper_funcs.yymmdd_to_date(args.first_date)
+        second_date = helper_funcs.yymmdd_to_date(args.second_date)
+    except ValueError:
+        raise ValueError('one or both dates is invalid. Both dates must be in YYMMDD format.')
 
-    # Checks that a valid detector has been entered
-    if unit == '':
-        return False, 'Error: no detector specified.'
-    elif not is_valid_detector(unit):
-        return False, 'Error: not a valid detector.'
+    if second_date > first_date:
+        raise ValueError('second date must be after first date.')
 
-    return True, ''
+    if args.detector == '':
+        raise ValueError('no detector specified.')
+    elif not tl.is_valid_detector(args.detector):
+        raise ValueError('not a valid detector.')
 
+    if args.import_loc != '' and args.import_loc == '/':
+        args.import_loc = ''
 
-def get_detector(unit: str, date_str: str) -> Detector | AdaptiveDetector:
-    """Returns a Detector (or AdaptiveDetector) instance based on the parameters provided."""
-    if unit.upper() == 'ADAPTIVE':
-        return AdaptiveDetector(date_str)
-    else:
-        return Detector(unit, date_str)
+    if args.import_loc != '':
+        if args.import_loc == '/':
+            args.import_loc = ''
+        elif not helper_funcs.is_valid_dir_path(args.import_loc):
+            raise ValueError('not a valid import path.')
 
+    if args.export_loc != '':
+        if args.export_loc == '/':
+            args.export_loc = ''
+        elif not helper_funcs.is_valid_dir_path(args.export_loc):
+            raise ValueError('not a valid export path.')
 
-def get_modes(mode_info: List[str]) -> Dict[str, bool]:
-    """Returns the modes dict used by many of the program's functions."""
+    # Setting up the modes dict
     modes = dict()
-    # Aircraft mode
-    modes['aircraft'] = True if '--aircraft' in mode_info else False
-
-    # All scintillators mode (all the scintillators will be checked individually by the short event search algorithm)
-    modes['allscints'] = True if '--allscints' in mode_info else False
-
-    # Clean energy mode (strip out max energy and low energies from the data)
-    modes['clnenrg'] = True if '--clnenrg' in mode_info else False
-
-    # Custom mode (use custom import and/or export directories
-    modes['custom'] = True if '-c' in mode_info else False
-
-    # Onescint mode (only the highest priority scintillator will be checked by the short event search algorithm)
-    modes['onescint'] = True if '--onescint' in mode_info else False
-
-    # Pickle mode
-    modes['pickle'] = True if '--pickle' in mode_info else False
-
-    # Modes for skipping over certain algorithms (mostly to speed up testing)
-    modes['sktrace'] = True if '--sktrace' in mode_info else False  # Skip trace filtering
-    modes['skshort'] = True if '--skshort' in mode_info else False  # Skip short event search
-    modes['skglow'] = True if '--skglow' in mode_info else False  # SKip long event search
+    modes['aircraft'] = args.aircraft
+    modes['allscints'] = args.allscints
+    modes['clnenrg'] = args.clnenrg
+    modes['onescint'] = args.onescint
+    modes['pickle'] = args.pickle
+    modes['sktrace'] = args.sktrace
+    modes['skshort'] = args.skshort
+    modes['skglow'] = args.skglow
 
     # Allscints includes onescint, so disable onescint if they're both present
     if modes['allscints'] and modes['onescint']:
         modes['onescint'] = False
 
-    return modes
+    return first_date, second_date, args.detector.upper(), args.import_loc, args.export_loc, modes
 
 
 def get_max_mem_frac() -> float:
@@ -1375,32 +1380,19 @@ def make_chunks(detector: Detector) -> List[Detector]:
 
 def main() -> None:
     """Gets necessary info from command line args and then runs the program."""
-    if len(sys.argv) >= 4:
-        first_date = str(sys.argv[1])
-        second_date = str(sys.argv[2])
-        unit = str(sys.argv[3])
-    else:
-        print('Error: please provide a first date, a second date, and a unit name.')
+    try:
+        first_date, second_date, unit, import_loc, export_loc, modes = parse_search_args(sys.argv[1:])
+    except (argparse.ArgumentError, ValueError) as ex:
+        print(f'Error: {ex}')
         exit()
 
-    # Makes sure that inputs are valid
-    check = search_check(first_date, second_date, unit)
-    if not check[0]:
-        print(check[1])
-        exit()
-
-    if len(sys.argv) > 4:
-        mode_info = sys.argv[4:]
-    else:
-        mode_info = []
-
-    program(first_date, second_date, unit, mode_info)
+    program(first_date, second_date, unit, import_loc, export_loc, modes)
 
 
-def program(first_date: str, second_date: str, unit: str, mode_info: List[str]):
+def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: str, export_loc: str,
+            modes: Dict[str, bool]) -> None:
     """Main program function."""
     matplotlib.use('Agg')  # Memory leaks without this
-    modes = get_modes(mode_info)
 
     # Looping through the dates
     for date in helper_funcs.get_date_list(first_date, second_date):
@@ -1410,19 +1402,11 @@ def program(first_date: str, second_date: str, unit: str, mode_info: List[str]):
 
         # Initializes the detector object
         print('Importing data...')
-        detector = get_detector(unit, date.strftime('%y%m%d'))
+        detector = tl.get_detector(unit, date.strftime('%y%m%d'))
+        # Setting up import/export directories if the user asks for custom ones
         try:
-            # Tells the detector to use custom import/export directories if the user asks for it
-            if modes['custom']:
-                index = mode_info.index('-c')
-                if index + 2 < len(mode_info):
-                    import_index = index + 1
-                    if mode_info[import_index] != 'none' and mode_info[import_index] != '/':
-                        detector.set_import_loc(mode_info[import_index])
-
-                    export_index = index + 2
-                    if mode_info[export_index] != 'none' and mode_info[export_index] != '/':
-                        detector.set_export_loc(mode_info[export_index])
+            if import_loc != '':
+                detector.set_import_loc(import_loc)
 
             if not detector.has_identity():
                 raise FileNotFoundError("couldn't infer identity.")
@@ -1431,6 +1415,9 @@ def program(first_date: str, second_date: str, unit: str, mode_info: List[str]):
             print('Error: no data files to infer detector identity from. Please provide the import location of '
                   'the data.')
             exit()
+
+        if export_loc != '':
+            detector.set_export_loc(export_loc)
 
         # Setting up logging for the day
 

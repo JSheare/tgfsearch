@@ -101,20 +101,19 @@ Here's an example for THOR5 data from July 1st, 2022 to August 31st, 2022:
 
     tgfsearch-cl 220701 220831 THOR5
 
+### **Custom Import and Export Locations:**
+If you want to use a custom import or export location, you can use the '--import-loc' flag for a custom import location
+and the '--export-loc' flag for a custom export location:
+
+    tgfsearch-cl yymmdd yymmdd detector --import-loc "import_directory"
+
+or
+
+    tgfsearch-cl yymmdd yymmdd detector --export-loc "export_directory"
+
 ### **Program Modes:**
 The program has several 'modes' that give it enhanced functionality. Here's a list of them all and how to use them:
 <br/>
-#### **'custom' Mode:**
-This mode can be used to specify custom data import and result export locations. To use it, enter a command
-of the following form:
-
-    tgfsearch-cl yymmdd yymmdd detector -c "import_directory" "export_directory"
-
-Note: if you don't wish to specify one of the locations, simply use the word 'none' instead. Here's an example
-where we omit a custom import location:
-
-    tgfsearch-cl yymmdd yymmdd detector -c none "export_directory"
-
 #### **'onescint' Mode:**
 This mode instructs the program to run the short event search algorithm on only the default scintillator (typically 
 the large plastic). This is generally a faster (though less thorough) search.
@@ -208,17 +207,16 @@ Images will be copied from the "Results" directory to a new directory called "co
 
 ### **Specifying Custom Result and Image Collection Locations:**
 By default, the image files are gathered from and collected in the present working directory, but if you'd like to use 
-custom locations you can use the '-c' flag:
+custom locations you can use the '--results-loc' and '--collection-loc' flags:
 
-    tgfsearch-collect yymmdd yymmdd detector -c "results_loc" "collection_loc"
+    tgfsearch-collect yymmdd yymmdd detector --results-loc "results_loc"
+
+or
+
+    tgfsearch-collect yymmdd detector --collection-loc "collection_loc"
 
 Where "results_loc" is the location of the "Results" directory and "collection_loc" is the location where the new 
 directory "collected_images" will be created.
-
-Note: if you don't wish to specify one of the locations, simply use the word 'none' instead. Here's an example
-where a custom collection location has been omitted:
-
-    tgfsearch-collect yymmdd yymmdd detector -c "results_loc" none
 
 
 ### **Including Only the Top-Ranked Short Events:**
