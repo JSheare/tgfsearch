@@ -46,7 +46,7 @@ def main() -> None:
         print('Error: one or both dates is invalid. Both dates must be in YYMMDD format.')
         exit()
 
-    if second_date > first_date:
+    if first_date > second_date:
         print('Error: second date must be after first date.')
         exit()
 

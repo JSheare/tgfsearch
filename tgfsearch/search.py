@@ -130,7 +130,7 @@ def parse_search_args(arg_list: List[str]) -> Tuple[dt.date, dt.date, str, str, 
     except ValueError:
         raise ValueError('one or both dates is invalid. Both dates must be in YYMMDD format.')
 
-    if second_date > first_date:
+    if first_date > second_date:
         raise ValueError('second date must be after first date.')
 
     if args.detector == '':
