@@ -25,7 +25,17 @@ if __name__ == '__main__':
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
 import tgfsearch.tools.tools as tl
-from tgfsearch.detectors.detector import Detector
+from tgfsearch.instruments.instrument import Instrument
+
+
+class SearchInfo:
+    """A helper class used to keep track of top-level information relevant to many aspects of a search."""
+    def __init__(self, date: dt.date, modes: Dict[str, bool], import_loc: str, export_loc: str):
+        self.date = date
+        self.first_sec = helper_funcs.get_first_sec(helper_funcs.date_to_yymmdd(date))
+        self.modes = modes
+        self.import_loc = import_loc
+        self.export_loc = export_loc
 
 
 class TraceInfo:
@@ -99,7 +109,7 @@ def parse_search_args(arg_list: List[str]) -> Tuple[dt.date, dt.date, str, str, 
     # Primary arguments
     parser.add_argument('first_date', help='The first date in the range of dates to search')
     parser.add_argument('second_date', help='The last date in the range of dates to search')
-    parser.add_argument('detector', help='The instrument whose data should be searched')
+    parser.add_argument('instrument', help='The instrument whose data should be searched')
     parser.add_argument('--import-loc', default='', help='The directory where data will be imported from')
     parser.add_argument('--export-loc', default='', help='The directory where results will be exported')
 
@@ -133,10 +143,10 @@ def parse_search_args(arg_list: List[str]) -> Tuple[dt.date, dt.date, str, str, 
     if first_date > second_date:
         raise ValueError('second date must be after first date.')
 
-    if args.detector == '':
-        raise ValueError('no detector specified.')
-    elif not tl.is_valid_detector(args.detector):
-        raise ValueError('not a valid detector.')
+    if args.instrument == '':
+        raise ValueError('no instrument specified.')
+    elif not tl.is_valid_instrument(args.instrument):
+        raise ValueError('not a valid instrument.')
 
     if args.import_loc != '' and args.import_loc == '/':
         args.import_loc = ''
@@ -168,7 +178,7 @@ def parse_search_args(arg_list: List[str]) -> Tuple[dt.date, dt.date, str, str, 
     if modes['allscints'] and modes['onescint']:
         modes['onescint'] = False
 
-    return first_date, second_date, args.detector.upper(), args.import_loc, args.export_loc, modes
+    return first_date, second_date, args.instrument.upper(), args.import_loc, args.export_loc, modes
 
 
 def get_max_mem_frac() -> float:
@@ -187,14 +197,14 @@ def print_logger(string: str) -> None:
     logging.getLogger(params.PACKAGE_NAME).info(string)
 
 
-def plot_traces(detector: Detector, scintillator: str, trace_names: List[str]) -> None:
+def plot_traces(search_info: SearchInfo, instrument: Instrument, scintillator: str, trace_names: List[str]) -> None:
     """Plots the given list of traces."""
     if trace_names:
         # Makes the trace plot path
-        plot_path = f'{detector.get_export_loc()}/traces'
+        plot_path = f'{search_info.export_loc}/traces'
         helper_funcs.make_path(plot_path)
         for trace_name in trace_names:
-            trace = detector.get_trace(scintillator, trace_name, deepcopy=False)
+            trace = instrument.get_trace(scintillator, trace_name, deepcopy=False)
             trace_single_buff = trace[trace['BufferNo'] == trace['BufferNo'].iloc[0]]
             plot_name = 'eRC' + trace_name.split('eRC')[-1][1:].split('.')[0]
 
@@ -213,16 +223,16 @@ def plot_traces(detector: Detector, scintillator: str, trace_names: List[str]) -
             gc.collect()
 
 
-def find_traces(detector: Detector) -> Dict[str, List[str]]:
-    """Searches through all traces in detector and returns lists of good ones for each scintillator. Also plots good
+def find_traces(search_info: SearchInfo, instrument: Instrument) -> Dict[str, List[str]]:
+    """Searches through all traces in instrument and returns lists of good ones for each scintillator. Also plots good
     traces."""
     # Filtering traces and setting up trace_dict, which keeps track of filtered trace names
     trace_dict = {}
-    for scintillator in detector:
-        trace_dict[scintillator] = tl.filter_traces(detector, scintillator)
+    for scintillator in instrument:
+        trace_dict[scintillator] = tl.filter_traces(instrument, scintillator)
 
         # Making plots for the traces that passed through the filter
-        plot_traces(detector, scintillator, trace_dict[scintillator])
+        plot_traces(search_info, instrument, scintillator, trace_dict[scintillator])
 
     return trace_dict
 
@@ -310,7 +320,7 @@ def get_clumpiness_and_hel(times: np.ndarray, energies: np.ndarray, start: int, 
     return clumpiness, high_energy_lead
 
 
-def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator: str, rollgap: int,
+def short_event_search(search_info: SearchInfo, instrument: Instrument, scintillator: str, rollgap: int,
                        times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64]) -> List[ShortEvent]:
     """Runs the short event search algorithm on the given data."""
     # Stats
@@ -357,7 +367,7 @@ def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator:
 
             # Checks that there are fewer counts in the higher energy channels than the low energy channels
             # High/low channel ratio is not checked for THOR or for events with < GOOD_LEN_THRESH counts
-            if (good_event and event_length >= params.GOOD_LEN_THRESH and detector.is_named('GODOT') and
+            if (good_event and event_length >= params.GOOD_LEN_THRESH and instrument.is_named('GODOT') and
                     get_hl_channel_ratio(energies, event_start, event_stop) > params.CHANNEL_RATIO):
                 good_event = False
                 removed_channel_ratio += 1
@@ -370,7 +380,7 @@ def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator:
                 removed_low_energy += 1
 
             # Eliminates events that are just successive cosmic ray showers
-            if (good_event and modes['aircraft'] and event_length < params.GOOD_LEN_THRESH and
+            if (good_event and search_info.modes['aircraft'] and event_length < params.GOOD_LEN_THRESH and
                     get_clumpiness_and_hel(times, energies, event_start, event_stop)[0] >= params.CLUMPINESS_THRESH):
                 good_event = False
                 removed_crs += 1
@@ -403,7 +413,7 @@ def short_event_search(detector: Detector, modes: Dict[str, bool], scintillator:
     return short_events
 
 
-def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dict[str, pd.DataFrame | None],
+def calculate_se_score(instrument: Instrument, event: ShortEvent, weather_cache: Dict[str, pd.DataFrame | None],
                        times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64]) -> None:
     """Calculates and records subscores and final score for the given short event."""
     # Calculating and recording the length subscore
@@ -417,8 +427,8 @@ def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dic
     event.hel_subscore = np.e ** -(5.3 * high_energy_lead)
 
     # Calculating the recording the weather subscore
-    if detector.deployment['weather_station'] != '':
-        event.weather_conditions = tl.get_weather_conditions(times[event.start] + detector.first_sec, detector.unit,
+    if instrument.deployment['weather_station'] != '':
+        event.weather_conditions = tl.get_weather_conditions(times[event.start] + instrument.first_sec, instrument.name,
                                                              weather_cache=weather_cache)
         match event.weather_conditions:
             case 'lightning or hail':
@@ -450,15 +460,15 @@ def calculate_se_score(detector: Detector, event: ShortEvent, weather_cache: Dic
                              params.WEATHER_WEIGHT * event.weather_subscore)
 
 
-def find_se_files(detector: Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+def find_se_files(instrument: Instrument, event: ShortEvent, times: npt.NDArray[np.float64],
                   count_scints: npt.NDArray[np.str_]) -> None:
     """Finds the list mode file(s) associated with a short event."""
     if count_scints is None:
         scintillators_left = 1
     else:
         scintillators_left = 0
-        for scintillator in detector:
-            if detector.data_present_in(scintillator):
+        for scintillator in instrument:
+            if instrument.data_present_in(scintillator):
                 scintillators_left += 1
 
     for i in range(event.start, event.stop):
@@ -469,7 +479,7 @@ def find_se_files(detector: Detector, event: ShortEvent, times: npt.NDArray[np.f
 
         if scintillator not in event.lm_files:
             event_time = times[i]
-            event.lm_files[scintillator] = detector.find_lm_file(scintillator, event_time)
+            event.lm_files[scintillator] = instrument.find_lm_file(scintillator, event_time)
             scintillators_left -= 1
 
         # Terminates the function early if we've already found files for the max number of scintillators possible
@@ -477,15 +487,15 @@ def find_se_files(detector: Detector, event: ShortEvent, times: npt.NDArray[np.f
             break
 
 
-def find_se_traces(detector: Detector, event: ShortEvent, trace_dict: Dict[str, List[str]],
+def find_se_traces(instrument: Instrument, event: ShortEvent, trace_dict: Dict[str, List[str]],
                    times: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
     """Finds the traces associated with a short event."""
     if count_scints is None:
         scintillators_left = 1
     else:
         scintillators_left = 0
-        for scintillator in detector:
-            if detector.data_present_in(scintillator):
+        for scintillator in instrument:
+            if instrument.data_present_in(scintillator):
                 scintillators_left += 1
 
     for i in range(event.start, event.stop):
@@ -496,13 +506,13 @@ def find_se_traces(detector: Detector, event: ShortEvent, trace_dict: Dict[str, 
 
         if scintillator not in event.traces:
             event_time = times[i]
-            event_lm_file_data = detector.get_lm_file(scintillator, detector.find_lm_file(scintillator, event_time))
-            potential_matches = detector.find_matching_traces(scintillator, event_time,
-                                                              trace_list=trace_dict[scintillator])
+            event_lm_file_data = instrument.get_lm_file(scintillator, instrument.find_lm_file(scintillator, event_time))
+            potential_matches = instrument.find_matching_traces(scintillator, event_time,
+                                                                trace_list=trace_dict[scintillator])
             trace_info = None
             best_diff = float('inf')
             for trace_name in potential_matches:
-                trace = detector.get_trace(scintillator, trace_name)
+                trace = instrument.get_trace(scintillator, trace_name)
                 buff_no = trace['BufferNo'].iloc[0]
                 # Aligning the trace and checking how close it is to the event
                 try:  # In case trace isn't in the same file after all
@@ -526,10 +536,11 @@ def find_se_traces(detector: Detector, event: ShortEvent, trace_dict: Dict[str, 
                 break
 
 
-def make_se_scatterplot(detector: Detector, prefs: Dict[str, Any], event: ShortEvent, times: npt.NDArray[np.float64],
-                        energies: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
+def make_se_scatterplot(search_info: SearchInfo, prefs: Dict[str, Any], event: ShortEvent,
+                        times: npt.NDArray[np.float64], energies: npt.NDArray[np.float64],
+                        count_scints: npt.NDArray[np.str_]) -> None:
     """Makes the scatter plot for a short event."""
-    timestamp = dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)
+    timestamp = dt.datetime.fromtimestamp(times[event.start] + search_info.first_sec, dt.UTC)
     # Subplot timescales
     timescales = [params.SE_TIMESCALE_ONE, params.SE_TIMESCALE_TWO, params.SE_TIMESCALE_THREE]
 
@@ -621,7 +632,7 @@ def make_se_scatterplot(detector: Detector, prefs: Dict[str, Any], event: ShortE
     # Note: with this code, if an event happens in that 200-300 seconds of the next day that are included in the
     # last file, the image will have the wrong date in its name (though the timestamp in the scatter plot title will
     # always be correct)
-    scatter_path = f'{detector.get_export_loc()}/scatter_plots'
+    scatter_path = f'{search_info.export_loc}/scatter_plots'
     helper_funcs.make_path(scatter_path)
     event_num_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.number)))
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
@@ -636,10 +647,10 @@ def make_se_scatterplot(detector: Detector, prefs: Dict[str, Any], event: ShortE
     gc.collect()
 
 
-def make_se_json(detector:Detector, event: ShortEvent, times: npt.NDArray[np.float64],
+def make_se_json(search_info: SearchInfo, event: ShortEvent, times: npt.NDArray[np.float64],
                  energies: npt.NDArray[np.float64], count_scints: npt.NDArray[np.str_]) -> None:
     """Makes the json file for a short event."""
-    event_path = f'{detector.get_export_loc()}/event_files/short_events/'
+    event_path = f'{search_info.export_loc}/event_files/short_events/'
     helper_funcs.make_path(event_path)
     event_dict = dict()
     event_dict['SecondsOfDay'] = times[event.start:event.stop].tolist()
@@ -654,14 +665,15 @@ def make_se_json(detector:Detector, event: ShortEvent, times: npt.NDArray[np.flo
     rank_padding = '0' * (len(str(params.MAX_PLOTS_PER_SCINT)) - len(str(event.rank)))
     helper_funcs.write_json_file(
         event_dict, f'{event_path}/'
-                    f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec).strftime("%y%m%d_%H%M%S")}_'
+                    f'{dt.datetime.fromtimestamp(times[event.start] + 
+                                                 search_info.first_sec).strftime("%y%m%d_%H%M%S")}_'
                     f'{event.scintillator}_'
                     f'event{event_num_padding}{event.number}_'
                     f'rank{rank_padding}{event.rank}_'
                     f'score{("%.3f" % event.total_score).replace(".", "p")}.json')
 
 
-def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Dict[str, List[str]],
+def find_short_events(search_info: SearchInfo, instrument: Instrument, trace_dict: Dict[str, List[str]],
                       weather_cache: Dict[str, pd.DataFrame], event_numbers: Dict[str, int] | None = None) -> None:
     """Runs the short event search."""
     logger = logging.getLogger(params.PACKAGE_NAME)
@@ -670,34 +682,35 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
     except SyntaxError:
         raise SyntaxError('invalid syntax in search config file.')
 
-    if modes['aircraft']:
+    if search_info.modes['aircraft']:
         rollgap = params.AIRCRAFT_ROLLGAP
-    elif modes['onescint'] or modes['allscints']:
+    elif search_info.modes['onescint'] or search_info.modes['allscints']:
         rollgap = params.INDIV_ROLLGAP
     else:
         # Calculating the rollgap adaptively based on the number of scintillators with data
         num_scintillators = 0
-        for scintillator in detector:
-            if detector.data_present_in(scintillator):
+        for scintillator in instrument:
+            if instrument.data_present_in(scintillator):
                 num_scintillators += 1
 
         rollgap = round(params.INDIV_ROLLGAP + num_scintillators * params.ROLLGAP_CONTRIBUTION)
 
-    for i in range(len(detector.scint_list)):
-        if not detector.data_present_in(detector.scint_list[i]) or (not modes['allscints'] and i > 0):
+    scint_list = [scintillator for scintillator in instrument]
+    for i in range(len(scint_list)):
+        if not instrument.data_present_in(scint_list[i]) or (not search_info.modes['allscints'] and i > 0):
             continue
 
         print_logger('')
         # Searching one scintillator at a time (onescint and allscints mode)
-        if modes['onescint'] or modes['allscints']:
-            scintillator = detector.scint_list[i]
-            if not detector.data_present_in(scintillator):
+        if search_info.modes['onescint'] or search_info.modes['allscints']:
+            scintillator = scint_list[i]
+            if not instrument.data_present_in(scintillator):
                 continue
 
-            print_logger(f'Searching eRC {detector.get_attribute(scintillator, "eRC")} '
+            print_logger(f'Searching eRC {instrument.get_scintillator_identity(scintillator)["erc"]} '
                             f'({scintillator})...')
-            times = detector.get_lm_data(scintillator, 'SecondsOfDay')
-            energies = detector.get_lm_data(scintillator, 'energies')
+            times = instrument.get_lm_data(scintillator, 'SecondsOfDay')
+            energies = instrument.get_lm_data(scintillator, 'energies')
             count_scints = None
 
         # Normal operating mode (combining all scintillator data)
@@ -706,10 +719,10 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
             print_logger('Searching combined scintillator data...')
             (times,
              energies,
-             count_scints) = tl.combine_data(detector)
+             count_scints) = tl.combine_data(instrument)
 
         # Finding potential events with the search algorithm in find_short_events
-        potential_events = short_event_search(detector, modes, scintillator, rollgap, times, energies)
+        potential_events = short_event_search(search_info, instrument, scintillator, rollgap, times, energies)
 
         if len(potential_events) > 0:
             print_logger('Generating scatter plots and event files...')
@@ -729,13 +742,13 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
             for j in range(len(potential_events)):
                 event = potential_events[j]
                 # Finds the file(s) that the event occurred in
-                find_se_files(detector, event, times, count_scints)
+                find_se_files(instrument, event, times, count_scints)
 
                 # Finds the trace(s) associated with the event and aligns them
-                find_se_traces(detector, event, trace_dict, times, count_scints)
+                find_se_traces(instrument, event, trace_dict, times, count_scints)
 
                 # Calculates and records the event's subscores and final score
-                calculate_se_score(detector, event, weather_cache, times, energies)
+                calculate_se_score(instrument, event, weather_cache, times, energies)
 
                 event.number = plots_already_made + j + 1
 
@@ -765,7 +778,7 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
                 # Logs the event
                 start_second = times[event.start] - params.SEC_PER_DAY if (
                         times[event.start] > params.SEC_PER_DAY) else times[event.start]
-                logger.info(f'{dt.datetime.fromtimestamp(times[event.start] + detector.first_sec, dt.UTC)} UTC '
+                logger.info(f'{dt.datetime.fromtimestamp(times[event.start] + instrument.first_sec, dt.UTC)} UTC '
                             f'({start_second} seconds of day) - weather: {event.weather_conditions}')
                 logger.info(f'    Score: {event.total_score}, Rank: {event.rank}, Subscores: '
                             f'[Length: {event.len_subscore}, '
@@ -774,10 +787,10 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
                             f'Weather: {event.weather_subscore}]\n')
 
                 # Makes the scatter plot for the event
-                make_se_scatterplot(detector, prefs, event, times, energies, count_scints)
+                make_se_scatterplot(search_info, prefs, event, times, energies, count_scints)
 
                 # Makes the json file for the event
-                make_se_json(detector, event, times, energies, count_scints)
+                make_se_json(search_info, event, times, energies, count_scints)
 
                 plots_made += 1
 
@@ -789,18 +802,18 @@ def find_short_events(detector: Detector, modes: Dict[str, bool], trace_dict: Di
     gc.collect()
 
 
-def get_le_scint_prefs(detector: Detector) -> List[str]:
-    """Returns the list of preferred scintillators to be used in the long event search depending on the Detector."""
+def get_le_scint_prefs(instrument: Instrument) -> List[str]:
+    """Returns the list of preferred scintillators to be used in the long event search depending on the Instrument."""
     try:
         all_preferences = helper_funcs.read_json_file(
             f'{os.path.dirname(os.path.realpath(__file__))}/config/search_config.json')['long_event_search_scints']
     except SyntaxError:
         raise SyntaxError('invalid syntax in search config file.')
 
-    if detector.unit in all_preferences:
+    if instrument.name in all_preferences:
         preferences = []
-        for scintillator in all_preferences[detector.unit]:
-            if detector.is_valid_scintillator(scintillator):
+        for scintillator in all_preferences[instrument.name]:
+            if instrument.is_valid_scintillator(scintillator):
                 preferences.append(scintillator)
 
         return preferences
@@ -808,14 +821,14 @@ def get_le_scint_prefs(detector: Detector) -> List[str]:
     return []
 
 
-def make_le_hist(detector: Detector, scintillator: str, hist_end: int,
+def make_le_hist(instrument: Instrument, scintillator: str, hist_end: int,
                  bin_size: int) -> Tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
     """Makes the histogram used in the long event search. If possible, cuts out counts below a certain energy."""
     # Rounding the edge down to the nearest full bin
     hist_end -= hist_end % bin_size
     bins_allday = np.arange(0, hist_end + bin_size, bin_size)
-    times = detector.get_lm_data(scintillator, 'SecondsOfDay')
-    energies = detector.get_lm_data(scintillator, 'energies')
+    times = instrument.get_lm_data(scintillator, 'SecondsOfDay')
+    energies = instrument.get_lm_data(scintillator, 'energies')
     if scintillator == 'NaI':
         times = np.delete(times, np.where(energies < params.NAI_CHANNEL_CUTOFF))
     else:
@@ -1033,7 +1046,7 @@ def aircraft_baseline(mue: npt.NDArray[np.float64], bins_allday: npt.NDArray[np.
     return mue
 
 
-def long_event_search(modes: Dict[str, bool], bins_allday: npt.NDArray[np.int64], hist_allday: npt.NDArray[np.int64],
+def long_event_search(search_info: SearchInfo, bins_allday: npt.NDArray[np.int64], hist_allday: npt.NDArray[np.int64],
                       mue: npt.NDArray[np.float64], sigma: npt.NDArray[np.float64]) -> List[LongEvent]:
     """Runs the long event search algorithm on the given data."""
     z_scores = (hist_allday - mue) / sigma
@@ -1064,7 +1077,7 @@ def long_event_search(modes: Dict[str, bool], bins_allday: npt.NDArray[np.int64]
         potential_glows.append(LongEvent(glow_start, glow_length, z_scores, bins_allday))
 
     # Rejects events whose bins don't have enough counts (aircraft only)
-    if modes['aircraft']:
+    if search_info.modes['aircraft']:
         a_potential_glows = []
         for glow in potential_glows:
             for i in range(glow.start, glow.stop):
@@ -1077,20 +1090,20 @@ def long_event_search(modes: Dict[str, bool], bins_allday: npt.NDArray[np.int64]
     return potential_glows
 
 
-def find_le_files(detector: Detector, le_scint_list: List[str], event: LongEvent) -> Dict[str, str]:
+def find_le_files(instrument: Instrument, le_scint_list: List[str], event: LongEvent) -> Dict[str, str]:
     """Finds the list mode file(s) associated with a long event."""
     lm_files = {}
     for scintillator in le_scint_list:
-        lm_files[scintillator] = detector.find_lm_file(scintillator, event.start_sec)
+        lm_files[scintillator] = instrument.find_lm_file(scintillator, event.start_sec)
 
     return lm_files
 
 
-def make_le_txt(detector: Detector, event: LongEvent, bin_size: int, event_num: int) -> None:
+def make_le_txt(search_info: SearchInfo, event: LongEvent, bin_size: int, event_num: int) -> None:
     """Makes the text file for a long event."""
-    event_path = f'{detector.get_export_loc()}/event_files/long_events/{bin_size}_sec_bins/'
+    event_path = f'{search_info.export_loc}/event_files/long_events/{bin_size}_sec_bins/'
     helper_funcs.make_path(event_path)
-    timestamp = dt.datetime.fromtimestamp(event.start_sec + detector.first_sec, dt.UTC)
+    timestamp = dt.datetime.fromtimestamp(event.start_sec + search_info.first_sec, dt.UTC)
     with open(f'{event_path}/'
               f'{timestamp.strftime("%y%m%d_%H%M%S")}_'
               f'event{event_num}_'
@@ -1104,7 +1117,7 @@ def make_le_txt(detector: Detector, event: LongEvent, bin_size: int, event_num: 
             print(f'{scintillator}: {event.lm_files[scintillator]}', file=event_file)
 
 
-def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: List[str],
+def find_long_events(search_info: SearchInfo, instrument: Instrument, le_scint_list: List[str],
                      bins_allday: npt.NDArray[np.int64], hist_allday: npt.NDArray[np.int64]) -> None:
     """Runs the long event search."""
     bin_size = int(bins_allday[1] - bins_allday[0])  # Bin size in seconds
@@ -1112,7 +1125,7 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
     mue_val = calculate_mue(hist_allday)
     mue = np.full(len(bins_allday), mue_val)
 
-    if modes['aircraft']:
+    if search_info.modes['aircraft']:
         mue = aircraft_baseline(mue, bins_allday, hist_allday, bin_size)
     else:
         mue = normal_baseline(mue, hist_allday, bin_size)
@@ -1120,12 +1133,12 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
     sigma = np.sqrt(mue)
 
     # Finding potential events with the search algorithm in find_long_events
-    potential_glows = long_event_search(modes, bins_allday, hist_allday, mue, sigma)
+    potential_glows = long_event_search(search_info, bins_allday, hist_allday, mue, sigma)
 
     # Making histogram
     figure = plt.figure(figsize=[20, 11.0])
-    figure.suptitle(f'{detector.unit} at {detector.deployment["location"]}, {detector.date.strftime("%Y-%m-%d)")}, '
-                    f'{bin_size} sec bins')
+    figure.suptitle(f'{instrument.name} at {instrument.deployment["location"]}, '
+                    f'{instrument.date.strftime("%Y-%m-%d)")}, {bin_size} sec bins')
 
     ax1 = figure.add_subplot(5, 1, 1)  # Daily histogram
     # The 4 top events in descending order (if they exist)
@@ -1163,15 +1176,15 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
             glow = potential_glows[i]
 
             # Getting the list mode files associated with the event
-            glow.lm_files = find_le_files(detector, le_scint_list, glow)
+            glow.lm_files = find_le_files(instrument, le_scint_list, glow)
 
             # Logging the event
-            logger.info(f'{dt.datetime.fromtimestamp(glow.start_sec + detector.first_sec, dt.UTC)} '
+            logger.info(f'{dt.datetime.fromtimestamp(glow.start_sec + instrument.first_sec, dt.UTC)} '
                         f'UTC ({glow.start_sec} seconds of day), {glow.stop_sec - glow.start_sec} seconds long, '
                         f'highest z-score: {glow.highest_score}, {bin_size} sec bins')
 
             # Making the event file
-            make_le_txt(detector, glow, bin_size, i + 1)
+            make_le_txt(search_info, glow, bin_size, i + 1)
 
         logger.info('')
 
@@ -1207,10 +1220,10 @@ def find_long_events(detector: Detector, modes: Dict[str, bool], le_scint_list: 
 
     # Saves the histogram(s):
     print_logger('Saving Histogram...')
-    hist_path = f'{detector.get_export_loc()}'
+    hist_path = search_info.export_loc
     helper_funcs.make_path(hist_path)
     figure.savefig(f'{hist_path}/'
-                   f'{detector.date.strftime("%y%m%d")}_'
+                   f'{helper_funcs.date_to_yymmdd(instrument.date)}_'
                    f'histogram_{bin_size}_sec_bins_'
                    f'{len(potential_glows)}_events.png',
                    dpi=500)
@@ -1228,10 +1241,10 @@ def map_traces(lm_filelist: List[str], trace_filelist: List[str]) -> Dict[str, L
     trace_index = 0
     trace_map = {}
     while lm_index < len(lm_filelist) - 1:
-        next_file_timestamp = int(tl.file_timestamp(lm_filelist[lm_index + 1]))
+        next_file_timestamp = int(helper_funcs.file_timestamp(lm_filelist[lm_index + 1]))
         file_traces = []
         while trace_index < len(trace_filelist):
-            trace_timestamp = int(tl.file_timestamp(trace_filelist[trace_index]))
+            trace_timestamp = int(helper_funcs.file_timestamp(trace_filelist[trace_index]))
             # If we start from the beginning of the trace filelist, every trace is either during or after the current
             # file.
             if trace_timestamp < next_file_timestamp:
@@ -1262,7 +1275,7 @@ def get_lm_sets(partition_points: List[int], lm_filelist: List[str]):
     while part_index < len(partition_points) - 1:
         if lm_index < len(lm_filelist):
             while lm_index < len(lm_filelist):
-                if int(tl.file_timestamp(lm_filelist[lm_index])) >= partition_points[part_index]:
+                if int(helper_funcs.file_timestamp(lm_filelist[lm_index])) >= partition_points[part_index]:
                     break
 
                 lm_index += 1
@@ -1276,22 +1289,22 @@ def get_lm_sets(partition_points: List[int], lm_filelist: List[str]):
     return set_indices
 
 
-def get_partition_memory(detector: Detector, scintillator: str, start: int, end: int, trace_map: Dict[str, List[str]],
-                         lm_filelist: List[str]) -> float:
+def get_partition_memory(instrument: Instrument, scintillator: str, start: int, end: int,
+                         trace_map: Dict[str, List[str]], lm_filelist: List[str]) -> float:
     """Returns the total memory in bytes of all files contained in the partition defined by points start and end."""
     memory = 0
     for i in range(start, end):
         file = lm_filelist[i]
-        memory += helper_funcs.file_size(file) * detector.lm_growth_factors[scintillator]
+        memory += helper_funcs.file_size(file) * params.LM_GROWTH_FACTORS[scintillator]
         if file in trace_map:
             for trace in trace_map[file]:
-                memory += helper_funcs.file_size(trace) * detector.trace_growth_factors[scintillator]
+                memory += helper_funcs.file_size(trace) * params.TRACE_GROWTH_FACTORS[scintillator]
 
     return memory
 
 
 def get_partition_files(start: int, end: int, trace_map: Dict[str, List[str]],
-                        lm_filelist: List[str]) -> Tuple[List[str], List[List[str]]]:
+                        lm_filelist: List[str]) -> Tuple[List[str], List[str]]:
     """Returns lists of all files contained in the partition defined by points start and end."""
     lm_partition = lm_filelist[start:end]
     trace_partition = []
@@ -1302,17 +1315,16 @@ def get_partition_files(start: int, end: int, trace_map: Dict[str, List[str]],
     return lm_partition, trace_partition
 
 
-def make_chunks(detector: Detector) -> List[Detector]:
-    """Partitions the day into self-contained detector objects depending on the memory limit in parameters."""
+def make_chunks(instrument: Instrument) -> List[Instrument]:
+    """Partitions the day into self-contained Instrument objects depending on the memory limit in parameters."""
     allowed_memory = psutil.virtual_memory()[1] * get_max_mem_frac()
 
-    lm_filelists = {scintillator: detector.get_attribute(scintillator, 'lm_filelist')
-                    for scintillator in detector}
+    lm_filelists = {scintillator: instrument.get_lm_filelist(scintillator) for scintillator in instrument}
 
     # Making the partition points using the filelist of the highest priority scintillator. Using the times of files
     # ensures that we're partitioning the day according to the data's approximate density
     best_scintillator = ''
-    for scintillator in detector:
+    for scintillator in instrument:
         if len(lm_filelists[scintillator]) > 0:
             best_scintillator = scintillator
             break
@@ -1320,16 +1332,16 @@ def make_chunks(detector: Detector) -> List[Detector]:
     if best_scintillator == '':
         raise FileNotFoundError('no data present.')
 
-    partition_points = ([0] + [int(tl.file_timestamp(file)) for file in lm_filelists[best_scintillator]] +
+    partition_points = ([0] + [int(helper_funcs.file_timestamp(file)) for file in lm_filelists[best_scintillator]] +
                         [240000])
 
     # For each scintillator, mapping traces to their corresponding list mode files and mapping sets of the list
     # mode files to all the partition points
     trace_maps = {}
     all_lm_sets = {}
-    for scintillator in detector:
+    for scintillator in instrument:
         lm_filelist = lm_filelists[scintillator]
-        trace_filelist = detector.get_attribute(scintillator, 'trace_filelist')
+        trace_filelist = instrument.get_trace_filelist(scintillator)
         trace_maps[scintillator] = map_traces(lm_filelist, trace_filelist)
         all_lm_sets[scintillator] = get_lm_sets(partition_points, lm_filelist)
 
@@ -1339,40 +1351,40 @@ def make_chunks(detector: Detector) -> List[Detector]:
     prev_point = 0
     for i in range(1, len(partition_points) - 1):
         new_memory = 0
-        for scintillator in detector:
+        for scintillator in instrument:
             trace_map = trace_maps[scintillator]
             lm_sets = all_lm_sets[scintillator]
             lm_filelist = lm_filelists[scintillator]
-            new_memory += get_partition_memory(detector, scintillator, lm_sets[i], lm_sets[i + 1],
+            new_memory += get_partition_memory(instrument, scintillator, lm_sets[i], lm_sets[i + 1],
                                                trace_map, lm_filelist)
 
         total_memory += new_memory
         # Making a new chunk if the amount of new memory added by partitioning at i + 1 takes us over the limit
         if total_memory > allowed_memory:
-            chunk = detector.get_clone()
-            for scintillator in detector:
+            chunk = instrument.get_clone()
+            for scintillator in instrument:
                 trace_map = trace_maps[scintillator]
                 lm_sets = all_lm_sets[scintillator]
                 lm_filelist = lm_filelists[scintillator]
                 lm_partition, trace_partition = get_partition_files(lm_sets[prev_point], lm_sets[i],
                                                                     trace_map, lm_filelist)
-                chunk.set_attribute(scintillator, 'lm_filelist', lm_partition, deepcopy=False)
-                chunk.set_attribute(scintillator, 'trace_filelist', trace_partition, deepcopy=False)
+                chunk.set_lm_filelist(scintillator, lm_partition, deepcopy=False)
+                chunk.set_trace_filelist(scintillator, trace_partition, deepcopy=False)
 
             chunk_list.append(chunk)
             total_memory = new_memory
             prev_point = i
 
     # Setting up the last chunk with whatever is left
-    chunk = detector.get_clone()
-    for scintillator in detector:
+    chunk = instrument.get_clone()
+    for scintillator in instrument:
         trace_map = trace_maps[scintillator]
         lm_sets = all_lm_sets[scintillator]
         lm_filelist = lm_filelists[scintillator]
         lm_partition, trace_partition = get_partition_files(lm_sets[prev_point], lm_sets[-1],
                                                             trace_map, lm_filelist)
-        chunk.set_attribute(scintillator, 'lm_filelist', lm_partition, deepcopy=False)
-        chunk.set_attribute(scintillator, 'trace_filelist', trace_partition, deepcopy=False)
+        chunk.set_lm_filelist(scintillator, lm_partition, deepcopy=False)
+        chunk.set_trace_filelist(scintillator, trace_partition, deepcopy=False)
 
     chunk_list.append(chunk)
     return chunk_list
@@ -1381,15 +1393,15 @@ def make_chunks(detector: Detector) -> List[Detector]:
 def main() -> None:
     """Gets necessary info from command line args and then runs the program."""
     try:
-        first_date, second_date, unit, import_loc, export_loc, modes = parse_search_args(sys.argv[1:])
+        first_date, second_date, instrument_name, import_loc, export_loc, modes = parse_search_args(sys.argv[1:])
     except (argparse.ArgumentError, ValueError) as ex:
         print(f'Error: {ex}')
         exit()
 
-    program(first_date, second_date, unit, import_loc, export_loc, modes)
+    program(first_date, second_date, instrument_name, import_loc, export_loc, modes)
 
 
-def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: str, export_loc: str,
+def program(first_date: dt.date, second_date: dt.date, instrument_name: str, import_loc: str, export_loc: str,
             modes: Dict[str, bool]) -> None:
     """Main program function."""
     matplotlib.use('Agg')  # Memory leaks without this
@@ -1400,24 +1412,32 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
         print('')
         print(f'{date.strftime('%Y-%m-%d')}:')
 
-        # Initializes the detector object
+        # Initializing the Instrument object
         print('Importing data...')
-        detector = tl.get_detector(unit, date.strftime('%y%m%d'))
+        instrument = tl.get_instrument(instrument_name, helper_funcs.date_to_yymmdd(date))
         # Setting up import/export directories if the user asks for custom ones
         try:
             if import_loc != '':
-                detector.set_import_loc(import_loc)
+                instrument.set_import_loc(import_loc)
 
-            if not detector.has_identity():
+            if not instrument.has_identity():
                 raise FileNotFoundError("couldn't infer identity.")
 
         except FileNotFoundError:
-            print('Error: no data files to infer detector identity from. Please provide the import location of '
+            print('Error: no data files to infer instrument identity from. Please provide the import location of '
                   'the data.')
             exit()
 
-        if export_loc != '':
-            detector.set_export_loc(export_loc)
+        # Initializing the SearchInfo object
+        if export_loc == '':
+            export_loc = f'Results/{instrument_name}/{helper_funcs.date_to_yymmdd(date)}'
+        else:
+            export_loc = export_loc.replace('\\', '/')
+            if export_loc[-1] == '/':
+                export_loc = export_loc[:-1]
+
+            export_loc = f'{export_loc}/Results/{instrument_name}/{helper_funcs.date_to_yymmdd(date)}'
+        search_info = SearchInfo(date, modes, import_loc, export_loc)
 
         # Setting up logging for the day
 
@@ -1429,13 +1449,13 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
             logger.removeHandler(handler)
 
         # Setting up a file handler for the current day
-        log_path = f'{detector.get_export_loc()}'
+        log_path = export_loc
         helper_funcs.make_path(log_path)
         handler = logging.FileHandler(f'{log_path}/log.txt')
         handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(handler)
 
-        logger.info(f'{unit} {date.strftime('%Y-%m-%d')}')
+        logger.info(f'{instrument_name} {date.strftime('%Y-%m-%d')}')
         logger.info('Modes:')
         for mode in modes:
             logger.info(f'{mode}: {modes[mode]}')
@@ -1446,16 +1466,16 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
         try:
             # Imports the data
             if modes['pickle']:  # In pickle mode: reads the pickle file, or exports one if it doesn't exist yet
-                pickle_paths = glob.glob(f'{detector.get_export_loc()}/detector.pickle')
+                pickle_paths = glob.glob(f'{export_loc}/instrument.pkl')
                 if len(pickle_paths) > 0:
-                    detector = Detector.unpickle(pickle_paths[0])
+                    instrument = Instrument.unpickle(pickle_paths[0])
                 else:
-                    detector.import_data(clean_energy=modes['clnenrg'], feedback=True,
-                                         mem_frac=get_max_mem_frac())
-                    detector.pickle('detector')
+                    instrument.import_data(clean_energy=modes['clnenrg'], feedback=True,
+                                           mem_frac=get_max_mem_frac())
+                    instrument.pickle('instrument', export_loc)
             else:
-                detector.import_data(clean_energy=modes['clnenrg'], feedback=True,
-                                     mem_frac=get_max_mem_frac())
+                instrument.import_data(clean_energy=modes['clnenrg'], feedback=True,
+                                       mem_frac=get_max_mem_frac())
 
             print('')
             print('Done.')
@@ -1464,13 +1484,13 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
             if not modes['sktrace']:
                 print_logger('\n')
                 print_logger('Filtering traces...')
-                trace_dict = find_traces(detector)
+                trace_dict = find_traces(search_info, instrument)
                 print_logger('Done.')
             else:
-                trace_dict = {scintillator: [] for scintillator in detector}
+                trace_dict = {scintillator: [] for scintillator in instrument}
 
             # Checks to see that necessary list mode data is present
-            if not detector:
+            if not instrument:
                 raise FileNotFoundError('no data present.')
 
             # Short event search
@@ -1480,7 +1500,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
 
                 # Calling the short event search algorithm
                 weather_cache = {}
-                find_short_events(detector, modes, trace_dict, weather_cache)
+                find_short_events(search_info, instrument, trace_dict, weather_cache)
 
                 print_logger('Done.')
 
@@ -1492,15 +1512,15 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                 # Choosing whether to use preferred scintillators for the long event search based on whether they have
                 # data present
                 le_scint_list = []
-                for scintillator in get_le_scint_prefs(detector):
-                    if detector.data_present_in(scintillator):
+                for scintillator in get_le_scint_prefs(instrument):
+                    if instrument.data_present_in(scintillator):
                         le_scint_list.append(scintillator)
 
                 # In the case that either 1) there aren't any preferred scintillators or 2) none of the preferred
                 # scintillators have data present, we instead use the highest priority scintillator with data present
                 if len(le_scint_list) == 0:
-                    for scintillator in detector:
-                        if detector.data_present_in(scintillator):
+                    for scintillator in instrument:
+                        if instrument.data_present_in(scintillator):
                             le_scint_list.append(scintillator)
                             break
 
@@ -1510,7 +1530,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                 # the earliest to ensure that the last bin has data from all scintillators
                 hist_end = float('inf')
                 for scintillator in le_scint_list:
-                    last_count = detector.get_attribute(scintillator, 'lm_file_ranges', deepcopy=False)[-1][1]
+                    last_count = instrument.get_lm_frame(scintillator, deepcopy=False)['SecondsOfDay'].iloc[-1]
                     if last_count < hist_end:
                         hist_end = last_count
 
@@ -1523,11 +1543,11 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     bins_allday = None
                     hist_allday = None
                     for scintillator in le_scint_list:
-                        bins_allday, scint_hist = make_le_hist(detector, scintillator, hist_end, bin_size)
+                        bins_allday, scint_hist = make_le_hist(instrument, scintillator, hist_end, bin_size)
                         hist_allday = scint_hist if hist_allday is None else hist_allday + scint_hist
 
                     # Calling the long event search algorithm
-                    find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday)
+                    find_long_events(search_info, instrument, le_scint_list, bins_allday, hist_allday)
 
                 print_logger('')
                 print_logger('Done.')
@@ -1554,21 +1574,21 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                 print_logger('Not enough memory. Entering low memory mode...')
 
                 # Clears leftover data (just to be sure)
-                detector.clear(clear_filelists=False)
+                instrument.clear(clear_filelists=False)
 
                 # Makes and sets up the chunks
-                chunk_list = make_chunks(detector)
+                chunk_list = make_chunks(instrument)
                 num_chunks = len(chunk_list)
 
-                chunk_scint_list = chunk_list[0].scint_list
+                chunk_scint_list = [scintillator for scintillator in chunk_list[0]]
 
                 # Imports data to each chunk and then pickles the chunks (and checks that data is actually present)
                 print('Importing data...')
 
                 chunk_num = 1
-                scint_data = {scintillator: False for scintillator in detector}
+                scint_data = {scintillator: False for scintillator in instrument}
                 # Passes reader objects between chunks
-                reader_dict = {scintillator: chunk_list[0].get_attribute(scintillator, 'reader', deepcopy=False)
+                reader_dict = {scintillator: chunk_list[0].get_reader(scintillator)
                                for scintillator in chunk_scint_list}
 
                 while chunk_list:
@@ -1576,7 +1596,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     # Updates chunk to include previous chunk's reader
                     if chunk_num != 1:
                         for scintillator in chunk:
-                            chunk.set_attribute(scintillator, 'reader', reader_dict[scintillator], deepcopy=False)
+                            chunk.set_reader(scintillator, reader_dict[scintillator])
 
                     print_logger('')
                     print_logger(f'Chunk {chunk_num} (of {num_chunks}):')
@@ -1587,13 +1607,8 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                         if not scint_data[scintillator]:
                             scint_data[scintillator] = chunk.data_present_in(scintillator)
 
-                    # Makes a full list of filetime extrema for long event search
-                    for scintillator in chunk:
-                        extrema = detector.get_attribute(scintillator, 'lm_file_ranges', deepcopy=False)
-                        extrema += chunk.get_attribute(scintillator, 'lm_file_ranges')
-
                     # Pickle chunk and add its path to the list
-                    chunk_path_list.append(chunk.pickle(f'chunk{chunk_num}'))
+                    chunk_path_list.append(chunk.pickle(f'chunk{chunk_num}', export_loc))
 
                     # Eliminates the chunk from active memory
                     del chunk
@@ -1609,8 +1624,8 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     print_logger('\n')
                     print_logger('Filtering traces...')
                     for chunk_path in chunk_path_list:
-                        chunk = Detector.unpickle(chunk_path)
-                        trace_dict = find_traces(chunk)
+                        chunk = Instrument.unpickle(chunk_path)
+                        trace_dict = find_traces(search_info, chunk)
                         chunk_trace_dicts[chunk_path] = trace_dict
                         del chunk
 
@@ -1638,10 +1653,10 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     weather_cache = {}
                     chunk_num = 1
                     for chunk_path in chunk_path_list:
-                        chunk = Detector.unpickle(chunk_path)
+                        chunk = Instrument.unpickle(chunk_path)
                         print_logger(f'Chunk {chunk_num} (of {num_chunks}):')
                         # Calling the short event search algorithm
-                        find_short_events(chunk, modes, chunk_trace_dicts[chunk_path], weather_cache,
+                        find_short_events(search_info, chunk, chunk_trace_dicts[chunk_path], weather_cache,
                                           event_numbers=event_numbers)
                         del chunk
                         chunk_num += 1
@@ -1655,7 +1670,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     le_scint_list = []
                     # Choosing whether to use preferred scintillators for the long event search based on whether they
                     # have data present in at least one chunk
-                    for scintillator in get_le_scint_prefs(detector):
+                    for scintillator in get_le_scint_prefs(instrument):
                         if scint_data[scintillator]:
                             le_scint_list.append(scintillator)
 
@@ -1672,7 +1687,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                     # the earliest to ensure that the last bin has data from all scintillators
                     hist_end = float('inf')
                     for scintillator in le_scint_list:
-                        last_count = detector.get_attribute(scintillator, 'lm_file_ranges', deepcopy=False)[-1][1]
+                        last_count = instrument.get_lm_frame(scintillator, deepcopy=False)['SecondsOfDay'].iloc[-1]
                         if last_count < hist_end:
                             hist_end = last_count
 
@@ -1685,7 +1700,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                         bins_allday = None
                         hist_allday = None
                         for chunk_path in chunk_path_list:
-                            chunk = Detector.unpickle(chunk_path)
+                            chunk = Instrument.unpickle(chunk_path)
                             for scintillator in le_scint_list:
                                 if chunk.data_present_in(scintillator):
                                     # Histograms the counts from each scintillator and combines them with the main one
@@ -1695,7 +1710,7 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                             del chunk
 
                         # Calling the long event search algorithm
-                        find_long_events(detector, modes, le_scint_list, bins_allday, hist_allday)
+                        find_long_events(search_info, instrument, le_scint_list, bins_allday, hist_allday)
 
                     print_logger('')
                     print_logger('Done.')
@@ -1716,11 +1731,11 @@ def program(first_date: dt.date, second_date: dt.date, unit: str, import_loc: st
                 print('See log for details.')
 
             finally:
-                # Deletes chunk .pickle files
+                # Deletes chunk .pkl files
                 for chunk_path in chunk_path_list:
                     os.remove(chunk_path)
 
-        del detector
+        del instrument
 
 
 if __name__ == '__main__':

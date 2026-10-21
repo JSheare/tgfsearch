@@ -1,5 +1,5 @@
-detector_config:
-JSON-formatted. The detector config details all the configuration information pertaining to instrument support for the package. It contains the following entries:
+instrument_config:
+JSON-formatted. The instrument config details all the configuration information pertaining to instrument support for the package. It contains the following entries:
 
 - default_data_root: the default main data directory.
 

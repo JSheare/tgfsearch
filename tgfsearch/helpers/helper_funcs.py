@@ -1,5 +1,6 @@
 """A module containing functions used by various parts of the package."""
 import datetime as dt
+import glob
 import json
 import os
 import struct
@@ -77,7 +78,7 @@ def read_json_file(file: str) -> Any:
 
     Returns
     -------
-    Any
+    any
         The json file's contents.
 
     """
@@ -96,7 +97,7 @@ def write_json_file(data: Any, file: str, pretty: bool = False) -> None:
 
         Parameters
         ----------
-        data : Any
+        data : any
             The JSON-serializable data to be written.
         file : str
             The name of the file to write the dictionary to as JSON.
@@ -134,7 +135,7 @@ def get_date_list(date1: dt.date, date2: dt.date)-> List[dt.date]:
 
     Returns
     -------
-    List[datetime.date]
+    list of datetime.date
         A list of datetime.date objects on the given date range.
 
     """
@@ -153,3 +154,24 @@ def get_first_sec(date_str: str) -> float:
     date = dt.datetime.strptime(date_str, '%y%m%d').astimezone(dt.UTC)
     return (date - dt.timedelta(hours=date.hour, minutes=date.minute, seconds=date.second,
                                 microseconds=date.microsecond)).timestamp()
+
+def file_timestamp(file: str) -> str:
+    """Returns the timestamp of the given data file as a string of the form hhmmss."""
+    labels = file.split('.')[0].split('_')
+    if len(labels) > 4:
+        return labels[-2]
+
+    return labels[-1]
+
+
+def get_serial_num_filelist(import_loc: str, erc: str, date: dt.date) -> List[str]:
+    """Returns a list of all data files with the given eRC serial number and date in the given import loc."""
+    file_name_form = f'eRC{erc}*_*_{date_to_yymmdd(date)}_*'
+    complete_filelist = glob.glob(f'{import_loc}/{file_name_form}')
+    if len(complete_filelist) == 0:  # Here in case the data files are grouped into daily folders
+        complete_filelist = glob.glob(f'{import_loc}/{date_to_yymmdd(date)}/{file_name_form}')
+
+    if len(complete_filelist) == 0:  # Here in case the data files are grouped into non-daily folders
+        complete_filelist = glob.glob(f'{import_loc}/*/{file_name_form}')
+
+    return complete_filelist

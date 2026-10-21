@@ -29,7 +29,7 @@ def get_data_root(timeout: float = 60.0) -> str | None:
 
     Returns
     -------
-    str | None
+    str or None
         The data root, if the API request was successful. A None otherwise.
 
     """
@@ -64,7 +64,7 @@ def get_instruments(timeout: float = 60.0) -> List[str] | None:
 
     Returns
     -------
-    List[str] | None
+    list of str or None
         A list containing the names of all registered UCSC TGF group instruments, if the API request was successful. A
         None otherwise
 
@@ -100,7 +100,7 @@ def get_scintillators(timeout: float = 60.0) -> Dict[str, Dict[str, str | int]] 
 
     Returns
     -------
-    Dict[str, Dict[str, str | int]] | None
+    dict of {str : dict of {str : str or int}} or None
         A dictionary containing records for all registered scintillator types, if the API request was successful. A
         None otherwise. Each entry in the dictionary will be of the following form: {scint_name: {'scint_priority': x,
         'plot_color': x}}.
@@ -145,7 +145,7 @@ def get_instrument_subdir(instrument: str, timeout: float = 60.0) -> str | None:
 
     Returns
     -------
-    str | None
+    str or None
         The instrument's data subdirectory, if the API request was successful. A None otherwise.
 
     Raises
@@ -199,7 +199,7 @@ def get_instrument_config(instrument: str, date: str,
 
     Returns
     -------
-    Dict[str, Dict[str, Dict[str, str | bool]]] | None
+    dict of {str : dict of {str : dict of {str : str or bool}}} or None
         A dictionary containing the given instrument's configuration on the given date, if the API request was
         successful. A None otherwise. The dictionary contains instrument configurations after particular dates, and each
         entry has the following form: {after_date_1: {scint_name_1: {'erc': x, 'format_name': x,
@@ -255,7 +255,7 @@ def get_instrument_deployment(instrument: str, date: str, timeout: float = 60.0)
 
     Returns
     -------
-    List[Dict[str, str | float]] | None
+    list of dict of {str : str or float} or None
         A list of dictionaries containing deployments that match the given instrument and date, if the API request was
         successful. A None otherwise. Each deployment dictionary is of the following form: {'instrument': instrument,
         'start_date': YYMMDD, 'end_date': YYMMDD, 'location': x, 'tz_identifier': x, 'weather_station': x,
@@ -314,7 +314,7 @@ def get_weather(instrument: str, date: str, timeout: float = 60.0) -> List[Dict[
 
     Returns
     -------
-    List[Dict[str, float | str]] | None
+    list of dict of {str : float or str} or None
         A list of weather measurements for the given instrument on the given date, if the API request was successful.
         A None otherwise. Each measurement has the following form {'measurement_time': x_epoch, 'condition': x}.
 
@@ -367,7 +367,7 @@ def get_weather_table(instrument: str, date: str, timeout: float = 60.0) -> pand
 
     Returns
     -------
-    pandas.core.frame.DataFrame | None
+    pandas.core.frame.DataFrame or None
         A pandas dataframe containing weather information for the passed instrument on the passed date, if the API
         request was successful. A None otherwise. The dataframe has two columns: 'measurement_time', which contains
         the time of the measurement in epoch, and 'condition', which contains the weather condition at the time of the

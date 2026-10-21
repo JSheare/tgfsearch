@@ -36,7 +36,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-str&nbsp;|&nbsp;None<br>
+str&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;data&nbsp;root,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.</span></dd></dl>
  <dl><dt><a name="-get_instrument_config"><strong>get_instrument_config</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; Optional[Dict[str, Dict[str, Dict[str, str | bool]]]]</dt><dd><span class="code">Returns&nbsp;the&nbsp;configuration&nbsp;information&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument.<br>
 &nbsp;<br>
@@ -52,7 +52,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-Dict[str,&nbsp;Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;bool]]]&nbsp;|&nbsp;None<br>
+dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;str&nbsp;or&nbsp;bool}}}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;the&nbsp;given&nbsp;instrument's&nbsp;configuration&nbsp;on&nbsp;the&nbsp;given&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was<br>
 &nbsp;&nbsp;&nbsp;&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;The&nbsp;dictionary&nbsp;contains&nbsp;instrument&nbsp;configurations&nbsp;after&nbsp;particular&nbsp;dates,&nbsp;and&nbsp;each<br>
 &nbsp;&nbsp;&nbsp;&nbsp;entry&nbsp;has&nbsp;the&nbsp;following&nbsp;form:&nbsp;{after_date_1:&nbsp;{scint_name_1:&nbsp;{'erc':&nbsp;x,&nbsp;'format_name':&nbsp;x,<br>
@@ -76,7 +76,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-List[Dict[str,&nbsp;str&nbsp;|&nbsp;float]]&nbsp;|&nbsp;None<br>
+list&nbsp;of&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;str&nbsp;or&nbsp;float}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;containing&nbsp;deployments&nbsp;that&nbsp;match&nbsp;the&nbsp;given&nbsp;instrument&nbsp;and&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was<br>
 &nbsp;&nbsp;&nbsp;&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;deployment&nbsp;dictionary&nbsp;is&nbsp;of&nbsp;the&nbsp;following&nbsp;form:&nbsp;{'instrument':&nbsp;instrument,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;'start_date':&nbsp;YYMMDD,&nbsp;'end_date':&nbsp;YYMMDD,&nbsp;'location':&nbsp;x,&nbsp;'tz_identifier':&nbsp;x,&nbsp;'weather_station':&nbsp;x,<br>
@@ -98,7 +98,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-str&nbsp;|&nbsp;None<br>
+str&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;instrument's&nbsp;data&nbsp;subdirectory,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.<br>
 &nbsp;<br>
 Raises<br>
@@ -114,7 +114,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-List[str]&nbsp;|&nbsp;None<br>
+list&nbsp;of&nbsp;str&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;all&nbsp;registered&nbsp;UCSC&nbsp;TGF&nbsp;group&nbsp;instruments,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A<br>
 &nbsp;&nbsp;&nbsp;&nbsp;None&nbsp;otherwise</span></dd></dl>
  <dl><dt><a name="-get_scintillators"><strong>get_scintillators</strong></a>(timeout: float = 60.0) -&gt; Optional[Dict[str, Dict[str, str | int]]]</dt><dd><span class="code">Returns&nbsp;a&nbsp;record&nbsp;of&nbsp;all&nbsp;registered&nbsp;scintillator&nbsp;types&nbsp;and&nbsp;their&nbsp;associated&nbsp;information.<br>
@@ -126,7 +126,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-Dict[str,&nbsp;Dict[str,&nbsp;str&nbsp;|&nbsp;int]]&nbsp;|&nbsp;None<br>
+dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;str&nbsp;or&nbsp;int}}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;records&nbsp;for&nbsp;all&nbsp;registered&nbsp;scintillator&nbsp;types,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A<br>
 &nbsp;&nbsp;&nbsp;&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;entry&nbsp;in&nbsp;the&nbsp;dictionary&nbsp;will&nbsp;be&nbsp;of&nbsp;the&nbsp;following&nbsp;form:&nbsp;{scint_name:&nbsp;{'scint_priority':&nbsp;x,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;'plot_color':&nbsp;x}}.<br>
@@ -148,7 +148,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-List[Dict[str,&nbsp;float&nbsp;|&nbsp;str]]&nbsp;|&nbsp;None<br>
+list&nbsp;of&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;float&nbsp;or&nbsp;str}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;of&nbsp;weather&nbsp;measurements&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date,&nbsp;if&nbsp;the&nbsp;API&nbsp;request&nbsp;was&nbsp;successful.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;Each&nbsp;measurement&nbsp;has&nbsp;the&nbsp;following&nbsp;form&nbsp;{'measurement_time':&nbsp;x_epoch,&nbsp;'condition':&nbsp;x}.<br>
 &nbsp;<br>
@@ -156,7 +156,7 @@ Raises<br>
 ------<br>
 ValueError<br>
 &nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;either&nbsp;the&nbsp;given&nbsp;instrument&nbsp;name&nbsp;or&nbsp;date&nbsp;are&nbsp;invalid.</span></dd></dl>
- <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; pandas.core.frame.DataFrame | None</dt><dd><span class="code">Returns&nbsp;a&nbsp;weather&nbsp;table&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
+ <dl><dt><a name="-get_weather_table"><strong>get_weather_table</strong></a>(instrument: str, date: str, timeout: float = 60.0) -&gt; pandas.DataFrame | None</dt><dd><span class="code">Returns&nbsp;a&nbsp;weather&nbsp;table&nbsp;for&nbsp;the&nbsp;given&nbsp;instrument&nbsp;on&nbsp;the&nbsp;given&nbsp;date.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -169,7 +169,7 @@ timeout&nbsp;:&nbsp;float<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-pandas.core.frame.DataFrame&nbsp;|&nbsp;None<br>
+pandas.core.frame.DataFrame&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;weather&nbsp;information&nbsp;for&nbsp;the&nbsp;passed&nbsp;instrument&nbsp;on&nbsp;the&nbsp;passed&nbsp;date,&nbsp;if&nbsp;the&nbsp;API<br>
 &nbsp;&nbsp;&nbsp;&nbsp;request&nbsp;was&nbsp;successful.&nbsp;A&nbsp;None&nbsp;otherwise.&nbsp;The&nbsp;dataframe&nbsp;has&nbsp;two&nbsp;columns:&nbsp;'measurement_time',&nbsp;which&nbsp;contains<br>
 &nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;time&nbsp;of&nbsp;the&nbsp;measurement&nbsp;in&nbsp;epoch,&nbsp;and&nbsp;'condition',&nbsp;which&nbsp;contains&nbsp;the&nbsp;weather&nbsp;condition&nbsp;at&nbsp;the&nbsp;time&nbsp;of&nbsp;the<br>

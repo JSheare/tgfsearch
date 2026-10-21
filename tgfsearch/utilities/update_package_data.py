@@ -7,9 +7,9 @@ import tgfsearch.helpers.api as api
 from tgfsearch.helpers.helper_funcs import write_json_file
 
 
-def build_detector_config(piecewise_timeout: float = 60.0) -> Dict[str, Any] | None:
+def build_instrument_config(piecewise_timeout: float = 60.0) -> Dict[str, Any] | None:
     """
-    Returns an up-to-date detector config built with information from the API.
+    Returns an up-to-date instrument config built with information from the API.
 
     Parameters
     ----------
@@ -19,7 +19,7 @@ def build_detector_config(piecewise_timeout: float = 60.0) -> Dict[str, Any] | N
     Returns
     -------
     Dict[str, Any] | None
-        An up-to-date detector config, if all information was successfully retrieved. A None otherwise. See config
+        An up-to-date instrument config, if all information was successfully retrieved. A None otherwise. See config
         file docs for details on its structure.
 
     """
@@ -125,11 +125,11 @@ def main() -> None:
     # Updating the config files
     config_loc = f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/config'
     if os.access(config_loc, os.W_OK):
-        detector_config = build_detector_config()
-        if detector_config is not None:
-            write_json_file(detector_config, f'{config_loc}/detector_config.json', pretty=True)
+        instrument_config = build_instrument_config()
+        if instrument_config is not None:
+            write_json_file(instrument_config, f'{config_loc}/instrument_config.json', pretty=True)
         else:
-            print('Failed to update detector config. No/improper response from API.')
+            print('Failed to update instrument config. No/improper response from API.')
 
         search_config = build_search_config()
         if search_config is not None:

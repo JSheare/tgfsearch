@@ -12,6 +12,15 @@ API_URL = 'https://thrud.pbsci.ucsc.edu'  # The url of the UCSC TGF group API
 API_BACKOFF_BASE_DELAY = 0.1  # The number of seconds to use as the base delay in the API module's exponential backoff
 API_MAX_RETRIES = 8  # The number of retries to do in the API module's exponential backoff before giving up
 
+# A mapping of bytes of memory to bytes of file growth factors for each list mode/trace mode data file type.
+# These need to be updated whenever a new file format is added. To do so, use the utility found in mem_test.py,
+# located at the top level of the package repo. It accepts commands of the usual form: yymmdd yymmdd instrument.
+# Also, if you want to disinclude certain scintillators, you can do so with the "-i" flag:
+# yymmdd yymmdd instrument -i scint1 scint2 ...
+LM_GROWTH_FACTORS = {'godot_lm': 1.2606058060274177, 'ssv_nrl_lm': 0.8465044061959315,
+                     'thor_lm': 0.7123617288020386, 'json_nrl_lm': 0.6251838546767902}
+TRACE_GROWTH_FACTORS = {'godot_lm': 1.0, 'ssv_nrl_lm': 1.0, 'thor_lm': 1.0, 'json_nrl_lm': 1.0}
+
 
 """Trace-Related Parameters"""
 LARGE_TRIGSPOT = 4092  # The usual trigspot for the large buffer

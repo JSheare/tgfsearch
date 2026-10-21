@@ -27,7 +27,7 @@ def make_index(docs_path: str) -> None:
         '\t<br>\n'
         '\t<a href="data_reader.html"> &#x2022; Data Reader Documentation</a>\n'
         '\t<br>\n'
-        '\t<a href="detector.html"> &#x2022; Detector Documentation</a>\n'
+        '\t<a href="instrument.html"> &#x2022; Instrument Documentation</a>\n'
         '\t<br>\n'
         '\t<a href="reader.html"> &#x2022; Reader Wrapper Documentation</a>\n'
         '\t<br>\n'
@@ -53,8 +53,8 @@ def main() -> None:
     # Docs for tools
     make_doc('tools', os.getcwd() + '/tgfsearch/tools', docs_path)
 
-    # Docs for detector
-    make_doc('detector', os.getcwd() + '/tgfsearch/detectors', docs_path)
+    # Docs for instrument
+    make_doc('instrument', os.getcwd() + '/tgfsearch/instruments', docs_path)
 
     # Docs for reader helper
     make_doc('reader', os.getcwd() + '/tgfsearch/tools', docs_path)

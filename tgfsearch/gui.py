@@ -24,8 +24,8 @@ from tgfsearch.helpers.helper_funcs import date_to_yymmdd
 from tgfsearch.search import parse_search_args, program
 
 
-def search_program_wrapper(write: Connection, first_date: dt.date, second_date: dt.date, unit: str, import_loc: str,
-                           export_loc: str, modes: Dict[str, bool]) -> None:
+def search_program_wrapper(write: Connection, first_date: dt.date, second_date: dt.date, instrument_name: str,
+                           import_loc: str, export_loc: str, modes: Dict[str, bool]) -> None:
     """Redirects stdout and stderr from the search program. Meant to be run in a subprocess."""
     # For running the program with pythonw (no terminal)
     if sys.stdout is None:
@@ -38,7 +38,7 @@ def search_program_wrapper(write: Connection, first_date: dt.date, second_date: 
     old_stdout_write = sys.stdout.write
     sys.stdout.write = write.send
     try:
-        program(first_date, second_date, unit, import_loc, export_loc, modes)
+        program(first_date, second_date, instrument_name, import_loc, export_loc, modes)
     except Exception as ex:
         print('Error: search program terminated with the following error or warning:\n')
         # Removing the top layer of the traceback (which is just this function) and printing the remainder
@@ -50,17 +50,17 @@ def search_program_wrapper(write: Connection, first_date: dt.date, second_date: 
 
 class SearchArgs:
     """A helper class that keeps track of the required arguments for a single search"""
-    def __init__(self, first_date: dt.date, second_date: dt.date, detector: str, import_loc: str, export_loc: str,
-                 modes: Dict[str, bool]) -> None:
+    def __init__(self, first_date: dt.date, second_date: dt.date, instrument_name: str, import_loc: str,
+                 export_loc: str, modes: Dict[str, bool]) -> None:
         self.first_date = first_date
         self.second_date = second_date
-        self.detector = detector
+        self.instrument_name = instrument_name
         self.import_loc = import_loc
         self.export_loc = export_loc
         self.modes = modes
 
     def __str__(self) -> str:
-        search_string = f'{self.first_date} {self.second_date} {self.detector}'
+        search_string = f'{self.first_date} {self.second_date} {self.instrument_name}'
         for mode in self.modes:
             if self.modes[mode]:
                 search_string += f' --{mode}'
@@ -68,13 +68,13 @@ class SearchArgs:
         return search_string
 
     def __hash__(self) -> int:
-        return hash(tuple([self.first_date, self.second_date, self.detector] +
+        return hash(tuple([self.first_date, self.second_date, self.instrument_name] +
                           sorted([mode for mode in self.modes if self.modes[mode]])))
 
     def __eq__(self, args2: SearchArgs) -> bool:
         return (self.first_date == args2.first_date and
                 self.second_date == args2.second_date and
-                self.detector == args2.detector and
+                self.instrument_name == args2.instrument_name and
                 self.modes == args2.modes)
 
 
@@ -106,14 +106,14 @@ class SearchManager:
         """Returns the number of searches in the queue."""
         return self._search_queue.qsize()
 
-    def enqueue(self, first_date_str: str, second_date_str: str, detector: str, import_loc: str,
+    def enqueue(self, first_date_str: str, second_date_str: str, instrument_name: str, import_loc: str,
                 export_loc: str) -> None:
         """Enqueues a new search with the given parameters."""
         with self._lock:
             if second_date_str == 'yymmdd' or second_date_str == '':
                 second_date_str = first_date_str
 
-            arg_list = [first_date_str, second_date_str, detector]
+            arg_list = [first_date_str, second_date_str, instrument_name]
             if import_loc != '':
                 arg_list.append('--import-loc')
                 arg_list.append(import_loc)
@@ -128,18 +128,18 @@ class SearchManager:
 
             # If the search command is valid, sets up a SearchArgs object to store it
             try:
-                first_date, second_date, unit, import_loc, export_loc, modes = parse_search_args(arg_list)
+                first_date, second_date, instrument_name, import_loc, export_loc, modes = parse_search_args(arg_list)
             except (argparse.ArgumentError, ValueError) as ex:
                 self._write(f'Error: {ex}')
                 return
 
-            search_args = SearchArgs(first_date, second_date, unit, import_loc, export_loc, modes)
+            search_args = SearchArgs(first_date, second_date, instrument_name, import_loc, export_loc, modes)
             if search_args not in self._search_set:
                 modes = [mode for mode in search_args.modes if search_args.modes[mode]]
-                modes_string = f' {", ".join(modes)}' if len(modes) > 0 else ''
+                modes_string = f'[{", ".join(modes)}]' if len(modes) > 0 else ''
                 self._write(f'Enqueueing {first_date_str}'
                             f'{" - " + second_date_str if first_date_str != second_date_str else ""}'
-                            f' on {detector.upper()}{modes_string}.')
+                            f' on {instrument_name} {modes_string}.')
                 self._search_queue.put(search_args)
                 self._search_set.add(search_args)
 
@@ -156,7 +156,7 @@ class SearchManager:
                 if search_args.first_date != search_args.second_date:
                     feedback_string += f' - {date_to_yymmdd(search_args.second_date)}'
 
-                feedback_string += f' on {search_args.detector}.'
+                feedback_string += f' on {search_args.instrument_name}.'
                 self._write(feedback_string)
                 # Reasoning behind 3: one for custom, the last two for custom import/export locations
                 modes = [mode for mode in search_args.modes if search_args.modes[mode]]
@@ -168,7 +168,7 @@ class SearchManager:
                 read, write = multiprocessing.Pipe()
                 process = multiprocessing.Process(target=search_program_wrapper,
                                                   args=(write, search_args.first_date, search_args.second_date,
-                                                        search_args.detector, search_args.import_loc,
+                                                        search_args.instrument_name, search_args.import_loc,
                                                         search_args.export_loc, search_args.modes))
                 process.start()
                 while process.is_alive() and not self._stop_event.is_set():
@@ -228,7 +228,7 @@ class SearchWindow(tk.Frame):
         self._input_frame = tk.Frame(self)
         self._input_frame.grid(row=2, column=1, rowspan=2)
 
-        # Adding and placing the date/detector labels and entry boxes to the frame
+        # Adding and placing the date/instrument labels and entry boxes to the frame
         self._date_one_label = tk.Label(self._input_frame, text='Date One:')
         self._date_one_label.grid(row=0, column=0, pady=(5, 0))
 
@@ -247,12 +247,12 @@ class SearchWindow(tk.Frame):
         self._date_two_entry.grid(row=3, column=0, pady=(5, 0))
         self._toggleable_widgets.append(self._date_two_entry)
 
-        self._detector_label = tk.Label(self._input_frame, text='Detector:')
-        self._detector_label.grid(row=4, column=0, pady=(5, 0))
+        self._instrument_label = tk.Label(self._input_frame, text='Instrument:')
+        self._instrument_label.grid(row=4, column=0, pady=(5, 0))
 
-        self._detector_entry = tk.Entry(self._input_frame, width=15, borderwidth=5)
-        self._detector_entry.grid(row=5, column=0, pady=(5, 0))
-        self._toggleable_widgets.append(self._detector_entry)
+        self._instrument_entry = tk.Entry(self._input_frame, width=15, borderwidth=5)
+        self._instrument_entry.grid(row=5, column=0, pady=(5, 0))
+        self._toggleable_widgets.append(self._instrument_entry)
 
         # Setting up the search control frame
         self._search_frame = tk.Frame(self)
@@ -466,7 +466,8 @@ class SearchWindow(tk.Frame):
         """Enqueues a new search based on the current contents of all the text entry boxes."""
         if self._search_thread is None or not self._search_thread.is_alive():
             self._search_manager.enqueue(self._date_one_entry.get(), self._date_two_entry.get(),
-                                         self._detector_entry.get(), self._import_entry.get(), self._export_entry.get())
+                                         self._instrument_entry.get(), self._import_entry.get(),
+                                         self._export_entry.get())
 
     def _start(self) -> None:
         """Starts running the enqueued searches."""
@@ -502,7 +503,7 @@ class SearchWindow(tk.Frame):
         self._date_one_entry.insert(0, 'yymmdd')
         self._date_two_entry.delete(0, 'end')
         self._date_two_entry.insert(0, 'yymmdd')
-        self._detector_entry.delete(0, 'end')
+        self._instrument_entry.delete(0, 'end')
 
         self._import_entry.delete(0, 'end')
         self._export_entry.delete(0, 'end')

@@ -44,7 +44,7 @@ A&nbsp;class&nbsp;that&nbsp;wraps&nbsp;and&nbsp;serves&nbsp;as&nbsp;an&nbsp;easy
 &nbsp;<br>
 Attributes<br>
 ----------<br>
-passtime&nbsp;:&nbsp;dict<br>
+passtime&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;any}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;containing&nbsp;information&nbsp;needed&nbsp;to&nbsp;import&nbsp;the&nbsp;subsequent&nbsp;list&nbsp;mode&nbsp;files&nbsp;properly&nbsp;(if&nbsp;applicable).<br>&nbsp;</span></td></tr>
 <tr><td>&nbsp;</td>
 <td class="singlecolumn">Methods defined here:<br>
@@ -57,7 +57,7 @@ passtime&nbsp;:&nbsp;dict<br>
     file_name: str,
     reset_after: bool = False,
     clean_energy: bool = False
-) -&gt; pandas.core.frame.DataFrame</dt><dd><span class="code">Reads&nbsp;the&nbsp;data&nbsp;file&nbsp;with&nbsp;the&nbsp;given&nbsp;name&nbsp;and&nbsp;returns&nbsp;the&nbsp;data&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
+) -&gt; pandas.DataFrame</dt><dd><span class="code">Reads&nbsp;the&nbsp;data&nbsp;file&nbsp;with&nbsp;the&nbsp;given&nbsp;name&nbsp;and&nbsp;returns&nbsp;the&nbsp;data&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>

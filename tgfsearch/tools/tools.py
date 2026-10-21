@@ -9,44 +9,68 @@ from typing import Dict, List, Tuple
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.api as api
 import tgfsearch.helpers.helper_funcs as helper_funcs
-from tgfsearch.detectors.detector import Detector
-from tgfsearch.detectors.adaptive_detector import AdaptiveDetector
+from tgfsearch.instruments.adaptive_instrument import AdaptiveInstrument
+from tgfsearch.instruments.instrument import Instrument
 
 
-def file_timestamp(file: str) -> str:
-    """Returns the timestamp of the given data file as a string of the form hhmmss."""
-    labels = file.split('.')[0].split('_')
-    if len(labels) > 4:
-        return labels[-2]
+def is_valid_instrument(instrument_name: str) -> bool:
+    """Returns True if the provided name is a valid instrument name and False otherwise.
 
-    return labels[-1]
+    Parameters
+    ----------
+    instrument_name : str
+        The instrument name to check for validity.
 
+    Returns
+    -------
+    bool
+        True if the given name is a valid instrument and False otherwise.
 
-def is_valid_detector(unit: str) -> bool:
-    """Returns True if the provided unit is a valid detector name and False otherwise."""
-    unit_upper = unit.upper()
-    if unit_upper == 'ADAPTIVE':
+    Raises
+    ------
+    SyntaxError
+        If the instrument config file contains invalid syntax.
+
+    """
+
+    instrument_name_upper = instrument_name.upper()
+    if instrument_name_upper == 'ADAPTIVE':
         return True
     else:
         try:
             identities = helper_funcs.read_json_file(
                 f'{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}'
-                f'/config/detector_config.json')['identities']
+                f'/config/instrument_config.json')['identities']
 
-            return unit_upper in identities
+            return instrument_name_upper in identities
         except SyntaxError:
-            raise SyntaxError('invalid syntax in detector config file.')
+            raise SyntaxError('invalid syntax in instrument config file.')
 
 
-def get_detector(unit: str, date_str: str) -> Detector | AdaptiveDetector:
-    """Returns a Detector (or AdaptiveDetector) instance based on the parameters provided."""
-    if unit.upper() == 'ADAPTIVE':
-        return AdaptiveDetector(date_str)
+def get_instrument(name: str, date_str: str) -> Instrument:
+    """Returns an Instrument (or AdaptiveInstrument) instance based on the parameters provided.
+
+    Parameters
+    ----------
+    name : str
+        The name of the instrument.
+    date_str : str
+        The date that the instrument will store data for in YYMMDD format.
+
+    Returns
+    -------
+    tgfsearch.instruments.instrument.Instrument
+        An Instrument object with the given name and date.
+
+    """
+
+    if name.upper() == 'ADAPTIVE':
+        return AdaptiveInstrument(date_str)
     else:
-        return Detector(unit, date_str)
+        return Instrument(name, date_str)
 
 
-def get_weather_conditions(event_time: float, instrument: str,
+def get_weather_conditions(event_time: float, instrument_name: str,
                            weather_cache: Dict[str, pd.DataFrame | None] | None = None) -> str:
     """Returns the weather conditions around the time of an event as a string.
 
@@ -54,9 +78,9 @@ def get_weather_conditions(event_time: float, instrument: str,
     ----------
     event_time : float
         The epoch time of the event.
-    instrument : str
+    instrument_name : str
         The name of the instrument that detected the event.
-    weather_cache : Dict[str, pandas.core.frame.DataFrame] | None
+    weather_cache : dict of {str : pandas.core.frame.DataFrame} or None
         Optional. A cache containing weather tables that have already been retrieved. The keys are dates in yymmdd
         format.
 
@@ -76,7 +100,7 @@ def get_weather_conditions(event_time: float, instrument: str,
     if event_date_str in weather_cache:
         weather_table = weather_cache[event_date_str]
     else:
-        weather_table = api.get_weather_table(instrument, event_date_str)
+        weather_table = api.get_weather_table(instrument_name, event_date_str)
         weather_cache[event_date_str] = weather_table
 
     if weather_table is None:
@@ -111,7 +135,7 @@ def get_weather_conditions(event_time: float, instrument: str,
                 if date_str in weather_cache:
                     weather_table = weather_cache[date_str]
                 else:
-                    weather_table = api.get_weather_table(instrument, date_str)
+                    weather_table = api.get_weather_table(instrument_name, date_str)
                     weather_cache[date_str] = weather_table
 
                 if weather_table is None:
@@ -149,17 +173,18 @@ def get_weather_conditions(event_time: float, instrument: str,
     return 'fair'
 
 
-def combine_data(detector: Detector) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.str_]]:
+def combine_data(
+        instrument: Instrument) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.str_]]:
     """Combines data from all scintillators into one set of arrays.
 
     Parameters
     ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector that data will be combined for.
+    instrument : tgfsearch.instruments.instrument.Instrument
+        The Instrument that data will be combined for.
 
     Returns
     -------
-    tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+    tuple of numpy.ndarray, length 3
         Three numpy arrays:
 
         times
@@ -175,9 +200,9 @@ def combine_data(detector: Detector) -> Tuple[npt.NDArray[np.float64], npt.NDArr
     times = []
     energies = []
     count_scints = []
-    for scintillator in detector:
-        if detector.data_present_in(scintillator):
-            lm_frame = detector.get_attribute(scintillator, 'lm_frame', deepcopy=False)
+    for scintillator in instrument:
+        if instrument.data_present_in(scintillator):
+            lm_frame = instrument.get_lm_frame(scintillator, deepcopy=False)
             times.append(lm_frame['SecondsOfDay'])
             energies.append(lm_frame['energies'])
             count_scints.append(np.array([scintillator] * len(times[-1])))
@@ -213,7 +238,7 @@ def separate_data(data: npt.NDArray[np.float64], count_scints: npt.NDArray[np.st
 
     Returns
     -------
-    dict
+    dict of {str, numpy.ndarray of numpy.float64}
         A dictionary with separated data for each scintillator in count_scints.
 
     """
@@ -319,33 +344,33 @@ def is_good_trace(trace: pd.DataFrame) -> bool:
     return False
 
 
-def filter_traces(detector: Detector, scintillator: str) -> List[str]:
+def filter_traces(instrument: Instrument, scintillator: str) -> List[str]:
     """Returns a list of traces that are likely to be interesting for the given scintillator.
 
     Parameters
     ----------
-    detector : tgfsearch.detectors.detector.Detector
-        The Detector containing the traces.
+    instrument : tgfsearch.instruments.instrument.Instruments
+        The Instrument containing the traces.
     scintillator : str
         The name of the scintillator of interest.
 
     Returns
     -------
-    list
+    list of str
         A list containing the names of traces that are likely to be interesting for the requested scintillator.
 
     """
 
     good_traces = []
-    trace_names = detector.get_trace_names(scintillator)
+    trace_names = instrument.get_trace_names(scintillator)
     for trace_name in trace_names:
-        if is_good_trace(detector.get_trace(scintillator, trace_name, deepcopy=False)):
+        if is_good_trace(instrument.get_trace(scintillator, trace_name, deepcopy=False)):
             good_traces.append(trace_name)
 
     return good_traces
 
 
-def trace_to_counts(trace_energies: npt.NDArray[np.float64]) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray,
+def _trace_to_counts(trace_energies: npt.NDArray[np.float64]) -> Tuple[npt.NDArray, npt.NDArray, npt.NDArray,
                                                                       npt.NDArray]:
     """Simulates the eMorpho response to trace data and returns the results."""
 
@@ -409,7 +434,7 @@ def align_trace(trace: pd.DataFrame, lm_frame: pd.DataFrame, buff_no: int = 0,
 
     Returns
     -------
-    tuple[numpy.ndarray, numpy.ndarray]
+    tuple of numpy.ndarray, length 2
         Two numpy arrays. The first contains the aligned trace times in seconds of day,
         the second contains the bit-corrected trace pulse magnitude.
 
@@ -434,7 +459,7 @@ def align_trace(trace: pd.DataFrame, lm_frame: pd.DataFrame, buff_no: int = 0,
     trace_energies = np.array(trace['pulse']) * 16
 
     # Simulating eMorpho response to trace data (effectively gives us a list mode analogue of the trace)
-    sim_times = trace_to_counts(trace_energies)[0]
+    sim_times = _trace_to_counts(trace_energies)[0]
     if len(sim_times) < 2:
         raise ValueError('insufficient trace data to align.')
 
@@ -501,16 +526,16 @@ def align_trace(trace: pd.DataFrame, lm_frame: pd.DataFrame, buff_no: int = 0,
     return trace_times, trace_energies
 
 
-def channel_to_mev(energy_array: npt.NDArray[np.float64], channels: List[int], energies: List[float]):
+def channel_to_mev(energy_array: npt.NDArray[np.float64], channels: List[int], energies: List[float]) -> np.ndarray:
     """Uses compton edges/photo peaks obtained from scintillator calibration to convert energy channels into MeV.
 
     Parameters
     ----------
     energy_array : numpy.ndarray
         An array containing energies for each count.
-    channels : list
+    channels : list of int
         A list containing the energy channels corresponding to the Compton edges/photo peaks.
-    energies : list
+    energies : list of float
         A list containing the energies of the Compton edges/photo peaks.
 
     Returns

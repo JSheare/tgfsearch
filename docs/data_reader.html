@@ -47,13 +47,13 @@ Passtime&nbsp;entries:<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-dict<br>
+dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;any}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;passtime&nbsp;dictionary.</span></dd></dl>
  <dl><dt><a name="-read_file"><strong>read_file</strong></a>(
     file_name: str,
     passtime: Optional[Dict[str, Any]] = None,
     killcr: bool = False
-) -&gt; Tuple[pandas.core.frame.DataFrame, Dict[str, Any]]</dt><dd><span class="code">Reads&nbsp;the&nbsp;given&nbsp;data&nbsp;file&nbsp;and&nbsp;returns&nbsp;it&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
+) -&gt; Tuple[pandas.DataFrame, Dict[str, Any]]</dt><dd><span class="code">Reads&nbsp;the&nbsp;given&nbsp;data&nbsp;file&nbsp;and&nbsp;returns&nbsp;it&nbsp;as&nbsp;a&nbsp;pandas&nbsp;dataframe.<br>
 &nbsp;<br>
 List&nbsp;Mode&nbsp;Columns:<br>
 &nbsp;<br>
@@ -76,7 +76,7 @@ Parameters<br>
 ----------<br>
 file_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;data&nbsp;file&nbsp;to&nbsp;be&nbsp;read.<br>
-passtime&nbsp;:&nbsp;dict<br>
+passtime&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;any}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;dictionary&nbsp;used&nbsp;to&nbsp;keep&nbsp;track&nbsp;of&nbsp;information&nbsp;between&nbsp;list&nbsp;mode&nbsp;frames.&nbsp;If&nbsp;not&nbsp;specified,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;one&nbsp;will&nbsp;be&nbsp;automatically&nbsp;instantiated&nbsp;with&nbsp;<a href="#-get_passtime">get_passtime</a>().<br>
 killcr:&nbsp;bool<br>
@@ -84,10 +84,10 @@ killcr:&nbsp;bool<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;tuple[pandas.core.frame.DataFrame,&nbsp;dict]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tuple&nbsp;of&nbsp;(pandas.core.frame.DataFrame,&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;any})<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;data&nbsp;and&nbsp;the&nbsp;passtime&nbsp;dictionary&nbsp;used&nbsp;to&nbsp;keep&nbsp;track&nbsp;of&nbsp;information<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;between&nbsp;list&nbsp;mode&nbsp;frames.</span></dd></dl>
- <dl><dt><a name="-read_files"><strong>read_files</strong></a>(file_file: str) -&gt; pandas.core.frame.DataFrame</dt><dd><span class="code">Reads&nbsp;a&nbsp;list&nbsp;of&nbsp;data&nbsp;files&nbsp;and&nbsp;returns&nbsp;them&nbsp;in&nbsp;a&nbsp;single&nbsp;dataframe.&nbsp;See&nbsp;<a href="#-read_file">read_file</a>()&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;column<br>
+ <dl><dt><a name="-read_files"><strong>read_files</strong></a>(file_file: str) -&gt; pandas.DataFrame</dt><dd><span class="code">Reads&nbsp;a&nbsp;list&nbsp;of&nbsp;data&nbsp;files&nbsp;and&nbsp;returns&nbsp;them&nbsp;in&nbsp;a&nbsp;single&nbsp;dataframe.&nbsp;See&nbsp;<a href="#-read_file">read_file</a>()&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;column<br>
 names.<br>
 &nbsp;<br>
 Parameters<br>
@@ -100,11 +100,11 @@ Returns<br>
 &nbsp;&nbsp;&nbsp;&nbsp;pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;the&nbsp;data&nbsp;from&nbsp;the&nbsp;listed&nbsp;files.</span></dd></dl>
  <dl><dt><a name="-translate_flags"><strong>translate_flags</strong></a>(
-    data: pandas.core.frame.DataFrame,
+    data: pandas.DataFrame,
     start: int | None = None,
     end: int | None = None,
     only_flags: Optional[List[str]] = None
-) -&gt; pandas.core.frame.DataFrame</dt><dd><span class="code">Translates&nbsp;the&nbsp;flags&nbsp;column&nbsp;of&nbsp;the&nbsp;given&nbsp;list&nbsp;mode&nbsp;dataframe&nbsp;into&nbsp;a&nbsp;dataframe&nbsp;with&nbsp;columns&nbsp;for&nbsp;each&nbsp;flag.<br>
+) -&gt; pandas.DataFrame</dt><dd><span class="code">Translates&nbsp;the&nbsp;flags&nbsp;column&nbsp;of&nbsp;the&nbsp;given&nbsp;list&nbsp;mode&nbsp;dataframe&nbsp;into&nbsp;a&nbsp;dataframe&nbsp;with&nbsp;columns&nbsp;for&nbsp;each&nbsp;flag.<br>
 &nbsp;<br>
 Flag&nbsp;meanings:<br>
 &nbsp;<br>
@@ -122,13 +122,13 @@ Parameters<br>
 ----------<br>
 data&nbsp;:&nbsp;pandas.core.frame.DataFrame<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pandas&nbsp;dataframe&nbsp;containing&nbsp;list&nbsp;mode&nbsp;data.<br>
-start&nbsp;:&nbsp;int<br>
+start&nbsp;:&nbsp;int&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;start&nbsp;index&nbsp;of&nbsp;the&nbsp;slice&nbsp;to&nbsp;translate&nbsp;flags&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,&nbsp;an&nbsp;index&nbsp;of&nbsp;0&nbsp;(beginning&nbsp;of<br>
 &nbsp;&nbsp;&nbsp;&nbsp;dataframe)&nbsp;will&nbsp;be&nbsp;used.<br>
-end&nbsp;:&nbsp;int<br>
+end&nbsp;:&nbsp;int&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;The&nbsp;end&nbsp;index&nbsp;of&nbsp;the&nbsp;slice&nbsp;to&nbsp;translate&nbsp;flags&nbsp;for.&nbsp;If&nbsp;not&nbsp;specified,&nbsp;an&nbsp;index&nbsp;of&nbsp;len(data)&nbsp;(end<br>
 &nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;dataframe)&nbsp;will&nbsp;be&nbsp;used.<br>
-only_flags&nbsp;:&nbsp;list[str]<br>
+only_flags&nbsp;:&nbsp;list&nbsp;of&nbsp;str&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;list&nbsp;of&nbsp;strings&nbsp;corresponding&nbsp;to&nbsp;flags&nbsp;to&nbsp;be&nbsp;translated;&nbsp;all&nbsp;other&nbsp;flags&nbsp;will&nbsp;be&nbsp;ignored.&nbsp;If&nbsp;left<br>
 &nbsp;&nbsp;&nbsp;&nbsp;unspecified,&nbsp;all&nbsp;flags&nbsp;will&nbsp;be&nbsp;translated.<br>
 &nbsp;<br>

@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
 import tgfsearch.config.parameters as params
 import tgfsearch.helpers.helper_funcs as helper_funcs
-from tgfsearch.tools.tools import is_valid_detector
+from tgfsearch.tools.tools import is_valid_instrument
 
 
 def main() -> None:
@@ -22,7 +22,7 @@ def main() -> None:
     # Primary arguments
     parser.add_argument('first_date', help='The first date in the range of dates to collect images for')
     parser.add_argument('second_date', help='The last date in the range of dates to collect images for')
-    parser.add_argument('detector', help='The instrument that images will be collected for')
+    parser.add_argument('instrument', help='The instrument that images will be collected for')
 
     # Flags
     parser.add_argument('--results-loc', default='',
@@ -50,14 +50,14 @@ def main() -> None:
         print('Error: second date must be after first date.')
         exit()
 
-    if args.detector == '':
-        print('Error: no detector specified.')
+    if args.instrument == '':
+        print('Error: no instrument specified.')
         exit()
-    elif not is_valid_detector(args.detector):
-        print('Error: not a valid detector.')
+    elif not is_valid_instrument(args.instrument):
+        print('Error: not a valid instrument.')
         exit()
 
-    unit = args.detector.upper()
+    instrument_name = args.instrument.upper()
 
     if args.results_loc != '':
         if args.results_loc == '/':
@@ -83,22 +83,22 @@ def main() -> None:
 
     min_score = args.ms
 
-    detector_path = f'{results_loc}/Results/{unit}' if results_loc != '' else f'Results/{unit}'
+    instrument_path = f'{results_loc}/Results/{instrument_name}' if results_loc != '' else f'Results/{instrument_name}'
     export_path = f'{collection_loc}/collected_images' if collection_loc != '' else 'collected_images'
 
     # For the traces
-    trace_path = f'{export_path}/{unit}/traces'
+    trace_path = f'{export_path}/{instrument_name}/traces'
 
     # For the scatter plots
-    short_event_path = f'{export_path}/{unit}/scatter_plots'
+    short_event_path = f'{export_path}/{instrument_name}/scatter_plots'
 
     # For the histograms
-    short_hist_path = f'{export_path}/{unit}/histograms/{params.SHORT_BIN_SIZE}_sec_bins'
-    long_hist_path = f'{export_path}/{unit}/histograms/{params.LONG_BIN_SIZE}_sec_bins'
+    short_hist_path = f'{export_path}/{instrument_name}/histograms/{params.SHORT_BIN_SIZE}_sec_bins'
+    long_hist_path = f'{export_path}/{instrument_name}/histograms/{params.LONG_BIN_SIZE}_sec_bins'
 
     requested_dates = helper_funcs.get_date_list(first_date, second_date)
     for date in requested_dates:
-        path = f'{detector_path}/{helper_funcs.date_to_yymmdd(date)}'
+        path = f'{instrument_path}/{helper_funcs.date_to_yymmdd(date)}'
 
         # Traces
         trace_list = glob.glob(f'{path}/traces/*xtr*.png')

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 import tgfsearch.helpers.helper_funcs as helper_funcs
-from tgfsearch.search import search_check, get_detector
+from tgfsearch.tools.tools import get_instrument
 
 
 def get_obj_size(obj: Any, visited: set | None = None) -> int:
@@ -51,11 +51,11 @@ def get_obj_size(obj: Any, visited: set | None = None) -> int:
 
 def main() -> None:
     if len(sys.argv) >= 4:
-        first_date = str(sys.argv[1])
-        second_date = str(sys.argv[2])
-        unit = str(sys.argv[3])
+        first_date = helper_funcs.yymmdd_to_date(sys.argv[1])
+        second_date = helper_funcs.yymmdd_to_date(sys.argv[2])
+        instrument_name = str(sys.argv[3])
     else:
-        print('Error: please provide a first date, a second date, and a unit name.')
+        print('Error: please provide a first date, a second date, and an instrument name.')
         exit()
 
     if len(sys.argv) > 4:
@@ -87,23 +87,17 @@ def main() -> None:
     else:
         ignore_scints = []
 
-    # Makes sure inputs are valid
-    feedback = search_check(first_date, second_date, unit)
-    print(feedback[1])
-    if not feedback[0]:
-        exit()
-
     lm_growth_factors = []
     trace_growth_factors = []
     try:
         for date in helper_funcs.get_date_list(first_date, second_date):
             date_str = date.strftime('%y%m%d')
             print(f'Importing data for {date_str}...')
-            detector = get_detector(unit, date_str)
+            instrument = get_instrument(instrument_name, date_str)
             if import_loc != '':
                 try:
-                    detector.set_import_loc(import_loc)
-                    if not detector.has_identity():
+                    instrument.set_import_loc(import_loc)
+                    if not instrument.has_identity():
                         raise FileNotFoundError("couldn't infer identity.")
 
                 except FileNotFoundError:
@@ -112,36 +106,36 @@ def main() -> None:
                     exit()
 
             import_scints = []
-            for scintillator in detector:
+            for scintillator in instrument:
                 if scintillator not in ignore_scints:
                     import_scints.append(scintillator)
 
             # Measuring the growth factor for the list mode files
-            detector.import_data(import_traces=False, import_scints=import_scints, feedback=True)
+            instrument.import_data(import_traces=False, import_scints=import_scints, feedback=True)
             fileset_size = 0
-            for scintillator in detector:
-                lm_filelist = detector.get_attribute(scintillator, 'lm_filelist', deepcopy=False)
+            for scintillator in instrument:
+                lm_filelist = instrument.get_lm_filelist(scintillator, deepcopy=False)
                 for file in lm_filelist:
                     fileset_size += helper_funcs.file_size(file)
 
             if fileset_size > 0:
-                lm_growth_factors.append(get_obj_size(detector) / fileset_size)
+                lm_growth_factors.append(get_obj_size(instrument) / fileset_size)
 
-            detector.clear()
+            instrument.clear()
             gc.collect()
 
             # Measuring the growth factor for the trace files
-            detector.import_data(import_lm=False, import_scints=import_scints, feedback=True)
+            instrument.import_data(import_lm=False, import_scints=import_scints, feedback=True)
             fileset_size = 0
-            for scintillator in detector:
-                trace_filelist = detector.get_attribute(scintillator, 'trace_filelist', deepcopy=False)
+            for scintillator in instrument:
+                trace_filelist = instrument.get_trace_filelist(scintillator, deepcopy=False)
                 for file in trace_filelist:
                     fileset_size += helper_funcs.file_size(file)
 
             if fileset_size > 0:
-                trace_growth_factors.append(get_obj_size(detector) / fileset_size)
+                trace_growth_factors.append(get_obj_size(instrument) / fileset_size)
 
-            detector.clear()
+            instrument.clear()
             gc.collect()
             print('\n')
 

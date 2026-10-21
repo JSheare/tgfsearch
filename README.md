@@ -5,7 +5,7 @@
     pip install tgfsearch@git+https://github.com/JSheare/tgfsearch
 
 
-### Afterward, it is also recommended that you update the package's built in data with the following command:
+### Afterwards, it is also recommended that you update the package's built in data with the following command:
 
     tgfsearch-update
 
@@ -23,7 +23,7 @@ To start a search, enter the first date in your search range in the entry box la
 Next, enter the last date in your search range in the entry box labeled 'Date Two' (if you're searching a single day, 
 you can leave this blank). 
 
-Afterward, specify the instrument you want to search in the box labeled 'Detector'.
+Afterwards, specify the instrument you want to search in the box labeled 'Instrument'.
 
 If you're running the program on Thrud (UCSC TGF group data computer) you're now ready to begin a search. Otherwise, 
 you may need to specify an import location for the data. This can be done by entering the data directory in the box
@@ -35,7 +35,7 @@ search results will be stored in a folder called 'Results' located inside the di
 'Export Location' entry box (present working directory by default).
 
 The search can be stopped at any time by clicking the 'Stop' button, and text can be cleared from onscreen by
-clicking 'Clear Text'. You can also reset the entered dates/detector/modes all at once by clicking the 'Reset' button.
+clicking 'Clear Text'. You can also reset the entered dates/instrument/modes all at once by clicking the 'Reset' button.
 
 ### **Program Modes:**
 The program has several 'modes' that give it enhanced functionality. To run the program with any of the modes, simply
@@ -44,10 +44,8 @@ check the mode's corresponding tick box. Details on what each mode does can be f
 - **'onescint' Mode:** - This mode instructs the program to run the short event search algorithm on only the default
 scintillator (typically the large plastic). This is generally a faster (though less thorough) search.
 
-
 - **'allscints' Mode** - This mode tells the program to run the short event search algorithm on all the scintillators 
 individually (by default the program combines all scintillator data into a single set).
-
 
 - **'aircraft' Mode** - If the detector you're searching was deployed to an aircraft or some other high-altitude 
 location during the search period, this is the mode that you want to use. It adds a special check to the short event 
@@ -66,7 +64,7 @@ when the data is being read.
 - **'skglow' Mode** - This mode skips the long event search algorithm.
 
 ### **Enqueuing Multiple Searches:**
-If desired, several searches can be enqueued and then executed sequentially.
+Several searches can be enqueued and then executed sequentially.
 To do this, simply fill out the search fields as described above and then press the 'Enqueue' button. 
 Once you've added all of your desired searches to the queue, click 'Start' and the program will 
 execute them all in the order in which they were entered.
@@ -77,7 +75,7 @@ To clear the queue without running any searches, click the 'Reset' button.
 If the data that you're trying to search is from an instrument with an arbitrary scintillator configuration and/or an 
 instrument that the program doesn't explicitly support yet, you can instead opt to use an adaptive mode that
 will dynamically infer the identity of the instrument based on the given data files. To use it, just enter the word
-'adaptive' in the detector entry box and the directory containing the data in the import entry box.
+'adaptive' in the Instrument entry box and the directory containing the data in the import entry box.
 
 Note: if the data is organized into daily folders, specify the directory that contains these folders.
 
@@ -86,7 +84,7 @@ Note: if the data is organized into daily folders, specify the directory that co
 ### **Single day:**
 To search a single day only, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector
+    tgfsearch-cl yymmdd yymmdd instrument
 
 where 'yy' corresponds to the year, 'mm' corresponds to the month, and 'dd' corresponds to the day.
 <br/>
@@ -105,11 +103,11 @@ Here's an example for THOR5 data from July 1st, 2022 to August 31st, 2022:
 If you want to use a custom import or export location, you can use the '--import-loc' flag for a custom import location
 and the '--export-loc' flag for a custom export location:
 
-    tgfsearch-cl yymmdd yymmdd detector --import-loc "import_directory"
+    tgfsearch-cl yymmdd yymmdd instrument --import-loc "import_directory"
 
 or
 
-    tgfsearch-cl yymmdd yymmdd detector --export-loc "export_directory"
+    tgfsearch-cl yymmdd yymmdd instrument --export-loc "export_directory"
 
 ### **Program Modes:**
 The program has several 'modes' that give it enhanced functionality. Here's a list of them all and how to use them:
@@ -120,7 +118,7 @@ the large plastic). This is generally a faster (though less thorough) search.
 
 To use the program in this mode, enter a command the same way as above but add the flag '--onescint' to the end:
 
-    tgfsearch-cl yymmdd yymmdd detector --onescint
+    tgfsearch-cl yymmdd yymmdd instrument --onescint
 
 #### **'allscints' Mode:**
 This mode tells the program to run the short event search algorithm on all the scintillators individually
@@ -128,17 +126,17 @@ This mode tells the program to run the short event search algorithm on all the s
 
 To run the program in this mode, enter a command the same way as above but add the flag '--allscints' to the end:
 
-    tgfsearch-cl yymmdd yymmdd detector --allscints
+    tgfsearch-cl yymmdd yymmdd instrument --allscints
 
 #### **'aircraft' Mode:**
-If the detector you're searching was deployed to an aircraft or some other high-altitude 
+If the instrument you're searching was deployed to an aircraft or some other high-altitude 
 location during the search period, this is the mode that you want to use. It adds a special check to the short event 
 search algorithm that filters out false alarms caused by cosmic rays, and uses a more fine-grained rolling baseline in
 the long event search algorithm.
 
 To run the program in this mode,enter a command the same way as above but add the flag '--aircraft' to the end:
 
-    tgfsearch-cl yymmdd yymmdd detector --aircraft
+    tgfsearch-cl yymmdd yymmdd instrument --aircraft
 
 #### **'clnenrg' Mode:**
 This mode cuts out all maximum energy counts (> 65000) and all very low energy counts (< 100)
@@ -146,35 +144,35 @@ when the data is being read.
 
 To use it, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector --clnenrg
+    tgfsearch-cl yymmdd yymmdd instrument --clnenrg
 
 #### **'pickle' Mode:**
 This mode serializes and saves imported data for later use OR imports previously-serialized data.
 
 To use it, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector --pickle
+    tgfsearch-cl yymmdd yymmdd instrument --pickle
 
 #### **'skshort' Mode:**
 This mode skips the short event search algorithm.
 
 To use it, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector --skshort
+    tgfsearch-cl yymmdd yymmdd instrument --skshort
 
 #### **'sktrace' Mode:**
 This mode skips the trace filtering algorithm.
 
 To use it, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector --sktrace
+    tgfsearch-cl yymmdd yymmdd instrument --sktrace
 
 #### **'skglow' Mode:**
 This mode skips the long event search algorithm.
 
 To use it, enter a command of the following form:
 
-    tgfsearch-cl yymmdd yymmdd detector --skglow
+    tgfsearch-cl yymmdd yymmdd instrument --skglow
 
 
 #### **Many Modes:**
@@ -182,7 +180,7 @@ It is possible to use as many of these modes in tandem as the user needs
 <br/>
 (i.e. commands like this are possible):
 
-    tgfsearch-cl yymmdd yymmdd detector --pickle --allscints --aircraft
+    tgfsearch-cl yymmdd yymmdd instrument --pickle --allscints --aircraft
 
 ### **Adaptive Mode:**
 If the data that you're trying to search is from an instrument with an arbitrary scintillator configuration and/or an 
@@ -190,9 +188,9 @@ instrument that the program doesn't explicitly support yet, you can instead opt 
 will dynamically infer the identity of the instrument based on the given data files. To use it, enter a command of 
 the following form:
 
-    tgfsearch-cl yymmdd yymmdd adaptive -c "import_directory" "export_directory"
+    tgfsearch-cl yymmdd yymmdd adaptive --import_loc "import_directory"
 
-where import_directory is required and specifies the directory where the data is located. 
+where the '--import_directory' flag is required and specifies the directory where the data is located. 
 
 Note: if the data is organized into daily folders, specify the directory that contains these folders.
 
@@ -200,7 +198,7 @@ Note: if the data is organized into daily folders, specify the directory that co
 The package also has a helpful utility for collecting the image files generated by the search program. To use it, enter
 a command of the following form in the command line:
 
-    tgfsearch-collect yymmdd yymmdd detector
+    tgfsearch-collect yymmdd yymmdd instrument
 
 where the first 'yymmdd' is the first date in the desired collection range and the second 'yymmdd' is the last. 
 Images will be copied from the "Results" directory to a new directory called "collected_images".
@@ -209,11 +207,11 @@ Images will be copied from the "Results" directory to a new directory called "co
 By default, the image files are gathered from and collected in the present working directory, but if you'd like to use 
 custom locations you can use the '--results-loc' and '--collection-loc' flags:
 
-    tgfsearch-collect yymmdd yymmdd detector --results-loc "results_loc"
+    tgfsearch-collect yymmdd yymmdd instrument --results-loc "results_loc"
 
 or
 
-    tgfsearch-collect yymmdd detector --collection-loc "collection_loc"
+    tgfsearch-collect yymmdd instrument --collection-loc "collection_loc"
 
 Where "results_loc" is the location of the "Results" directory and "collection_loc" is the location where the new 
 directory "collected_images" will be created.
@@ -222,26 +220,26 @@ directory "collected_images" will be created.
 ### **Including Only the Top-Ranked Short Events:**
 To include only the top-ranked short events, you can use the '-tr' flag:
 
-    tgfsearch-collect yymmdd yymmdd detector -tr
+    tgfsearch-collect yymmdd yymmdd instrument -tr
 
 By default, only events with a rank of one are included, but if you'd like to include events with ranks that are equal
 to or higher than a particular value, you can do so by supplying the value as an argument. Here's an example where only 
 events with rank 13 or higher are included:
 
-    tgfsearch-collect yymmdd yymmdd detector -tr 13
+    tgfsearch-collect yymmdd yymmdd instrument -tr 13
 
 
 ### **Including Only Short Events With A Minimum Score:**
 To include only those short events which have a score greater than or equal to a certain value, you can use the '-ms'
 flag. Here's an example where only events with a score at or above 0.5 are included:
 
-    tgfsearch-collect yymmdd yymmdd detector -ms 0.5
+    tgfsearch-collect yymmdd yymmdd instrument -ms 0.5
 
 
 # **Using Data Tools:**
 In addition to the search program and associated utilities, the package also includes data handling tools that you can 
 use to build your own programs and scripts. This section will serve as an example for how to use many of these tools, 
-with special emphasis placed on Detector objects, as they are the main focus of the package. 
+with special emphasis placed on Instrument objects, as they are the main focus of the package. 
 
 To get started, import the package:
 ```python3
@@ -283,217 +281,201 @@ Or at an arbitrary time using the reset() method:
 reader.reset()
 ```
 
-### **Basic Detector Class Usage:**
-Detector is a class that's designed to quickly and efficiently import and provide access to all data (list mode and 
-trace) for a single day. Throughout these examples, we'll be using August 31st, 2022 on Thor 1 as a test day.
+### **Basic Instrument Class Usage:**
+Instrument is a class that's designed to quickly and efficiently import and provide access to all data (list mode and 
+trace) for a single day. Throughout these examples, we'll be using August 31st, 2022 on Thor 1 as an example day.
 
-The best way to get a detector object of the correct type is to use the provided function get_detector():
+The best way to get an Instrument object of the correct type is to use the provided function get_instrument():
 ```python3
-detector = tgf.get_detector('THOR1', '220831')
+instrument = tgf.get_instrument('THOR1', '220831')
 ```
 If you're using the package on Thrud, you're already good to go. But in case you aren't, or you're trying to import data
 from somewhere other than the main data drive, you can also set a custom import location:
 ```python3
-detector.set_import_loc('/home/user/THOR1/220831')
-```
-Additionally, some of Detector's member and helper functions are capable of exporting files for various purposes. 
-By default, these files are exported to your present working directory, but you can also specify a custom directory 
-like so:
-```python3
-detector.set_export_loc('/home/user')
+instrument.set_import_loc('/home/user/THOR1/220831')
 ```
 Now we're ready to import data, and we do so like this:
 ```python3
-detector.import_data()
+instrument.import_data()
 ```
 Note that this process can take several minutes depending on the size of the data set. By default, both list mode data 
 and trace data are imported, but this can be changed using the two optional boolean parameters import_lm and 
 import_traces.
 
-The Detector will attempt to import any data it finds in its specified import directory. But, in case the data is 
+The Instrument will attempt to import any data it finds in its specified import directory. But, in case the data is 
 missing or couldn't be imported properly, you can also check to see if it's present:
 ```python3
-for scintillator in detector:
-    if not detector.data_present_in(scintillator):  # Checking that list mode data is present (default)
+for scintillator in instrument:
+    if not instrument.data_present_in(scintillator):  # Checking that list mode data is present (default)
         print(f'List mode data missing for {scintillator}.')
 
-    if not detector.data_present_in(scintillator, data_type='trace'):  # Checking that trace data is present
+    if not instrument.data_present_in(scintillator, data_type='trace'):  # Checking that trace data is present
         print(f'Trace data missing for {scintillator}.')
 ```
 
-### **Getting and Setting Basic Information for Detector:**
-The Detector class has several useful class attributes containing basic information that are worth knowing about:
+### **Getting and Setting Basic Information for Instrument:**
+The Instrument class has several useful class attributes containing basic information that are worth knowing about:
 ```python3
-unit = detector.unit  # The name of the instrument (string).
-date = detector.date  # The date (datetime.date).
-first_sec = detector.first_sec  # The first second of the day in epoch time.
-deployment = detector.deployment  # Deployment information for the instrument on the requested day (if available).
-scint_list = detector.scint_list  # A list of abbreviations corresponding to the instrument's scintillators.
+name = instrument.name  # The name of the instrument (string).
+date = instrument.date  # The date (datetime.date).
+instrument = instrument.first_sec  # The first second of the day in epoch time.
+deployment = instrument.deployment  # Deployment information for the instrument on the requested day (if available).
 ```
-These are the most likely to be useful, but there are several others too. See the Detector documentation (linked at the 
-bottom) for a full list.
 
-If the information you're looking for is particular to a single scintillator, you can use the get_attribute() method:
-```python3
-eRC = detector.get_attribute('LP', 'eRC')  # Getting the serial number of the large plastic scintillator.
-lm_filelist = detector.get_attribute('LP', 'lm_filelist')  # Getting a list of all large plastic list mode files.
-trace_filelist = detector.get_attribute('LP', 'trace_filelist')  # Getting a list of all large plastic trace files.
-lm_data = detector.get_attribute('LP', 'lm_frame')  # Getting all the large plastic list mode data for the whole day.
-```
-As above, these are the most common attributes, but you can request any on the following list:
-- name - The scintillator's name (abbreviated).
-- eRC - The scintillator's serial number.
-- lm_frame - A pandas dataframe containing all the scintillator's list mode data.
-- lm_files - A list of list mode files for the day.
-- lm_file_ranges - A list of lists. Each sublist contains a pair of numbers corresponding to the first and last second
-        in each list mode file.
-- lm_file_indices - A dictionary of lists. Each list contains the indices needed to slice data for a particular file
-        out of lm_frame.
-- trace_filelist - A list of trace files for the day.
-- traces - A dictionary containing trace data for each of the day's trace files.
-- reader - The Reader object used to read the scintillator's data files.
+There are also a number of class methods for getting scintillator-specific information. Here are a few:
 
-Additionally, you can also assign new information to these attributes using the Detector's set_attribute() method:
+The get_scintillator_identity() method will return identifying information about the scintillator in a dictionary:
 ```python3
-# Setting the filelist for the large plastic scintillator to a single file.
-detector.set_attribute('LP', 'lm_filelist',
-                       ['/media/tgfdata/Detectors/THOR/THOR1/220831/eRC4195lpl_lm_220831_235435.txt.gz'])
+scint_identity = instrument.get_scintillator_identity('lpl')  # Getting information about the large plastic scintillator
+erc = scint_identity['erc']  # The eRC serial number of the scintillator
+lm_format = scinti_identity['lm_format']  # The format of the scintillator's list mode data
 ```
-Note that the new information must be of the same type as the old information or an error will be raised.
+
+The get_lm_filelist() and get_trace_filelist() methods will return the data file lists for the scintillator:
+```python3
+lm_filelist = instrument.get_lm_filelist('lpl')
+trace_filelist = instrument.get_trace_filelist('lpl')
+```
+
+For a full list of these methods, and their corresponding setter methods, see the full Instrument documentation below.
 
 ### **Getting and Setting List Mode Data Columns:**
-Detector has a built-in method for getting individual columns of list mode data as numpy arrays.
+Instrument has a built-in method for getting individual columns of list mode data as numpy arrays.
 ```python3
-time = detector.get_lm_data('LP', 'SecondsOfDay')  # Getting the large plastic SecondsOfDay column as a numpy array.
-energy = detector.get_lm_data('LP', 'energy')  # Getting the large plastic energy column as a numpy array.
-wc = detector.get_lm_data('LP', 'wc')  # Getting the large plastic wc (wallclock) column as a numpy array.
+time = instrument.get_lm_data('lpl', 'SecondsOfDay')  # Getting the large plastic SecondsOfDay column as a numpy array.
+energy = instrument.get_lm_data('lpl', 'energy')  # Getting the large plastic energy column as a numpy array.
+wc = instrument.get_lm_data('lpl', 'wc')  # Getting the large plastic wc (wallclock) column as a numpy array.
 ```
 You can also request a column from only a single data file like so:
 ```python3
-file_time = detector.get_lm_data('LP', 'SecondsOfDay', file_name='/media/tgfdata/Detectors/THOR/THOR1/220831/'
-                                                                 'eRC4195lpl_lm_220831_235435.txt.gz')
+file_time = instrument.get_lm_data('lpl', 'SecondsOfDay', file_name='/media/tgfdata/Detectors/THOR/THOR1/220831/'
+                                                                    'eRC4195lpl_lm_220831_235435.txt.gz')
 ```
 Finally, you can also set the data for a particular column using the set_lm_data() method:
 ```python3
-detector.set_lm_data('LP', 'energy', np.array([1, 2, 3, 4, 5, 6, 7]))  # Example array
+instrument.set_lm_data('lpl', 'energy', np.array([1, 2, 3, 4, 5, 6, 7]))  # Example array
 ```
 Note that the new data must be of the same length as the old data or an error will be raised.
 
 ### **Finding Matching List Mode Files and Trace Files:**
-Detector contains two main member functions for matching count times with their corresponding list mode files or trace 
+Instrument contains two main member functions for matching count times with their corresponding list mode files or trace 
 files. Say, for example, we have a large plastic count at 73000 seconds of day that we want to match:
 ```python3
 # Matching the count to the name (as a string) of the list mode file it came from.
-matching_lm_file = detector.find_lm_file('LP', 73000)
+matching_lm_file = instrument.find_lm_file('lpl', 73000)
 
 # Matching the count to a list of trace file names (strings) that it *could* have come from.
-matching_traces = detector.find_matching_traces('LP', 73000)
+matching_traces = instrument.find_matching_traces('lpl', 73000)
 ```
 
 ### **Getting Specific Files' Data:**
-Detector has two member functions for getting all data from specific files: one is for list mode files, the other is for
-trace files. All you need to provide is the name of the scintillator the file is from and the name of the file itself:
+Instrument has two member functions for getting all data from specific files: one is for list mode files, the other is 
+for trace files. All you need to provide is the name of the scintillator the file is from and the name of the file 
+itself:
 ```python3
-lm_file_data = detector.get_lm_file('LP', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
-                                          'eRC4195lpl_lm_220831_235435.txt.gz')
+lm_file_data = instrument.get_lm_file('lpl', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
+                                             'eRC4195lpl_lm_220831_235435.txt.gz')
 
-trace_file_data = detector.get_trace('LP', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
-                                           'eRC4195lpl_xtr_220831_191800.xtr.gz')
+trace_file_data = instrument.get_trace('lpl', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
+                                              'eRC4195lpl_xtr_220831_191800.xtr.gz')
 # These functions return dataframes.
 ```
 
-### **Pickling and Unpickling Detectors:**
-A Detector object can be pickled (saved to a file, data and all) and unpickled using the following methods:
+### **Pickling and Unpickling Instruments:**
+An Instrument object can be pickled (serialized and saved to a file, data included) and unpickled using the following 
+methods:
 ```python3
-# Pickling our detector object in a file named "my_detector.pickle" to a results folder in the directory "/home/user"
-# Note that path is an optional variable, and if left unspecified the detector will be pickled to its results directory.
-pickle_path = detector.pickle_detector('my_detector', path='/home/user')
+# Pickling our instrument object in a file named "my_instrument.pkl" to the directory "/home/user"
+pickle_path = instrument.pickle('my_instrument', '/home/user')
 
-detector = tgf.Detector.unpickle_detector(pickle_path)
+instrument = tgf.Instrument.unpickle(pickle_path)
 ```
 These functions can be useful if you're using the same data set over and over again and want to avoid the lengthy
 import procedure.
 
-### **Splicing Two Detectors Together:**
-Data from two different Detectors can be combined using the splice() method, yielding a new Detector with
-a combination of both datasets:
+### **Splicing Two Instruments Together:**
+Data from two different Instruments can be combined using the splice() method, yielding a new Instrument with a 
+combination of both datasets:
 ```python3
-# Making another Detector for the purpose of the example
-detector2 = tgf.get_detector('THOR1', '220830')
-detector2.set_import_loc('/home/user/THOR1/220830')
-detector2.import_data()
+# Making another Instrument for the purpose of the example
+instrument2 = tgf.get_instrument('THOR1', '220830')
+instrument2.set_import_loc('/home/user/THOR1/220830')
+instrument2.import_data()
 
-# Calling the splice() method returns a new Detector
-detector3 = detector1.splice(detector2)
+# Calling the splice() method returns a new Instrument
+instrument3 = instrument1.splice(instrument2)
 
 # If you want, you can also use the normal addition syntax to do a splice
-# detector3 = detector + detector2
+# instrument3 = instrument + instrument2
 
-# or += to overwrite an existing detector with the new, spliced one
-# detector += detector2
+# or += to overwrite an existing instrument with the new, spliced one
+# instrument += instrument2
 ```
-The new Detector (detector3) will contain the seamlessly-combined data from both detector1 and detector2.
-There are a few things to note about the new Detector:
-- It will use the *earlier* of the two Detectors' dates as its own. For example, because detector has the date
-      220831, and detector2 has the date 220830, detector3 will use the earlier 220830.
-- Time data in the new Detector will be updated to reflect the difference in date between the two provided
-      Detectors. For example, detector and detector2 are separated by a day, so all the data from the later
-      Detector (detector2 in this case) will be corrected one day forward.
-- Trying to import data with the new Detector won't work and will instead raise an error.
+The new Instrument (instrument3) will contain the seamlessly-combined data from both instrument1 and instrument2.
+There are a few things to note about the new Instrument:
+- It will use the *earlier* of the two Instruments' dates as its own. For example, because instrument has the date
+      220831, and instrument2 has the date 220830, instrument3 will use the earlier 220830.
+- Time data in the new Instrument will be updated to reflect the difference in date between the two provided
+      Instruments. For example, instrument and instrument2 are separated by a day, so all the data from the later
+      Instrument (instrument2 in this case) will be corrected one day forward.
+- Trying to import data with the new Instrument won't work and will instead raise an error.
 
-If you ever need to get a list of dates stored in a Detector, you can do so with Detector's dates_stored attribute:
+If you ever need to get a list of dates stored in an Instrument, you can do so with Instrument's dates_stored attribute:
 ```python3
-dates_stored = detector3.dates_stored  # In this example, the list would be ['220830', '220831']
-```
-
-
-### **Clearing Data from Detector:**
-Detector also has a method for clearing all currently stored data:
-```python3
-detector.clear()
-```
-Additionally, you can also opt to clear all stored data BUT leave file lists alone:
-```python3
-detector.clear(clear_filelists=False)
+dates_stored = instrument3.dates_stored  # In this example, the list would be ['220830', '220831']
 ```
 
-### **Detector Methods and Deep Copying:**
-To make sure that data can't be modified by accident, several of Detector's getter and setter functions return/make deep
-copies of the resource being requested/assigned. This behavior can be overridden using the optional boolean parameter 
-'deepcopy' for the following member functions:
-- get_attribute()
-- set_attribute()
-- get_lm_file()
-- get_trace()
 
-For example, the following code will return the actual list mode file dataframe stored in Detector rather than a copy:
+### **Clearing Data from Instrument:**
+Instrument also has a method for clearing all currently stored data:
 ```python3
-actual_lm_data = detector.get_lm_file('LP', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
-                                            'eRC4195lpl_lm_220831_235435.txt.gz', deepcopy=False)
+instrument.clear()
+```
+Additionally, you can also opt to clear all stored data BUT leave file lists alone (a sort of soft reset):
+```python3
+instrument.clear(clear_filelists=False)
+```
+
+### **Instrument Methods and Deep Copying:**
+To make sure that data can't be modified by accident, several of Instrument's getter and setter functions return/make 
+deep copies of the resource being requested/assigned. This behavior can be overridden using the optional boolean 
+parameter 'deepcopy' for the following member functions:
+- get_lm_filelist
+- set_lm_filelist
+- get_lm_file
+- get_lm_frame
+- set_lm_frame
+- get_trace_filelist
+- set_trace_filelist
+- get_trace
+
+For example, the following code will return the actual list mode file dataframe stored in Instrument rather than a copy:
+```python3
+actual_lm_data = instrument.get_lm_frame('lpl', deepcopy=False)
 ```
 This can be performant in some cases, but be careful not to modify your data by accident!
 
 
-### **Adaptive Detector:**
-For maximum flexibility, the package contains a special child class of Detector called AdaptiveDetector that can be used
-to handle data from instruments with arbitrary scintillator configurations. You can get one like so:
+### **Adaptive Instrument:**
+For maximum flexibility, the package contains a special subclass of Instrument called InstrumentDetector that can be 
+used to handle data from instruments with arbitrary scintillator configurations. You can get one like so:
 
 ```python3
-adaptive = tgf.get_detector('ADAPTIVE', '220831')
+adaptive = tgf.get_instrument('ADAPTIVE', '220831')
 ```
 
-You can use AdaptiveDetector in essentially the exact same way as Detector, with a few important caveats:
-- You *must* supply an import directory before you can import data. AdaptiveDetector infers its identity based on the
+You can use AdaptiveInstrument in essentially the exact same way as Detector, with a few important caveats:
+- You *must* supply an import directory before you can import data. AdaptiveInstrument infers its identity based on the
   data files found in the import directory, so you *have* to give it a populated import directory before anything else 
   can proceed. Trying to import data without doing this will result in an error.
 - Specifying an import directory will clear all currently stored data and the current identity before inferring a new 
   identity. This is to prevent the object from ending up in a hybrid state with multiple identities. Be wary of this 
   when changing the import directory.
-- AdaptiveDetector's identity inference *might* be wrong. When this happens, the object may behave in unexpected ways.
+- AdaptiveInstrument's identity inference *might* be wrong. When this happens, the object may behave in unexpected ways.
   So, use it at your own risk.
 
-You can check whether any Detector (and, by inheritance, any AdaptiveDetector) has an identity using
-the has_identity() method:
+You can check whether any Instrument (and, by inheritance, any AdaptiveInstrument) has an identity using the 
+has_identity() method:
 
 ```python3
 if adaptive.has_identity():
@@ -508,59 +490,53 @@ The package contains several functions for filtering and aligning traces that yo
 # For single traces. is_good will be True if the trace is good.
 is_good = tgf.is_good_trace(trace_file_data)
 
-# For a group of traces stored in a Detector. The result will be a list containing the names of traces that are
+# For a group of traces stored in a Instrument. The result will be a list containing the names of traces that are
 # likely to be interesting for the requested scintillator (the large plastic in this example).
-good_trace_names = tgf.filter_traces(detector, 'LP')
+good_trace_names = tgf.filter_traces(instrument, 'lpl')
 
 if is_good:
-    # Aligning the trace with its corresponding list mode data. This will return two numpy arrays: one with the
+    # Aligning the trace with its corresponding list mode data. This will return two numpy arrays: one with the 
     # correctly-aligned times and another with the magnitude-corrected trace energies.
     trace_times, trace_energies = tgf.align_trace(trace_file_data, lm_file_data)
 ```
 
 ## **List of Common Functions and Methods:**
 
-### **Detector:**
-- Detector.import_data()
-  - Imports data from data files into arrays and then updates them into the detector's scintillator objects.
-- Detector.get_import_loc()
+### **Instrument:**
+- Instrument.import_data()
+  - Imports data from data files into arrays and then updates them into the Instrument's scintillator objects.
+- Instrument.get_import_loc()
   - Returns the directory where data will be imported from.
-- Detector.set_import_loc()
+- Instrument.set_import_loc()
   - Sets the directory where data will be imported from.
-- Detector.get_export_loc()
-  - Returns the directory where all data and results will be stored.
-- Detector.set_export_loc()
-  - Sets the directory where all data and results will be stored.
-- Detector.is_named()
-  - Returns True if the Detector has the same name as the passed string.
-- Detector.data_present_in()
+- Instrument.is_named()
+  - Returns True if the Instrument has the same name as the passed string.
+- Instrument.data_present_in()
   - Returns True if data is present for the specified scintillator and False otherwise.
-- Detector.get_attribute()
-  - Returns the requested attribute for a particular scintillator.
-- Detector.set_attribute()
-  - Updates the requested attribute for a particular scintillator.
-- Detector.get_lm_data()
+- Instrument.get_lm_data()
   - Returns a single column of list mode data as a numpy array.
-- Detector.set_lm_data()
+- Instrument.set_lm_data()
   - Sets a single column of list mode data to the new data specified.
-- Detector.find_lm_file()
+- Instrument.find_lm_file()
   - Returns the name of the list mode file that the given count occurred in.
-- Detector.get_lm_file()
+- Instrument.get_lm_file()
   - Returns the list mode data for the specified list mode file.
-- Detector.get_trace()
+- Instrument.get_trace()
   - Returns the trace data for the given scintillator and trace name.
-- Detector.get_trace_names()
+- Instrument.get_trace_names()
   - Returns a list of names of the traces that are currently being stored.
-- Detector.find_matching_traces()
+- Instrument.find_matching_traces()
   - Finds the traces that could be a match for the given count (if they exist).
-- Detector.clear()
-  - Clears all data currently stored in the Detector.
+- Instrument.clear()
+  - Clears all data currently stored in the Instrument.
 
-Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/detector.html).
+Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/instrument.html).
 
 ### **Tools:**
-- tgf.file_timestamp()
-  - Returns the timestamp of the given data file as a string of the form hhmmss.
+- is_valid_instrument()
+  - Returns True if the provided name is a valid instrument name and False otherwise.
+- get_instrument()
+  - Returns an Instrument (or AdaptiveInstrument) instance based on the parameters provided.
 - tgf.get_weather_conditions()
   - Returns the weather conditions around the time of an event as a string.
 - tgf.combine_data()

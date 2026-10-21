@@ -10,7 +10,7 @@ class Reader:
 
     Attributes
     ----------
-    passtime : dict
+    passtime : dict of {str : any}
         A dictionary containing information needed to import the subsequent list mode files properly (if applicable).
 
     """

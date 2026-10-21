@@ -31,8 +31,8 @@
     
 <tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
 <td class="singlecolumn"><dl><dt><a name="-align_trace"><strong>align_trace</strong></a>(
-    trace: pandas.core.frame.DataFrame,
-    lm_frame: pandas.core.frame.DataFrame,
+    trace: pandas.DataFrame,
+    lm_frame: pandas.DataFrame,
     buff_no: int = 0,
     trigspot: int | None = None
 ) -&gt; Tuple[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]], numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]]]</dt><dd><span class="code">Aligns&nbsp;the&nbsp;given&nbsp;trace&nbsp;with&nbsp;the&nbsp;given&nbsp;list&nbsp;mode&nbsp;data.<br>
@@ -50,7 +50,7 @@ trigspot&nbsp;:&nbsp;int<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-tuple[numpy.ndarray,&nbsp;numpy.ndarray]<br>
+tuple&nbsp;of&nbsp;numpy.ndarray,&nbsp;length&nbsp;2<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;numpy&nbsp;arrays.&nbsp;The&nbsp;first&nbsp;contains&nbsp;the&nbsp;aligned&nbsp;trace&nbsp;times&nbsp;in&nbsp;seconds&nbsp;of&nbsp;day,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;second&nbsp;contains&nbsp;the&nbsp;bit-corrected&nbsp;trace&nbsp;pulse&nbsp;magnitude.<br>
 &nbsp;<br>
@@ -63,31 +63,31 @@ ValueError<br>
     energy_array: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],
     channels: List[int],
     energies: List[float]
-)</dt><dd><span class="code">Uses&nbsp;compton&nbsp;edges/photo&nbsp;peaks&nbsp;obtained&nbsp;from&nbsp;scintillator&nbsp;calibration&nbsp;to&nbsp;convert&nbsp;energy&nbsp;channels&nbsp;into&nbsp;MeV.<br>
+) -&gt; numpy.ndarray</dt><dd><span class="code">Uses&nbsp;compton&nbsp;edges/photo&nbsp;peaks&nbsp;obtained&nbsp;from&nbsp;scintillator&nbsp;calibration&nbsp;to&nbsp;convert&nbsp;energy&nbsp;channels&nbsp;into&nbsp;MeV.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
 energy_array&nbsp;:&nbsp;numpy.ndarray<br>
 &nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;energies&nbsp;for&nbsp;each&nbsp;count.<br>
-channels&nbsp;:&nbsp;list<br>
+channels&nbsp;:&nbsp;list&nbsp;of&nbsp;int<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;energy&nbsp;channels&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;Compton&nbsp;edges/photo&nbsp;peaks.<br>
-energies&nbsp;:&nbsp;list<br>
+energies&nbsp;:&nbsp;list&nbsp;of&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;energies&nbsp;of&nbsp;the&nbsp;Compton&nbsp;edges/photo&nbsp;peaks.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
 numpy.ndarray<br>
 &nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;energies&nbsp;for&nbsp;each&nbsp;count&nbsp;in&nbsp;MeV.</span></dd></dl>
- <dl><dt><a name="-combine_data"><strong>combine_data</strong></a>(detector: tgfsearch.detectors.detector.Detector) -&gt; Tuple[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]], numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]], numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.str_]]]</dt><dd><span class="code">Combines&nbsp;data&nbsp;from&nbsp;all&nbsp;scintillators&nbsp;into&nbsp;one&nbsp;set&nbsp;of&nbsp;arrays.<br>
+ <dl><dt><a name="-combine_data"><strong>combine_data</strong></a>(instrument: tgfsearch.instruments.instrument.Instrument) -&gt; Tuple[numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]], numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.float64]], numpy.ndarray[tuple[Any, ...], numpy.dtype[numpy.str_]]]</dt><dd><span class="code">Combines&nbsp;data&nbsp;from&nbsp;all&nbsp;scintillators&nbsp;into&nbsp;one&nbsp;set&nbsp;of&nbsp;arrays.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
-detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;that&nbsp;data&nbsp;will&nbsp;be&nbsp;combined&nbsp;for.<br>
+instrument&nbsp;:&nbsp;tgfsearch.instruments.instrument.Instrument<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Instrument&nbsp;that&nbsp;data&nbsp;will&nbsp;be&nbsp;combined&nbsp;for.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
+tuple&nbsp;of&nbsp;numpy.ndarray,&nbsp;length&nbsp;3<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Three&nbsp;numpy&nbsp;arrays:<br>
 &nbsp;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;times<br>
@@ -97,37 +97,48 @@ tuple[numpy.ndarray,&nbsp;numpy.ndarray,&nbsp;numpy.ndarray]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;count_scints<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;containing&nbsp;scintillator&nbsp;names.&nbsp;Each&nbsp;entry&nbsp;corresponds&nbsp;to&nbsp;the&nbsp;scintillator<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;its&nbsp;corresponding&nbsp;count&nbsp;originated&nbsp;from.</span></dd></dl>
- <dl><dt><a name="-file_timestamp"><strong>file_timestamp</strong></a>(file: str) -&gt; str</dt><dd><span class="code">Returns&nbsp;the&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;given&nbsp;data&nbsp;file&nbsp;as&nbsp;a&nbsp;string&nbsp;of&nbsp;the&nbsp;form&nbsp;hhmmss.</span></dd></dl>
  <dl><dt><a name="-filter_traces"><strong>filter_traces</strong></a>(
-    detector: tgfsearch.detectors.detector.Detector,
+    instrument: tgfsearch.instruments.instrument.Instrument,
     scintillator: str
 ) -&gt; List[str]</dt><dd><span class="code">Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;given&nbsp;scintillator.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
-detector&nbsp;:&nbsp;tgfsearch.detectors.detector.Detector<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Detector&nbsp;containing&nbsp;the&nbsp;traces.<br>
+instrument&nbsp;:&nbsp;tgfsearch.instruments.instrument.Instruments<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;Instrument&nbsp;containing&nbsp;the&nbsp;traces.<br>
 scintillator&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;scintillator&nbsp;of&nbsp;interest.<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-list<br>
+list&nbsp;of&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;list&nbsp;containing&nbsp;the&nbsp;names&nbsp;of&nbsp;traces&nbsp;that&nbsp;are&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;for&nbsp;the&nbsp;requested&nbsp;scintillator.</span></dd></dl>
- <dl><dt><a name="-get_detector"><strong>get_detector</strong></a>(unit: str, date_str: str) -&gt; tgfsearch.detectors.detector.Detector | tgfsearch.detectors.adaptive_detector.AdaptiveDetector</dt><dd><span class="code">Returns&nbsp;a&nbsp;Detector&nbsp;(or&nbsp;AdaptiveDetector)&nbsp;instance&nbsp;based&nbsp;on&nbsp;the&nbsp;parameters&nbsp;provided.</span></dd></dl>
+ <dl><dt><a name="-get_instrument"><strong>get_instrument</strong></a>(name: str, date_str: str) -&gt; tgfsearch.instruments.instrument.Instrument</dt><dd><span class="code">Returns&nbsp;an&nbsp;Instrument&nbsp;(or&nbsp;AdaptiveInstrument)&nbsp;instance&nbsp;based&nbsp;on&nbsp;the&nbsp;parameters&nbsp;provided.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument.<br>
+date_str&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;date&nbsp;that&nbsp;the&nbsp;instrument&nbsp;will&nbsp;store&nbsp;data&nbsp;for&nbsp;in&nbsp;YYMMDD&nbsp;format.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+tgfsearch.instruments.instrument.Instrument<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;Instrument&nbsp;object&nbsp;with&nbsp;the&nbsp;given&nbsp;name&nbsp;and&nbsp;date.</span></dd></dl>
  <dl><dt><a name="-get_weather_conditions"><strong>get_weather_conditions</strong></a>(
     event_time: float,
-    instrument: str,
-    weather_cache: Optional[Dict[str, pandas.core.frame.DataFrame | None]] = None
+    instrument_name: str,
+    weather_cache: Optional[Dict[str, pandas.DataFrame | None]] = None
 ) -&gt; str</dt><dd><span class="code">Returns&nbsp;the&nbsp;weather&nbsp;conditions&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;an&nbsp;event&nbsp;as&nbsp;a&nbsp;string.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
 event_time&nbsp;:&nbsp;float<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;epoch&nbsp;time&nbsp;of&nbsp;the&nbsp;event.<br>
-instrument&nbsp;:&nbsp;str<br>
+instrument_name&nbsp;:&nbsp;str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;instrument&nbsp;that&nbsp;detected&nbsp;the&nbsp;event.<br>
-weather_cache&nbsp;:&nbsp;Dict[str,&nbsp;pandas.core.frame.DataFrame]&nbsp;|&nbsp;None<br>
+weather_cache&nbsp;:&nbsp;dict&nbsp;of&nbsp;{str&nbsp;:&nbsp;pandas.core.frame.DataFrame}&nbsp;or&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Optional.&nbsp;A&nbsp;cache&nbsp;containing&nbsp;weather&nbsp;tables&nbsp;that&nbsp;have&nbsp;already&nbsp;been&nbsp;retrieved.&nbsp;The&nbsp;keys&nbsp;are&nbsp;dates&nbsp;in&nbsp;yymmdd<br>
 &nbsp;&nbsp;&nbsp;&nbsp;format.<br>
 &nbsp;<br>
@@ -135,7 +146,7 @@ Returns<br>
 -------<br>
 str<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;weather&nbsp;conditions&nbsp;around&nbsp;the&nbsp;time&nbsp;of&nbsp;the&nbsp;event&nbsp;as&nbsp;a&nbsp;string.</span></dd></dl>
- <dl><dt><a name="-is_good_trace"><strong>is_good_trace</strong></a>(trace: pandas.core.frame.DataFrame) -&gt; bool</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;and&nbsp;False&nbsp;otherwise.<br>
+ <dl><dt><a name="-is_good_trace"><strong>is_good_trace</strong></a>(trace: pandas.DataFrame) -&gt; bool</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting&nbsp;and&nbsp;False&nbsp;otherwise.<br>
 &nbsp;<br>
 Parameters<br>
 ----------<br>
@@ -146,7 +157,22 @@ Returns<br>
 -------<br>
 bool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;trace&nbsp;is&nbsp;likely&nbsp;to&nbsp;be&nbsp;interesting,&nbsp;False&nbsp;otherwise.</span></dd></dl>
- <dl><dt><a name="-is_valid_detector"><strong>is_valid_detector</strong></a>(unit: str) -&gt; bool</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;unit&nbsp;is&nbsp;a&nbsp;valid&nbsp;detector&nbsp;name&nbsp;and&nbsp;False&nbsp;otherwise.</span></dd></dl>
+ <dl><dt><a name="-is_valid_instrument"><strong>is_valid_instrument</strong></a>(instrument_name: str) -&gt; bool</dt><dd><span class="code">Returns&nbsp;True&nbsp;if&nbsp;the&nbsp;provided&nbsp;name&nbsp;is&nbsp;a&nbsp;valid&nbsp;instrument&nbsp;name&nbsp;and&nbsp;False&nbsp;otherwise.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+instrument_name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;instrument&nbsp;name&nbsp;to&nbsp;check&nbsp;for&nbsp;validity.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;given&nbsp;name&nbsp;is&nbsp;a&nbsp;valid&nbsp;instrument&nbsp;and&nbsp;False&nbsp;otherwise.<br>
+&nbsp;<br>
+Raises<br>
+------<br>
+SyntaxError<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;the&nbsp;instrument&nbsp;config&nbsp;file&nbsp;contains&nbsp;invalid&nbsp;syntax.</span></dd></dl>
  <dl><dt><a name="-separate_data"><strong>separate_data</strong></a>(
     data: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]],
     count_scints: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.str_]],
@@ -170,11 +196,8 @@ stop&nbsp;:&nbsp;int<br>
 &nbsp;<br>
 Returns<br>
 -------<br>
-dict<br>
+dict&nbsp;of&nbsp;{str,&nbsp;numpy.ndarray&nbsp;of&nbsp;numpy.float64}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;with&nbsp;separated&nbsp;data&nbsp;for&nbsp;each&nbsp;scintillator&nbsp;in&nbsp;count_scints.</span></dd></dl>
- <dl><dt><a name="-trace_to_counts"><strong>trace_to_counts</strong></a>(
-    trace_energies: numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[numpy.float64]]
-) -&gt; Tuple[numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]], numpy.ndarray[tuple[Any, ...], numpy.dtype[~_ScalarT]]]</dt><dd><span class="code">Simulates&nbsp;the&nbsp;eMorpho&nbsp;response&nbsp;to&nbsp;trace&nbsp;data&nbsp;and&nbsp;returns&nbsp;the&nbsp;results.</span></dd></dl>
 </td></tr></table><p>
 <table class="section">
 <tr class="decor data-decor heading-text">
