@@ -29,7 +29,7 @@ def get_passtime() -> Dict[str, Any]:
 
     Returns
     -------
-    dict of {str : any}
+    dict of [str, any]
         The passtime dictionary.
 
     """
@@ -169,7 +169,7 @@ def read_file(file_name: str, passtime: Dict[str, Any] | None = None,
     ----------
     file_name : str
         The name of the data file to be read.
-    passtime : dict of {str : any} or None
+    passtime : dict of [str, any] or None
         Optional. A dictionary used to keep track of information between list mode frames. If not specified,
         one will be automatically instantiated with get_passtime().
     killcr: bool
@@ -177,7 +177,7 @@ def read_file(file_name: str, passtime: Dict[str, Any] | None = None,
 
     Returns
     -------
-        tuple of (pandas.core.frame.DataFrame, dict of {str : any})
+        tuple of [pandas.core.frame.DataFrame, dict of [str, any]]
             A pandas dataframe containing the data and the passtime dictionary used to keep track of information
             between list mode frames.
 

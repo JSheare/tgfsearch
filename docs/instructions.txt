@@ -1,0 +1,3 @@
+This package is documented using the numpy style and docs pages are generated using Sphinx.
+
+To regenerate the docs pages, enter the following command on Windows: make.bat html

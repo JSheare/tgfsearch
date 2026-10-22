@@ -100,7 +100,7 @@ def get_scintillators(timeout: float = 60.0) -> Dict[str, Dict[str, str | int]] 
 
     Returns
     -------
-    dict of {str : dict of {str : str or int}} or None
+    dict of [str, dict of [str, str or int]] or None
         A dictionary containing records for all registered scintillator types, if the API request was successful. A
         None otherwise. Each entry in the dictionary will be of the following form: {scint_name: {'scint_priority': x,
         'plot_color': x}}.
@@ -192,14 +192,14 @@ def get_instrument_config(instrument: str, date: str,
     instrument : str
         The name of the instrument to get configuration information for.
     date : str
-        The date to get configuration information for. This should be of the form 'YYMMDD', or an asterisk to get all
+        The date to get configuration information for. This should be of the form 'yymmdd', or an asterisk to get all
         configurations for the instrument.
     timeout : float
         Optional. The maximum amount of time to wait for a response from the API.
 
     Returns
     -------
-    dict of {str : dict of {str : dict of {str : str or bool}}} or None
+    dict of [str, dict of [str, dict of [str, str or bool]]] or None
         A dictionary containing the given instrument's configuration on the given date, if the API request was
         successful. A None otherwise. The dictionary contains instrument configurations after particular dates, and each
         entry has the following form: {after_date_1: {scint_name_1: {'erc': x, 'format_name': x,
@@ -248,17 +248,17 @@ def get_instrument_deployment(instrument: str, date: str, timeout: float = 60.0)
     instrument : str
         The name of the instrument to get deployment information for.
     date : str
-        The date to get deployment information for. This should be of the form 'YYMMDD', or an asterisk to get all
+        The date to get deployment information for. This should be of the form 'yymmdd', or an asterisk to get all
         deployments for the instrument.
     timeout : float
         Optional. The maximum amount of time to wait for a response from the API.
 
     Returns
     -------
-    list of dict of {str : str or float} or None
+    list of dict of [str, str or float] or None
         A list of dictionaries containing deployments that match the given instrument and date, if the API request was
         successful. A None otherwise. Each deployment dictionary is of the following form: {'instrument': instrument,
-        'start_date': YYMMDD, 'end_date': YYMMDD, 'location': x, 'tz_identifier': x, 'weather_station': x,
+        'start_date': yymmdd, 'end_date': yymmdd, 'location': x, 'tz_identifier': x, 'weather_station': x,
         'sounding_station': x, 'latitude': x, 'longitude': x, 'altitude': x, 'notes': x}.
 
     Raises
@@ -308,13 +308,13 @@ def get_weather(instrument: str, date: str, timeout: float = 60.0) -> List[Dict[
     instrument : str
         The name of the instrument to get weather information for.
     date : str
-        The date to get weather information for. This should be of the form 'YYMMDD'.
+        The date to get weather information for. This should be of the form 'yymmdd'.
     timeout : float
         Optional. The maximum amount of time to wait for a response from the API.
 
     Returns
     -------
-    list of dict of {str : float or str} or None
+    list of dict of [str, float or str] or None
         A list of weather measurements for the given instrument on the given date, if the API request was successful.
         A None otherwise. Each measurement has the following form {'measurement_time': x_epoch, 'condition': x}.
 
@@ -361,7 +361,7 @@ def get_weather_table(instrument: str, date: str, timeout: float = 60.0) -> pand
     instrument : str
         The name of the instrument to get weather information for.
     date : str
-        The date to get weather information for. This should be of the form 'YYMMDD'.
+        The date to get weather information for. This should be of the form 'yymmdd'.
     timeout : float
         Optional. The maximum amount of time to wait for a response from the API.
 

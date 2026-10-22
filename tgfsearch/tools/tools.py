@@ -55,7 +55,7 @@ def get_instrument(name: str, date_str: str) -> Instrument:
     name : str
         The name of the instrument.
     date_str : str
-        The date that the instrument will store data for in YYMMDD format.
+        The date that the instrument will store data for in 'yymmdd' format.
 
     Returns
     -------
@@ -80,8 +80,8 @@ def get_weather_conditions(event_time: float, instrument_name: str,
         The epoch time of the event.
     instrument_name : str
         The name of the instrument that detected the event.
-    weather_cache : dict of {str : pandas.core.frame.DataFrame} or None
-        Optional. A cache containing weather tables that have already been retrieved. The keys are dates in yymmdd
+    weather_cache : dict of [str, pandas.core.frame.DataFrame] or None
+        Optional. A cache containing weather tables that have already been retrieved. The keys are dates in 'yymmdd'
         format.
 
     Returns
@@ -238,7 +238,7 @@ def separate_data(data: npt.NDArray[np.float64], count_scints: npt.NDArray[np.st
 
     Returns
     -------
-    dict of {str, numpy.ndarray of numpy.float64}
+    dict of [str, numpy.ndarray of numpy.float64]
         A dictionary with separated data for each scintillator in count_scints.
 
     """

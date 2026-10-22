@@ -24,7 +24,7 @@ from tgfsearch.instruments.scintillator import Scintillator
 from tgfsearch.tools.reader import Reader
 
 
-def worker_init() -> None:
+def _worker_init() -> None:
     """Data importer worker process initialization function. Mutes worker stdout and stderr output."""
     sys.stdout = open(os.devnull, 'w')
     sys.stderr = open(os.devnull, 'w')
@@ -56,12 +56,12 @@ class Instrument:
         A flag for whether the Instrument has an identity (established name, scintillator configuration, etc.).
     _import_loc : str
         The directory where data files for the day are located.
-    _scintillators : dict of {str : tgfsearch.instruments.scintillator.Scintillator}
-        A dictionary containing Scintillators. These keep track of data for each of the instrument's
-        scintillators. Note the name mangling underscore.
+    _scintillators : dict of [str, tgfsearch.instruments.scintillator.Scintillator]
+        A dictionary containing Scintillators. These keep track of data for each of the instrument's scintillators.
+        Note the name mangling underscore.
     _scint_list : list of str
         A list of the instrument's scintillator names in descending order of priority.
-    deployment : dict of {str : any}
+    deployment : dict of [str, any]
         Deployment information for the instrument on the requested day (if available).
 
     """
@@ -345,7 +345,7 @@ class Instrument:
 
         Returns
         -------
-        dict of {str : str or datetime.date}
+        dict of [str, str or datetime.date]
             The scintillator's identifying information, including: its name, its eRC serial number, its data date, its
             list mode data format name, and more.
 
@@ -907,7 +907,7 @@ class Instrument:
                    'feedback': kwargs['feedback'] if 'feedback' in kwargs else False}
 
         # Creating the process pool for data reading tasks
-        with multiprocessing.Pool(processes=len(scintillators), initializer=worker_init) as process_pool:
+        with multiprocessing.Pool(processes=len(scintillators), initializer=_worker_init) as process_pool:
             # Creating threads for each scintillator's import manager
             output_lock = threading.Lock()  # Mutex lock for log and stdout output
             threads = [threading.Thread(target=self.__import_scintillator,

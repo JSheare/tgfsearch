@@ -18,7 +18,7 @@ import tgfsearch.helpers.helper_funcs as helper_funcs
 from tgfsearch.tools.reader import Reader
 
 
-def read_data_files(reader: Reader, filelist: List[str], clean_energy: bool, connection: Connection) -> None:
+def _read_data_files(reader: Reader, filelist: List[str], clean_energy: bool, connection: Connection) -> None:
     """Reads the given data files and sends them to the given pipe. Meant to be run in a subprocess, which means that
     the passed arguments and piped values are serialized/deserialized on each end."""
     warning_strings = []
@@ -71,12 +71,12 @@ class Scintillator:
     _lm_file_ranges : list of list of float
         A list of lists. Each sublist contains a pair of numbers corresponding to
         the first and last second in each list mode file.
-    _lm_file_indices : dict of {str : list of int}
+    _lm_file_indices : dict of [str, list of int]
         A dictionary of lists. Each list contains the indices needed to slice data for a particular file
         out of lm_frame.
     _trace_filelist : list of str
         A list of trace files for the day.
-    _traces : dict of {str : pandas.core.frame.DataFrame}
+    _traces : dict of [str, pandas.core.frame.DataFrame]
         A dictionary containing trace data for each of the day's trace files.
     _reader : tgfsearch.tools.reader.Reader
         A Reader object for reading the scintillator's data files.
@@ -362,7 +362,8 @@ class Scintillator:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(read_data_files, args=(self._reader, self._lm_filelist, options['clean_energy'], end2))
+        process_pool.apply_async(_read_data_files,
+                                 args=(self._reader, self._lm_filelist, options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
             end1.send(1)  # Notifying the other process that the data has been received
@@ -439,7 +440,7 @@ class Scintillator:
         # Importing the data
         end1, end2 = multiprocessing.Pipe()
         file_index = 0
-        process_pool.apply_async(read_data_files, args=(self._reader, self._trace_filelist,
+        process_pool.apply_async(_read_data_files, args=(self._reader, self._trace_filelist,
                                                         options['clean_energy'], end2))
         while True:
             data = end1.recv()  # Reading data from the other process
