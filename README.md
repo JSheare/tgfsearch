@@ -530,7 +530,7 @@ if is_good:
 - Instrument.clear()
   - Clears all data currently stored in the Instrument.
 
-Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/#instrument-class).
+Full Instrument documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/#instrument-class).
 
 ### **Tools:**
 - is_valid_instrument()
