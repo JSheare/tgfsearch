@@ -530,7 +530,7 @@ if is_good:
 - Instrument.clear()
   - Clears all data currently stored in the Instrument.
 
-Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/instrument.html).
+Full Detector documentation for these methods (and more) can be found [here](https://jsheare.github.io/tgfsearch/#instrument-class).
 
 ### **Tools:**
 - is_valid_instrument()
@@ -550,7 +550,7 @@ Full Detector documentation for these methods (and more) can be found [here](htt
 - tgf.align_trace()
   - Aligns the given trace with the given list mode data.
 
-Full tools documentation for these functions (and others) can be found [here](https://jsheare.github.io/tgfsearch/tools.html).
+Full tools documentation for these functions (and others) can be found [here](https://jsheare.github.io/tgfsearch/#data-tools).
 
 ## **Full Documentation:**
 https://jsheare.github.io/tgfsearch/
