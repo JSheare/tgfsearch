@@ -1,3 +1,3 @@
-This package is documented using the numpy style and docs pages are generated using Sphinx.
+This package is documented in numpy docstring style and its docs are generated using Sphinx.
 
-To regenerate the docs pages, enter the following command on Windows: make.bat html
+To regenerate the docs, go the project's root directory and run: sphinx-build -b html . ./docs
