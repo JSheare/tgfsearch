@@ -15,6 +15,7 @@ import pickle
 import psutil
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import Pool
 from typing import Any, Dict, Generator, List
 
@@ -892,17 +893,14 @@ class Instrument:
         with multiprocessing.Pool(processes=len(scintillators), initializer=_worker_init) as process_pool:
             # Creating threads for each scintillator's import manager
             output_lock = threading.Lock()  # Mutex lock for log and stdout output
-            threads = [threading.Thread(target=self.__import_scintillator,
-                                        args=(process_pool, output_lock, scintillator, options),
-                                        daemon=True)
-                       for scintillator in scintillators]
+            with ThreadPoolExecutor(max_workers=len(scintillators)) as executor:
+                futures = [executor.submit(self.__import_scintillator,
+                                           process_pool, output_lock, scintillator, options)
+                           for scintillator in scintillators]
 
-            for thread in threads:
-                thread.start()
-
-            # Waiting for data importing to finish for each scintillator
-            for thread in threads:
-                thread.join()
+                # Waiting for data importing to finish for each scintillator
+                for future in futures:
+                    future.result()
 
         gc.collect()
 
