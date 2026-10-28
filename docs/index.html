@@ -460,34 +460,10 @@ data will be retrieved for the whole day.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tgfsearch.instruments.instrument.Instrument.get_lm_file">
-<span class="sig-name descname"><span class="pre">get_lm_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.get_lm_file" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list mode data for the specified list mode file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>scintillator</strong> (<em>str</em>) – The name of the scintillator that the file is from.</p></li>
-<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file that data is being requested for. Note that this must be the <em>full</em> name of the file,
-including the path from the root directory.</p></li>
-<li><p><strong>deepcopy</strong> (<em>bool</em>) – Optional. If True, a deepcopy of the file frame will be returned. True by default.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dataframe with the data for the requested list mode file.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>pandas.core.frame.DataFrame</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If either the passed scintillator or the passed file name aren’t valid.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="tgfsearch.instruments.instrument.Instrument.get_lm_filelist">
 <span class="sig-name descname"><span class="pre">get_lm_filelist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.get_lm_filelist" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list mode file list for the given scintillator.</p>
+<dd><p>Returns the list mode file list for the given scintillator. Note that, if not set explicitly,  the list mode
+data file list is generated lazily (i.e. not until data is imported).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -509,12 +485,15 @@ including the path from the root directory.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tgfsearch.instruments.instrument.Instrument.get_lm_frame">
-<span class="sig-name descname"><span class="pre">get_lm_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.get_lm_frame" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_lm_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.get_lm_frame" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the list mode data frame for the given scintillator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scintillator</strong> (<em>str</em>) – The scintillator of interest.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – Optional. The name of the file that the frame is being requested for. Note that this must be the <em>full</em> name
+of the file, including the path from the root directory. Also note that, because of how DataFrames work,
+this will make the deepcopy parameter implicitly True.</p></li>
 <li><p><strong>deepcopy</strong> (<em>bool</em>) – Optional. If True, a copy of the data frame will be returned instead of the original. True by default.</p></li>
 </ul>
 </dd>
@@ -525,7 +504,7 @@ including the path from the root directory.</p></li>
 <dd class="field-odd"><p>pandas.core.frame.DataFrame</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If the passed scintillator isn’t valid.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the passed scintillator isn’t valid or if the passed file name isn’t valid.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -598,7 +577,8 @@ list mode data format name, and more.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tgfsearch.instruments.instrument.Instrument.get_trace_filelist">
 <span class="sig-name descname"><span class="pre">get_trace_filelist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.get_trace_filelist" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the trace file list for the given scintillator.</p>
+<dd><p>Returns the trace file list for the given scintillator. Note that, if not set explicitly, the trace data file
+list is generated lazily (i.e. not until data is imported).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -779,19 +759,23 @@ by default.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tgfsearch.instruments.instrument.Instrument.set_lm_frame">
-<span class="sig-name descname"><span class="pre">set_lm_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lm_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.set_lm_frame" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_lm_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scintillator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lm_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deepcopy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tgfsearch.instruments.instrument.Instrument.set_lm_frame" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the given scintillator’s trace file list to the given list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scintillator</strong> (<em>str</em>) – The scintillator of interest.</p></li>
 <li><p><strong>lm_frame</strong> (<em>pandas.core.frame.DataFrame</em>) – The list mode data frame.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – Optional. The name of the file that the frame is being set for. Note that this must be the <em>full</em> name of
+the file, including the path from the root directory. Also note that, because of how DataFrames work, this
+will make the deepcopy parameter implicitly True.</p></li>
 <li><p><strong>deepcopy</strong> (<em>bool</em>) – Optional. If True, the scintillator’s list mode data frame will be set to a copy of the given data frame.
 True by default.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If the passed scintillator isn’t valid.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the passed scintillator isn’t valid, the passed lm_frame isn’t valid, or the passed file name isn’t
+    valid.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1326,7 +1310,6 @@ measurement.</p>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_clone"><code class="docutils literal notranslate"><span class="pre">Instrument.get_clone()</span></code></a></li>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_import_loc"><code class="docutils literal notranslate"><span class="pre">Instrument.get_import_loc()</span></code></a></li>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_lm_data"><code class="docutils literal notranslate"><span class="pre">Instrument.get_lm_data()</span></code></a></li>
-<li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_lm_file"><code class="docutils literal notranslate"><span class="pre">Instrument.get_lm_file()</span></code></a></li>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_lm_filelist"><code class="docutils literal notranslate"><span class="pre">Instrument.get_lm_filelist()</span></code></a></li>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_lm_frame"><code class="docutils literal notranslate"><span class="pre">Instrument.get_lm_frame()</span></code></a></li>
 <li><a class="reference internal" href="#tgfsearch.instruments.instrument.Instrument.get_reader"><code class="docutils literal notranslate"><span class="pre">Instrument.get_reader()</span></code></a></li>

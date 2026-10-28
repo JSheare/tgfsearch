@@ -373,8 +373,8 @@ Instrument has two member functions for getting all data from specific files: on
 for trace files. All you need to provide is the name of the scintillator the file is from and the name of the file 
 itself:
 ```python3
-lm_file_data = instrument.get_lm_file('lpl', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
-                                             'eRC4195lpl_lm_220831_235435.txt.gz')
+lm_file_data = instrument.get_lm_frame('lpl', file_name='/media/tgfdata/Detectors/THOR/THOR1/220831/'
+                                                        'eRC4195lpl_lm_220831_235435.txt.gz')
 
 trace_file_data = instrument.get_trace('lpl', '/media/tgfdata/Detectors/THOR/THOR1/220831/'
                                               'eRC4195lpl_xtr_220831_191800.xtr.gz')
@@ -442,7 +442,6 @@ deep copies of the resource being requested/assigned. This behavior can be overr
 parameter 'deepcopy' for the following member functions:
 - get_lm_filelist
 - set_lm_filelist
-- get_lm_file
 - get_lm_frame
 - set_lm_frame
 - get_trace_filelist
@@ -519,8 +518,6 @@ if is_good:
   - Sets a single column of list mode data to the new data specified.
 - Instrument.find_lm_file()
   - Returns the name of the list mode file that the given count occurred in.
-- Instrument.get_lm_file()
-  - Returns the list mode data for the specified list mode file.
 - Instrument.get_trace()
   - Returns the trace data for the given scintillator and trace name.
 - Instrument.get_trace_names()

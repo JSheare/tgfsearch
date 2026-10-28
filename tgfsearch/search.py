@@ -506,7 +506,8 @@ def find_se_traces(instrument: Instrument, event: ShortEvent, trace_dict: Dict[s
 
         if scintillator not in event.traces:
             event_time = times[i]
-            event_lm_file_data = instrument.get_lm_file(scintillator, instrument.find_lm_file(scintillator, event_time))
+            event_lm_file_data = instrument.get_lm_frame(scintillator,
+                                                         file_name=instrument.find_lm_file(scintillator, event_time))
             potential_matches = instrument.find_matching_traces(scintillator, event_time,
                                                                 trace_list=trace_dict[scintillator])
             trace_info = None

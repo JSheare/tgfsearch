@@ -409,7 +409,8 @@ class Instrument:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
     def get_lm_filelist(self, scintillator: str, deepcopy: bool = True) -> List[str]:
-        """Returns the list mode file list for the given scintillator.
+        """Returns the list mode file list for the given scintillator. Note that, if not set explicitly,  the list mode
+        data file list is generated lazily (i.e. not until data is imported).
 
         Parameters
         ----------
@@ -547,43 +548,17 @@ class Instrument:
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def get_lm_file(self, scintillator: str, file_name: str, deepcopy: bool = True) -> pd.DataFrame:
-        """Returns the list mode data for the specified list mode file.
-
-        Parameters
-        ----------
-        scintillator : str
-            The name of the scintillator that the file is from.
-        file_name : str
-            The name of the file that data is being requested for. Note that this must be the *full* name of the file,
-            including the path from the root directory.
-        deepcopy : bool
-            Optional. If True, a deepcopy of the file frame will be returned. True by default.
-
-        Returns
-        -------
-        pandas.core.frame.DataFrame
-            A dataframe with the data for the requested list mode file.
-
-        Raises
-        ------
-        ValueError
-            If either the passed scintillator or the passed file name aren't valid.
-
-        """
-
-        if scintillator in self._scintillators:
-            return self._scintillators[scintillator].get_lm_file(file_name, deepcopy)
-        else:
-            raise ValueError(f"'{scintillator}' is not a valid scintillator.")
-
-    def get_lm_frame(self, scintillator: str, deepcopy: bool = True) -> pd.DataFrame:
+    def get_lm_frame(self, scintillator: str, file_name: str | None = None, deepcopy: bool = True) -> pd.DataFrame:
         """Returns the list mode data frame for the given scintillator.
 
         Parameters
         ----------
         scintillator : str
             The scintillator of interest.
+        file_name : str
+            Optional. The name of the file that the frame is being requested for. Note that this must be the *full* name
+            of the file, including the path from the root directory. Also note that, because of how DataFrames work,
+            this will make the deepcopy parameter implicitly True.
         deepcopy : bool
             Optional. If True, a copy of the data frame will be returned instead of the original. True by default.
 
@@ -595,16 +570,17 @@ class Instrument:
         Raises
         ------
         ValueError
-            If the passed scintillator isn't valid.
+            If the passed scintillator isn't valid or if the passed file name isn't valid.
 
         """
 
         if scintillator in self._scintillators:
-            return self._scintillators[scintillator].get_lm_frame(deepcopy=deepcopy)
+            return self._scintillators[scintillator].get_lm_frame(file_name=file_name, deepcopy=deepcopy)
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
-    def set_lm_frame(self, scintillator: str, lm_frame: pd.DataFrame, deepcopy: bool = True) -> None:
+    def set_lm_frame(self, scintillator: str, lm_frame: pd.DataFrame, file_name: str | None = None,
+                     deepcopy: bool = True) -> None:
         """Sets the given scintillator's trace file list to the given list.
 
         Parameters
@@ -613,6 +589,10 @@ class Instrument:
             The scintillator of interest.
         lm_frame : pandas.core.frame.DataFrame
             The list mode data frame.
+        file_name : str
+            Optional. The name of the file that the frame is being set for. Note that this must be the *full* name of
+            the file, including the path from the root directory. Also note that, because of how DataFrames work, this
+            will make the deepcopy parameter implicitly True.
         deepcopy : bool
             Optional. If True, the scintillator's list mode data frame will be set to a copy of the given data frame.
             True by default.
@@ -620,17 +600,19 @@ class Instrument:
         Raises
         ------
         ValueError
-            If the passed scintillator isn't valid.
+            If the passed scintillator isn't valid, the passed lm_frame isn't valid, or the passed file name isn't
+            valid.
 
         """
 
         if scintillator in self._scintillators:
-            self._scintillators[scintillator].set_lm_frame(lm_frame, deepcopy=deepcopy)
+            self._scintillators[scintillator].set_lm_frame(lm_frame, file_name=file_name, deepcopy=deepcopy)
         else:
             raise ValueError(f"'{scintillator}' is not a valid scintillator.")
 
     def get_trace_filelist(self, scintillator: str, deepcopy: bool = True) -> List[str]:
-        """Returns the trace file list for the given scintillator.
+        """Returns the trace file list for the given scintillator. Note that, if not set explicitly, the trace data file
+        list is generated lazily (i.e. not until data is imported).
 
         Parameters
         ----------

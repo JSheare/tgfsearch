@@ -88,7 +88,7 @@ class Scintillator:
         self.erc = erc
         self.date = date
         self.lm_format = lm_format
-        self.dates_stored = []
+        self.dates_stored = [self.date]
 
         self._lm_frame = pd.DataFrame()
         self._lm_filelist = []
@@ -151,44 +151,81 @@ class Scintillator:
 
     def get_lm_data(self, column: str, file_name: str | None = None) -> npt.NDArray[np.float64]:
         """Returns a single column of list mode data as a numpy array."""
-        if file_name is None:
-            frame = self._lm_frame
-        else:
-            frame = self.get_lm_file(file_name, deepcopy=False)
+        if column in self._lm_frame.columns:
+            if file_name is None:
+                return self._lm_frame[column].to_numpy()
+            else:
+                if file_name in self._lm_file_indices:
+                    indices = self._lm_file_indices[file_name]
+                    return self._lm_frame[column][indices[0]:indices[1]].to_numpy()
+                else:
+                    raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
 
-        if column in frame.columns:
-            return frame[column].to_numpy()
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")
 
     def set_lm_data(self, column: str, new_data: npt.NDArray[np.float64], file_name: str | None = None) -> None:
         """Sets a single column of list mode data to the new data specified."""
-        if file_name is None:
-            frame = self._lm_frame
-        else:
-            frame = self.get_lm_file(file_name, deepcopy=False)
+        if column in self._lm_frame.columns:
+            if file_name is not None:
+                if file_name not in self._lm_file_indices:
+                    raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
 
-        if len(frame) != len(new_data):
-            raise ValueError(f"length of data ({len(new_data)}) doesn't match size of frame ({len(frame)}).")
+                indices = self._lm_file_indices[file_name]
+            else:
+                indices = [0, len(self._lm_frame[column])]
 
-        if column in frame.columns:
-            frame[column] = new_data
+            frame_len = indices[1] - indices[0]
+            if len(new_data) != frame_len:
+                raise ValueError(f"length of data ({len(new_data)}) doesn't match size of frame ({frame_len}).")
+
+            column_index = self._lm_frame.columns.get_loc(column)
+            self._lm_frame.iloc[indices[0]:indices[1], column_index] = new_data
         else:
             raise ValueError(f"'{column}' is either not a valid column or data hasn't been imported.")
 
-    def get_lm_frame(self, deepcopy: bool = True) -> pd.DataFrame:
+    def get_lm_frame(self, file_name: str | None = None, deepcopy: bool = True) -> pd.DataFrame:
         """Returns either the original list mode data frame or a copy depending on the optional deepcopy param."""
+        if file_name is not None:
+            if file_name not in self._lm_file_indices:
+                raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
+
+            indices = self._lm_file_indices[file_name]
+            return self._lm_frame.iloc[indices[0]:indices[1]].copy(deep=True)
+
         if deepcopy:
             return self._lm_frame.copy(deep=True)
 
         return self._lm_frame
 
-    def set_lm_frame(self, lm_frame: pd.DataFrame, deepcopy: bool = True) -> None:
+    def set_lm_frame(self, lm_frame: pd.DataFrame, file_name: str | None = None, deepcopy: bool = True) -> None:
         """Sets either the given list mode data frame or a copy depending on the optional deepcopy param."""
-        if deepcopy:
-            self._lm_frame = lm_frame.copy(deep=True)
+        if file_name is not None:
+            if file_name not in self._lm_file_indices:
+                raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
+
+            indices = self._lm_file_indices[file_name]
+            file_len = indices[1] - indices[0]
+            if len(lm_frame.index) != file_len:
+                raise ValueError(f"length of frame ({len(lm_frame.index)}) doesn't match size of file ({file_len}).")
+
+            if len(self._lm_frame.columns) != len(lm_frame.columns):
+                raise ValueError(f"frame doesn't have the same number of columns as file.")
+
+            columns = set(self._lm_frame.columns.values)
+            for column in lm_frame.columns.values.tolist():
+                if column not in columns:
+                    raise ValueError(f"frame is missing one or more columns present in file.")
+
+            for column in columns:
+                self._lm_frame.iloc[indices[0]:indices[1], self._lm_frame.columns.get_loc(column)] = (
+                    lm_frame).iloc[:, lm_frame.columns.get_loc(column)]
+
         else:
-            self._lm_frame = lm_frame
+            if deepcopy:
+                self._lm_frame = lm_frame.copy(deep=True)
+            else:
+                self._lm_frame = lm_frame
 
     def _find_lm_file_index(self, count_time: float) -> int:
         """Returns the index of the list mode file that the given count occurred in."""
@@ -217,18 +254,6 @@ class Scintillator:
             return self._lm_filelist[index]
         else:
             return ''
-
-    def get_lm_file(self, file_name: str, deepcopy: bool = True) -> pd.DataFrame:
-        """Returns the list mode data for the specified list mode file."""
-        if file_name in self._lm_file_indices:
-            indices = self._lm_file_indices[file_name]
-            if deepcopy:
-                return self._lm_frame[indices[0]:indices[1]].copy(deep=True)
-            else:
-                return self._lm_frame[indices[0]:indices[1]]
-
-        else:
-            raise ValueError(f"no file '{file_name}' for scintillator '{self.name}'.")
 
     def get_trace_filelist(self, deepcopy: bool = True) -> List[str]:
         """Returns either the list of list mode files or a copy depending on the optional deepcopy param."""
