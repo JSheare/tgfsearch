@@ -449,12 +449,11 @@ def _read_lm_file(passtime: Dict[str, Any], parser: Generator[tuple[datetime, pd
     started = passtime['started']
     long_gap_counts = 25
     for header, data, adc_rate, rollover_period in parser:
-        last_unix = passtime['lastunix']
+        last_unix = passtime['lastunix']  # Copying this out before it gets overwritten by _process_data_timing
         _process_data_timing(passtime, header, data, adc_rate, rollover_period)
         if started:
-            dt = (data['SecondsOfDay'][0] + datetime(header.year, header.month, header.day).timestamp()) - last_unix
-            if dt > long_gap_counts * (
-                    (data['SecondsOfDay'][len(data.index) - 1] - data['SecondsOfDay'][0]) / len(data.index)):
+            dt = data['unix'][0] - last_unix
+            if dt > long_gap_counts * ((data['unix'][len(data.index) - 1] - data['unix'][0]) / len(data.index)):
                 _raise_warning(f'long gap ({dt}s) between frames at {header}')
 
             if dt < 0:
@@ -466,6 +465,8 @@ def _read_lm_file(passtime: Dict[str, Any], parser: Generator[tuple[datetime, pd
 
         data_list.append(data)
         started = passtime['started']
+
+        data.drop(columns='unix', inplace=True)
 
         if 'pps' in data.columns:
             data.drop(columns='pps', inplace=True)
@@ -634,6 +635,7 @@ def _process_data_timing(passtime: Dict[str, Any], header: datetime, data: pd.Da
         # Storing gps sync info in the last flags bit
         data['flags'] += gps_sync
 
+    data['unix'] = unix_times
     data['SecondsOfDay'] = unix_times - daystart_unix
     # Checking to see if we've crossed a day boundary in this frame. When this happens, SecondsOfDay goes partially
     # negative. Counts in the current day become count - 86400
@@ -646,12 +648,12 @@ def _process_data_timing(passtime: Dict[str, Any], header: datetime, data: pd.Da
     data['wc'] -= rollover_correction
 
     # Updating passtime
-    passtime['lastunix'] = unix_times[last_index]
+    passtime['lastunix'] = data['unix'][last_index]
     passtime['lastsod'] = data['SecondsOfDay'][last_index]
     passtime['lastwc'] = data['wc'][last_index]
     if n_pps > 0:
         passtime['ppswc'] = data['wc'][pps[-1]]
-        passtime['ppsunix'] = unix_times[pps[-1]]
+        passtime['ppsunix'] = data['unix'][pps[-1]]
         passtime['ppssod'] = data['SecondsOfDay'][pps[-1]]
         passtime['ppsage'] = 0
     elif passtime['ppsage'] >= 0:
@@ -659,7 +661,7 @@ def _process_data_timing(passtime: Dict[str, Any], header: datetime, data: pd.Da
 
     # Recording the length of the very first frame read. Used to check for prior missing frames later
     if not passtime['started']:
-        passtime['frlen'] = data['SecondsOfDay'][last_index] - data['SecondsOfDay'][0]
+        passtime['frlen'] = data['unix'][last_index] - data['unix'][0]
         passtime['started'] = 1
 
 
