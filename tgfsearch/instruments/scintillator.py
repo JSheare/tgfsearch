@@ -100,9 +100,6 @@ class Scintillator:
 
         self._reader = Reader()
 
-    def __del__(self) -> None:
-        self.clear()
-
     def __str__(self) -> str:
         return f'Scintillator({self.name}, {self.erc})'
 

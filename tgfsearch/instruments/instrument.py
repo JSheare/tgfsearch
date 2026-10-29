@@ -87,9 +87,6 @@ class Instrument:
         else:
             self._read_identity()
 
-    def __del__(self) -> None:
-        self.clear()
-
     def __str__(self) -> str:
         """String casting overload. Returns a string of the form 'Instrument(name, date_yymmdd)'."""
         return f'Instrument({self.name}, {helper_funcs.date_to_yymmdd(self.date)})'

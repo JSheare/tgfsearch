@@ -1737,6 +1737,7 @@ def program(first_date: dt.date, second_date: dt.date, instrument_name: str, imp
                     os.remove(chunk_path)
 
         del instrument
+        gc.collect()
 
 
 if __name__ == '__main__':
