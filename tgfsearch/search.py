@@ -1427,7 +1427,7 @@ def program(first_date: dt.date, second_date: dt.date, instrument_name: str, imp
         except FileNotFoundError:
             print('Error: no data files to infer instrument identity from. Please provide the import location of '
                   'the data.')
-            exit()
+            return
 
         # Initializing the SearchInfo object
         if export_loc == '':

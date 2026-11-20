@@ -539,7 +539,7 @@ Full Instrument documentation for these methods (and more) can be found [here](h
 - tgf.combine_data()
   - Combines data from all scintillators into one set of arrays.
 - tgf.separate_data()
-  - Separates combined data from multiple scintillators into separate data for each scintillator()
+  - Separates combined data from multiple scintillators into separate data for each scintillator.
 - tgf.is_good_trace()
   - Returns True if the given trace is likely to be interesting and False otherwise.
 - tgf.filter_traces()
